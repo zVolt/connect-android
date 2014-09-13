@@ -9,5 +9,5 @@
     <string name="sendMsg">Send</string>
     <string name="typeMsg">Type a Message</string>
     <string name="getMsg">Refresh</string>
-
+	<string name="user_list">Users</string>
 </resources>
