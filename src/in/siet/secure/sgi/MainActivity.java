@@ -24,7 +24,7 @@ import com.loopj.android.http.RequestParams;
 
 public class MainActivity extends ActionBarActivity {
 	//ProgressDialog progDialog;
-	private static String TAG="in.siet.secure.sgi.MainActivity";
+	private static String TAG="in.siet.secure.sgi.MainActivity"; 
 	private static String userid=null;
 	Clientapi capi=new Clientapi();
 	@Override
@@ -41,7 +41,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 	public void onClickButtonSignin(View view){
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
 		Log.d(TAG+" onClick"," at start");
 	//	progDialog.show();
 		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString();
@@ -50,6 +50,7 @@ public class MainActivity extends ActionBarActivity {
 		params.put("username", userid);
 		params.put("password", pwd);
 		invokeWS(params);
+		//function call
 		Log.d(TAG+" onClick"," at end");
 /*	//	Toast.makeText(this, "Signin", Toast.LENGTH_SHORT).show();
 		//authenticate here 
@@ -60,16 +61,18 @@ public class MainActivity extends ActionBarActivity {
 	public void startUserListActivity(){
 		Intent intent=new Intent(this,UserListActivity.class);
 		intent.putExtra("UserId", userid);
+		
 		Log.d(TAG,"stating new Activity");
+		//start kar diya ok..
 		startActivity(intent);
 	}
 	public void invokeWS(RequestParams params){
+		//yaha aa gaye hum..
 		Log.d(TAG+" invokeWS"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		
 		client.get("http://172.16.7.200:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
-				public void onSuccess(int statusCode,Header[] headers,JSONObject response){
+				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
 					Log.d(TAG+" onSucess"," at start");
 					try {
 						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
@@ -80,7 +83,7 @@ public class MainActivity extends ActionBarActivity {
 							ft.commit();*/
 						}
 						else{
-							
+							//else mee aa jayga .. ok
 							Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
 							((TextView)findViewById(R.id.textView_error_msg)).setText("Login Failed");
 							
@@ -93,6 +96,7 @@ public class MainActivity extends ActionBarActivity {
 				
 				@Override
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
+					// fail me like n/w acess hi ni hai user k par to bas message lod kary ok..??
 					Log.d(TAG+" onFailure"," at start");
 				}
 			
