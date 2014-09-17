@@ -31,6 +31,11 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		SharedPreferences spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
+		if(spref.getBoolean(getString(R.string.logged_in), false)){
+			startUserListActivity();
+			
+		}
 		setContentView(R.layout.activity_main);
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
@@ -47,8 +52,8 @@ public class MainActivity extends ActionBarActivity {
 		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
 		pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
 		RequestParams params =new RequestParams();
-		params.put("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-		params.put("password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
+		params.put(getString(R.string.web_prm_usr),Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
+		params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
 		Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
 		Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
 		invokeWS(params);
@@ -62,10 +67,9 @@ public class MainActivity extends ActionBarActivity {
 */	}
 	public void startUserListActivity(){
 		Intent intent=new Intent(this,UserListActivity.class);
-		intent.putExtra("UserId", userid);
 		Log.d(TAG,"stating new Activity");
-		//start kar diya ok..
 		startActivity(intent);
+		finish();
 	}
 	public void saveUser(){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
@@ -74,14 +78,13 @@ public class MainActivity extends ActionBarActivity {
 		if (saved_user_id==null || saved_password!=null){
 			//save password
 			Editor editor=sharedPref.edit();
-			editor.putString("User Id",userid);
-			editor.putString("Password",pwd);
+			editor.putString(getString(R.string.user_id),userid);
+			editor.putString(getString(R.string.password),pwd);
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.commit();
 		}
 	}
 	public void invokeWS(RequestParams params){
-		//yaha aa gaye hum..
 		Log.d(TAG+" invokeWS"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get("http://192.168.0.100:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
