@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,8 +48,10 @@ public class MainActivity extends ActionBarActivity {
 		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString();
 		String pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString();
 		RequestParams params =new RequestParams();
-		params.put("username", userid);
-		params.put("password", pwd);
+		params.put("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
+		params.put("password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
+		Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
+		Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
 		invokeWS(params);
 		//function call
 		Log.d(TAG+" onClick"," at end");
@@ -70,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
 		//yaha aa gaye hum..
 		Log.d(TAG+" invokeWS"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://172.16.7.200:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
+		client.get("http://192.168.0.100:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
 				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
 					Log.d(TAG+" onSucess"," at start");
