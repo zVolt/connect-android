@@ -13,4 +13,5 @@ public class FragmentUserList extends Fragment{
 		View rootView=inflater.inflate(R.layout.fragment_chat_user_list,container,false);
 		return rootView;
 	}
+	
 }

@@ -7,12 +7,12 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -27,12 +27,11 @@ public class MainActivity extends ActionBarActivity {
 	//ProgressDialog progDialog;
 	private static String TAG="in.siet.secure.sgi.MainActivity"; 
 	private static String userid=null;
-	Clientapi capi=new Clientapi();
+	private static String pwd=null;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.fragmentFrame, new FragmentSignin()).commit();
@@ -45,8 +44,8 @@ public class MainActivity extends ActionBarActivity {
 		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
 		Log.d(TAG+" onClick"," at start");
 	//	progDialog.show();
-		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString();
-		String pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString();
+		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
+		pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
 		RequestParams params =new RequestParams();
 		params.put("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
 		params.put("password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
@@ -64,10 +63,22 @@ public class MainActivity extends ActionBarActivity {
 	public void startUserListActivity(){
 		Intent intent=new Intent(this,UserListActivity.class);
 		intent.putExtra("UserId", userid);
-		
 		Log.d(TAG,"stating new Activity");
 		//start kar diya ok..
 		startActivity(intent);
+	}
+	public void saveUser(){
+		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
+		String saved_user_id=sharedPref.getString("User Id", null);
+		String saved_password=sharedPref.getString("Password", null);
+		if (saved_user_id==null || saved_password!=null){
+			//save password
+			Editor editor=sharedPref.edit();
+			editor.putString("User Id",userid);
+			editor.putString("Password",pwd);
+			editor.putBoolean(getString(R.string.logged_in), true);
+			editor.commit();
+		}
 	}
 	public void invokeWS(RequestParams params){
 		//yaha aa gaye hum..
@@ -80,6 +91,7 @@ public class MainActivity extends ActionBarActivity {
 					try {
 						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
 							Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
+							saveUser();
 							startUserListActivity();
 						/*	FragmentTransaction ft=getSupportFragmentManager().beginTransaction().replace(R.id.fragmentFrame, new FragmentMainDisplay());
 							ft.addToBackStack(TAG+"Login");
@@ -107,38 +119,13 @@ public class MainActivity extends ActionBarActivity {
 		});
 		Log.d(TAG+" invokeWS"," at end");
 	}
-	@Override
+/*	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
-	public void sendMsg(View view){
-		String msg=((TextView)findViewById(R.id.userMsg)).getText().toString();
-		Toast.makeText(view.getContext(), "Message Sending", Toast.LENGTH_SHORT).show();
-		if(capi.sendMessage(msg))
-			Toast.makeText(view.getContext(), "Message Send", Toast.LENGTH_SHORT).show();
-		else
-			Toast.makeText(view.getContext(), "Message Not Send", Toast.LENGTH_SHORT).show();
-	}
-	public void getMsg(View view){
-		TextView textview=(TextView)findViewById(R.id.textViewDisplayMsg);
-		String tmp=capi.getMessages();
-		textview.setText(textview.getText().toString()+"\n"+tmp);
-	}
+*/
 
 }
