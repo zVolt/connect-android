@@ -4,6 +4,21 @@
     tools:context="in.siet.secure.sgi.MainActivity" >
 
     <item
+        android:id="@+id/action_notifications"
+        android:orderInCategory="100"
+        android:title="@string/action_notifications"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_contacts"
+        android:orderInCategory="100"
+        android:title="@string/action_contacts"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_users"
+        android:orderInCategory="100"
+        android:title="@string/action_users"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

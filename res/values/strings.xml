@@ -5,7 +5,7 @@
     <string name="user_login">College Login Id</string>
     <string name="user_password">Password</string>
     <string name="signin">Sign In</string>
-    <string name="action_settings">Setting</string>
+    
     <string name="sendMsg">Send</string>
     <string name="typeMsg">Type a Message</string>
     <string name="getMsg">Refresh</string>
@@ -15,6 +15,18 @@
 	<string name="web_prm_usr">username</string>
 	<string name="web_prm_pwd">password</string>
 	<string name="password">Password</string>
-	<string name="action_logout">Logout</string>
 	<string name="preference_file_name">in.siet.secure.preference_file</string>
+	
+	<string name="action_settings">Setting</string>
+	<string name="action_logout">Logout</string>
+	<string name="action_notifications">Notifications</string>
+	<string name="action_contacts">Contacts</string>
+	<string name="action_users">All Users</string>
+	
+	<string-array name="panel_options">
+		<item >Notifications</item>
+		<item >Contacts</item>
+		<item >Users</item>
+		<item >Settings</item>
+	</string-array>
 </resources>

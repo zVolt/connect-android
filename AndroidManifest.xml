@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="in.siet.secure.sgi.MainActivity"
+            android:name="in.siet.secure.sgi.LoginActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="in.siet.secure.sgi.UserListActivity"
+            android:name="in.siet.secure.sgi.MainActivity"
             android:label="@string/user_list" >
         </activity>
     </application>
