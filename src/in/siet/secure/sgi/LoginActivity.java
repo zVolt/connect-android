@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +28,7 @@ public class LoginActivity extends ActionBarActivity {
 	private static String TAG="in.siet.secure.sgi.LoginActivity"; 
 	private static String userid=null;
 	private static String pwd=null;
+	private static boolean is_faculty=false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -40,51 +42,65 @@ public class LoginActivity extends ActionBarActivity {
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.loginFrame, new FragmentSignin()).commit();
 		}
-	//	progDialog=new ProgressDialog(getApplicationContext());
 		Log.d(TAG+" onCreate"," at End");
 	}
 	public void onClickButtonSignin(View view){
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
 		Log.d(TAG+" onClick"," at start");
-	//	progDialog.show();
 		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
 		pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
-		RequestParams params =new RequestParams();
-		params.put(getString(R.string.web_prm_usr),Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-		params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
-		Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-		Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
-		invokeWS(params);
-		//function call
-		Log.d(TAG+" onClick"," at end");
-/*	//	Toast.makeText(this, "Signin", Toast.LENGTH_SHORT).show();
-		//authenticate here 
-		FragmentTransaction ft=getSupportFragmentManager().beginTransaction().replace(R.id.fragmentFrame, new FragmentMainDisplay());
-		ft.addToBackStack(TAG+"Login");
-		ft.commit();
-*/	}
+		if(verifyInput()){
+			
+			if(((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked())
+				is_faculty=true;
+			else
+				is_faculty=false;
+			RequestParams params =new RequestParams();
+			params.put(getString(R.string.web_prm_usr),Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
+			params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
+			params.put(getString(R.string.web_prm_isfac),is_faculty);
+			Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
+			Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
+			invokeWS(params);
+			//function call
+			Log.d(TAG+" onClick"," at end");
+		}
+		else{
+			clearInput();
+			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",1);
+		}
+	}
 	public void startUserListActivity(){
 		Intent intent=new Intent(this,MainActivity.class);
-		Log.d(TAG,"stating new Activity");
+		Utility.log(TAG,"stating new Activity");
 		startActivity(intent);
 		finish();
+	}
+	public boolean verifyInput(){
+		if(userid!=null && userid.length()>0 && pwd!=null && pwd.length()>0 && (((RadioButton)findViewById(R.id.radioButton_student)).isChecked() || ((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked()))
+			return true;
+		return false;
+	}
+	public void clearInput(){
+		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
 	}
 	public void saveUser(){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		String saved_user_id=sharedPref.getString("User Id", null);
 		String saved_password=sharedPref.getString("Password", null);
 		if (saved_user_id==null || saved_password!=null){
-			//save password
 			Editor editor=sharedPref.edit();
 			editor.putString(getString(R.string.user_id),userid);
 			editor.putString(getString(R.string.password),pwd);
 			editor.putBoolean(getString(R.string.logged_in), true);
+			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
 			editor.commit();
 		}
 	}
 	public void invokeWS(RequestParams params){
 		Log.d(TAG+" invokeWS"," at start");
+		Utility.RaiseToast(getApplicationContext(), ""+is_faculty, 1);
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get("http://192.168.0.100:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
@@ -95,12 +111,8 @@ public class LoginActivity extends ActionBarActivity {
 							Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
 							saveUser();
 							startUserListActivity();
-						/*	FragmentTransaction ft=getSupportFragmentManager().beginTransaction().replace(R.id.fragmentFrame, new FragmentMainDisplay());
-							ft.addToBackStack(TAG+"Login");
-							ft.commit();*/
 						}
 						else{
-							//else mee aa jayga .. ok
 							Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
 							((TextView)findViewById(R.id.textView_error_msg)).setText("Login Failed");
 							
@@ -113,7 +125,7 @@ public class LoginActivity extends ActionBarActivity {
 				
 				@Override
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
-					// fail me like n/w acess hi ni hai user k par to bas message lod kary ok..??
+					
 					Log.d(TAG+" onFailure"," at start");
 				}
 			
@@ -121,13 +133,4 @@ public class LoginActivity extends ActionBarActivity {
 		});
 		Log.d(TAG+" invokeWS"," at end");
 	}
-/*	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-*/
-
 }

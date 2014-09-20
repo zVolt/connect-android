@@ -1,7 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-    
 
-</TextView>
+    <ListView
+        android:id="@+id/notification_list_attachments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/notification_attachments" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/notification_attachments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/notification_time"
+        android:layout_centerHorizontal="true"
+        android:text="Attachments"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/notification_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/notification_text"
+        android:layout_marginRight="14dp"
+        android:text="12:00 pm"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+
+
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:drawableLeft="@drawable/ic_launcher"
+        android:gravity="left|center"
+        android:text="All Students are hereby informedAll Students are hereby informed"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/notification_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/notification_title"
+        android:layout_marginTop="17dp"
+        android:text="Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</RelativeLayout>
