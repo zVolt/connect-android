@@ -45,6 +45,7 @@ public class LoginActivity extends ActionBarActivity {
 		Log.d(TAG+" onCreate"," at End");
 	}
 	public void onClickButtonSignin(View view){
+		Utility.showProgressDialog(this);
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
 		Log.d(TAG+" onClick"," at start");
@@ -100,13 +101,13 @@ public class LoginActivity extends ActionBarActivity {
 	}
 	public void invokeWS(RequestParams params){
 		Log.d(TAG+" invokeWS"," at start");
-		Utility.RaiseToast(getApplicationContext(), ""+is_faculty, 1);
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get("http://192.168.0.100:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
 				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
 					Log.d(TAG+" onSucess"," at start");
 					try {
+						Utility.hideProgressDialog();
 						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
 							Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
 							saveUser();
@@ -118,19 +119,21 @@ public class LoginActivity extends ActionBarActivity {
 							
 						}
 					} catch (JSONException e) {
-						Log.d(TAG+" invokeWS exception ",e.getLocalizedMessage());
+						Utility.log(TAG+" invokeWS exception ",e.getLocalizedMessage());
 						((TextView)findViewById(R.id.textView_error_msg)).setText("Try Again!!");
 					}
 				}
 				
 				@Override
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
-					
-					Log.d(TAG+" onFailure"," at start");
+					Utility.hideProgressDialog();
+					Utility.RaiseToast(getApplicationContext(), "Server Error", 1);
+					Utility.log(TAG+" onFailure"," at start");
 				}
 			
 			
 		});
-		Log.d(TAG+" invokeWS"," at end");
+		Utility.log(TAG+" invokeWS"," at end");
 	}
+	
 }

@@ -3,6 +3,7 @@ package in.siet.secure.sgi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -18,7 +19,7 @@ import android.widget.Toast;
 public class MainActivity extends ActionBarActivity{
 	public static final String TAG="in.siet.secure.sgi.MainActivity";
 	private String[] panelOption;
-	//private DrawerLayout drawerlayout;
+	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -27,13 +28,13 @@ public class MainActivity extends ActionBarActivity{
 			setContentView(R.layout.activity_main);
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.mainFrame,new FragmentNotification()).commit();
-		}
 		//set drawer
 		panelOption=getResources().getStringArray(R.array.panel_options);
-	//	drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
+		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		drawerListView.setAdapter(new ArrayAdapter<String>(this,R.layout.list_item_drawer,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
+		}
 		
 	}
 	@Override
@@ -58,12 +59,14 @@ public class MainActivity extends ActionBarActivity{
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
 	public void startLoginActivity(){
 		Intent intent=new Intent(this,LoginActivity.class);
 		Log.d(TAG,"stating login Activity");
 		startActivity(intent);
 		finish();
 	}
+	
 	public void switch_fragment(int position){
 		switch(position){
 		case 0:
@@ -88,8 +91,11 @@ public class MainActivity extends ActionBarActivity{
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			drawerListView.setItemChecked(position, true);
+			setTitle(panelOption[position]);
 			switch_fragment(position);
+			drawerlayout.closeDrawer(drawerListView);
 		}
-
 	}
+	
 }
