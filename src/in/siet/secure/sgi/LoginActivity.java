@@ -1,5 +1,8 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
+
 import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,8 +37,7 @@ public class LoginActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		SharedPreferences spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		if(spref.getBoolean(getString(R.string.logged_in), false)){
-			startUserListActivity();
-			
+			startMainActivity();
 		}
 		setContentView(R.layout.activity_login);
 		if (savedInstanceState == null) {
@@ -59,20 +61,20 @@ public class LoginActivity extends ActionBarActivity {
 				is_faculty=false;
 			RequestParams params =new RequestParams();
 			params.put(getString(R.string.web_prm_usr),Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-			params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
+			params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(Utility.sha1(pwd).getBytes(),Base64.DEFAULT));
 			params.put(getString(R.string.web_prm_isfac),is_faculty);
 			Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
 			Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
 			invokeWS(params);
-			//function call
 			Log.d(TAG+" onClick"," at end");
 		}
 		else{
 			clearInput();
+			Utility.hideProgressDialog();
 			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",1);
 		}
 	}
-	public void startUserListActivity(){
+	public void startMainActivity(){
 		Intent intent=new Intent(this,MainActivity.class);
 		Utility.log(TAG,"stating new Activity");
 		startActivity(intent);
@@ -86,6 +88,10 @@ public class LoginActivity extends ActionBarActivity {
 	public void clearInput(){
 		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
 	}
+	public void createdb(){
+		new DbHelper(getApplicationContext()).getReadableDatabase();
+		Utility.log(TAG,"donedb");
+	}
 	public void saveUser(){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		String saved_user_id=sharedPref.getString("User Id", null);
@@ -93,16 +99,17 @@ public class LoginActivity extends ActionBarActivity {
 		if (saved_user_id==null || saved_password!=null){
 			Editor editor=sharedPref.edit();
 			editor.putString(getString(R.string.user_id),userid);
-			editor.putString(getString(R.string.password),pwd);
+			editor.putString(getString(R.string.acess_token),Base64.encodeToString(Utility.sha1(pwd).getBytes(),Base64.DEFAULT));
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
 			editor.commit();
 		}
+		createdb();
 	}
 	public void invokeWS(RequestParams params){
 		Log.d(TAG+" invokeWS"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://192.168.0.100:8080/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
+		client.get("http://"+Constants.SOCKET+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
 				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
 					Log.d(TAG+" onSucess"," at start");
@@ -111,7 +118,7 @@ public class LoginActivity extends ActionBarActivity {
 						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
 							Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
 							saveUser();
-							startUserListActivity();
+							startMainActivity();
 						}
 						else{
 							Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
@@ -127,7 +134,7 @@ public class LoginActivity extends ActionBarActivity {
 				@Override
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
 					Utility.hideProgressDialog();
-					Utility.RaiseToast(getApplicationContext(), "Server Error", 1);
+					Utility.RaiseToast(getApplicationContext(), "Unable to connect", 1);
 					Utility.log(TAG+" onFailure"," at start");
 				}
 			

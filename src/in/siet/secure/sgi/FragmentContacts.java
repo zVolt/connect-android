@@ -10,6 +10,7 @@ public class FragmentContacts extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_contacts, container,	false);
+		getActivity().setTitle(getResources().getStringArray(R.array.panel_options)[1]);
 		return rootView;
 	}
 }

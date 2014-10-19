@@ -1,0 +1,52 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp"
+     >
+
+    <TextView
+        android:id="@+id/ListItemUsersTextViewName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/ListItemUsersImageViewPic"
+        android:layout_marginTop="5dp"
+        android:layout_toRightOf="@+id/ListItemUsersImageViewPic"
+        android:layout_marginLeft="10dp"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+         />
+
+    <ImageView
+        android:id="@+id/ListItemUsersImageViewPic"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/user_image_desc"
+        android:src="@drawable/ic_action_person" />
+
+    <TextView
+        android:id="@+id/ListItemUsersTextViewId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ListItemUsersImageViewPic"
+        android:layout_alignLeft="@+id/ListItemUsersTextViewName"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_marginBottom="3dp"
+        
+         />
+
+    <TextView
+        android:id="@+id/ListItemUsersTextViewState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/ListItemUsersTextViewId"
+        android:layout_alignBottom="@+id/ListItemUsersImageViewPic"
+        android:layout_alignParentRight="true"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="3dp"
+        
+         />
+
+</RelativeLayout>

@@ -1,5 +1,7 @@
 package in.siet.secure.sgi;
 
+import java.security.MessageDigest;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
@@ -16,7 +18,8 @@ public class Utility {
 	}
 	public static void showProgressDialog(Context context){
 		try{
-			progress_dialog=ProgressDialog.show(context, "Connecting", "Please wait..", true, false);
+			progress_dialog=ProgressDialog.show(context, null, "Please wait..", true, false);
+			Utility.log(TAG, "progress is OK");
 		}catch(Exception ex){
 			log(TAG,"showProgressDialog "+ex.getMessage());
 		}
@@ -25,7 +28,22 @@ public class Utility {
 		try{
 			progress_dialog.dismiss();
 		}catch(Exception ex){
-			log(TAG,"showProgressDialog "+ex.getMessage());
+			log(TAG,"hideProgressDialog "+ex.getMessage());
 		}
 	}
+	public static String sha1(String input){
+		try{
+	        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
+	        byte[] result = mDigest.digest(input.getBytes());
+	        StringBuffer sb = new StringBuffer();
+	        for (int i = 0; i < result.length; i++) {
+	            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+	        }
+	        return sb.toString();
+        }
+		catch(Exception ex){
+			log("sha1", ex.getMessage());
+        	return null;
+        }
+    }
 }
