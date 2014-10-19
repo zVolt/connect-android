@@ -10,6 +10,9 @@
     <string name="logged_in">logged_in</string>
     <string name="is_faculty">Is_Faulty</string>
     
+    <string name="load_next">Next</string>
+    <string name="load_prev">Previous</string>
+    
     <string name="wrong_choice">Wrong Choice.. Try Again</string>
     <string name="sendMsg">Send</string>
     <string name="typeMsg">Type a Message</string>
@@ -34,10 +37,17 @@
 	<string name="radio_student">Student</string>
 	<string name="radio_faculty">Faculty</string>
 	
+	<string name="user_image_desc">Image of the user</string>
 	<string-array name="panel_options">
 		<item >Notifications</item>
 		<item >Contacts</item>
 		<item >Users</item>
 		<item >Settings</item>
+	</string-array>
+	
+	<string name="userType">Select Type</string>
+	<string-array name="userTypeArray">
+		<item >Student</item>
+		<item >Faculty</item>
 	</string-array>
 </resources>

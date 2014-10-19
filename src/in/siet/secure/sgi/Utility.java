@@ -19,6 +19,7 @@ public class Utility {
 	public static void showProgressDialog(Context context){
 		try{
 			progress_dialog=ProgressDialog.show(context, null, "Please wait..", true, false);
+			Utility.log(TAG, "progress is OK");
 		}catch(Exception ex){
 			log(TAG,"showProgressDialog "+ex.getMessage());
 		}
@@ -27,7 +28,7 @@ public class Utility {
 		try{
 			progress_dialog.dismiss();
 		}catch(Exception ex){
-			log(TAG,"showProgressDialog "+ex.getMessage());
+			log(TAG,"hideProgressDialog "+ex.getMessage());
 		}
 	}
 	public static String sha1(String input){
