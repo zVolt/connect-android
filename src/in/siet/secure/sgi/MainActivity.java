@@ -39,7 +39,7 @@ public class MainActivity extends ActionBarActivity{
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		drawerListView.setAdapter(new ArrayAdapter<String>(this,R.layout.list_item_drawer,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
-		//fill_tmp_data();
+		fill_tmp_data();
 		}
 		
 	}
