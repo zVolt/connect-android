@@ -1,6 +1,7 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
 
 import org.apache.http.Header;
 import org.json.JSONException;
@@ -87,6 +88,10 @@ public class LoginActivity extends ActionBarActivity {
 	public void clearInput(){
 		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
 	}
+	public void createdb(){
+		new DbHelper(getApplicationContext()).getReadableDatabase();
+		Utility.log(TAG,"donedb");
+	}
 	public void saveUser(){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		String saved_user_id=sharedPref.getString("User Id", null);
@@ -99,6 +104,7 @@ public class LoginActivity extends ActionBarActivity {
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
 			editor.commit();
 		}
+		createdb();
 	}
 	public void invokeWS(RequestParams params){
 		Log.d(TAG+" invokeWS"," at start");

@@ -10,6 +10,7 @@ public class FragmentNotification extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
+		getActivity().setTitle(getResources().getStringArray(R.array.panel_options)[0]);
 		return rootView;
 	}
 }
