@@ -10,6 +10,9 @@
     <string name="logged_in">logged_in</string>
     <string name="is_faculty">Is_Faulty</string>
     
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Closed</string>
+    
     <string name="load_next">Next</string>
     <string name="load_prev">Previous</string>
     

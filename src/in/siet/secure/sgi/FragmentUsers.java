@@ -40,7 +40,11 @@ public class FragmentUsers extends Fragment{
 		load();
 		return rootView;
 	}
-
+	@Override
+	public void onResume(){
+		super.onResume();
+		Utility.RaiseToast(getActivity(), "I am Users", 0);
+	}
 	public void load(){
 		Utility.showProgressDialog(getActivity());
 		fetch_all();

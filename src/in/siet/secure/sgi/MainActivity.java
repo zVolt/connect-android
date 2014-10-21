@@ -5,9 +5,11 @@ import in.siet.secure.dao.DbStructure;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -33,8 +35,8 @@ public class MainActivity extends ActionBarActivity{
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
-	
-	
+	private ActionBarDrawerToggle drawerToggle;
+	private int active_drawer_option;
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -45,12 +47,37 @@ public class MainActivity extends ActionBarActivity{
 			setContentView(R.layout.activity_main);
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.mainFrame,new FragmentNotification()).commit();
+			active_drawer_option=0;
+			
 		//set drawer
 		panelOption=getResources().getStringArray(R.array.panel_options);
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		drawerListView.setAdapter(new ArrayAdapter<String>(this,R.layout.list_item_drawer,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
+		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close){
+			
+			@Override
+			public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+        //        getSupportActionBar().setTitle(getString(R.string.drawer_close));
+      //          Utility.RaiseToast(getApplicationContext(), "close", 0);
+                this.syncState();
+                setTitle();
+            }
+			
+			@Override
+			public void onDrawerOpened(View view) {
+                super.onDrawerOpened(view);
+                getSupportActionBar().setTitle(getString(R.string.app_name));
+    //            Utility.RaiseToast(getApplicationContext(), "open", 0);
+                this.syncState();
+                
+            }
+		};
+		drawerlayout.setDrawerListener(drawerToggle);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
 		
 		DisplayImageOptions options=new DisplayImageOptions.Builder()
 		.cacheInMemory(true)
@@ -60,11 +87,24 @@ public class MainActivity extends ActionBarActivity{
 		ImageLoaderConfiguration config=new ImageLoaderConfiguration.Builder(getApplicationContext())
 		.defaultDisplayImageOptions(options)
 		.build();
-		
 		ImageLoader.getInstance().init(config);
+		setTitle();
 		}
 		
 	}
+	 @Override
+	    protected void onPostCreate(Bundle savedInstanceState) {
+	        super.onPostCreate(savedInstanceState);
+	        // Sync the toggle state after onRestoreInstanceState has occurred.
+	        drawerToggle.syncState();
+	 }
+	 
+	 @Override
+	    public void onConfigurationChanged(Configuration newConfig) {
+	        super.onConfigurationChanged(newConfig);
+	        drawerToggle.onConfigurationChanged(newConfig);
+	    }
+	 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
@@ -75,6 +115,12 @@ public class MainActivity extends ActionBarActivity{
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
+		
+		//handle drawer open/close clicks
+		if (drawerToggle.onOptionsItemSelected(item)) {
+	          return true;
+		}
+		
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			return true;
@@ -116,6 +162,11 @@ public class MainActivity extends ActionBarActivity{
 		Utility.RaiseToast(getApplicationContext(), c.getString(c.getColumnIndexOrThrow(DbStructure.FcultyContactsTable.COLUMN_FNAME)), 1);
 	}
 	
+	public void setTitle(){
+		Utility.RaiseToast(this, "changing title", 0);
+		getSupportActionBar().setTitle(panelOption[active_drawer_option]);
+	}
+	
 	public void switch_fragment(int position){
 		FragmentManager fragmentManager=getSupportFragmentManager();
 		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
@@ -126,7 +177,7 @@ public class MainActivity extends ActionBarActivity{
 				fragmentTransaction.replace(R.id.mainFrame,new FragmentNotification(),TAG+panelOption[position]);
 			else
 				fragmentTransaction.replace(R.id.mainFrame,fragment);
-			fragmentTransaction.addToBackStack(null);
+			//fragmentTransaction.addToBackStack(null);
 			fragmentTransaction.commit();
 			break;
 		case 1:
@@ -134,7 +185,7 @@ public class MainActivity extends ActionBarActivity{
 				fragmentTransaction.replace(R.id.mainFrame,new FragmentContacts(),TAG+panelOption[position]);
 			else
 				fragmentTransaction.replace(R.id.mainFrame,fragment);
-			fragmentTransaction.addToBackStack(null);
+			//fragmentTransaction.addToBackStack(null);
 			fragmentTransaction.commit();
 			break;
 		case 2:
@@ -163,6 +214,7 @@ public class MainActivity extends ActionBarActivity{
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			drawerListView.setItemChecked(position, true);
 			switch_fragment(position);
+			active_drawer_option=position;
 			drawerlayout.closeDrawer(drawerListView);
 			
 		}
