@@ -13,4 +13,9 @@ public class FragmentContacts extends Fragment{
 		getActivity().setTitle(getResources().getStringArray(R.array.panel_options)[1]);
 		return rootView;
 	}
+	@Override
+	public void onResume(){
+		super.onResume();
+		Utility.RaiseToast(getActivity(), "I am Contacts", 0);
+	}
 }

@@ -30,7 +30,7 @@ public class UserCategoryDialog extends DialogFragment{
 					getFragmentManager().beginTransaction().replace(R.id.mainFrame,fragment).commit();
 				}
 				//((FragmentUsers)fragment).fetch_all();
-				Utility.RaiseToast(getActivity(), ""+which, 0);
+				//Utility.RaiseToast(getActivity(), ""+which, 0);
 			}
 		});
 		return builder.create();
