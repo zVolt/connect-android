@@ -42,6 +42,7 @@
 	
 	<string name="user_image_desc">Image of the user</string>
 	<string name="userType">Select Type</string>
+	<string name="attachments">Attachments</string>
 	
 	<string-array name="panel_options">
 		<item >Notifications</item>

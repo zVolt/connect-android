@@ -32,7 +32,7 @@ public class Utility {
 		}
 	}
 	public static String getUserImage(String id){
-		return "http://secure.siet.in/images/std_photo/b-11-136.jpg";
+		return "http://www.secure.siet.in/images/std_photo/"+id.toLowerCase().trim()+".jpg";
 	}
 	public static String sha1(String input){
 		try{

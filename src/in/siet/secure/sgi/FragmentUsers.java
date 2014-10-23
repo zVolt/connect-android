@@ -72,6 +72,7 @@ public class FragmentUsers extends Fragment{
 		listview.setOnItemClickListener(new ItemClickListener());
 		Utility.log(TAG,"show_users");
 	}
+	
 	class ItemClickListener implements OnItemClickListener{
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {

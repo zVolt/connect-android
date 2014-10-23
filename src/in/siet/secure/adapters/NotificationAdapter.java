@@ -30,14 +30,12 @@ public class NotificationAdapter extends ArrayAdapter<Notification>{
 		LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View rowView= inflater.inflate(R.layout.list_item_notification, parent, false);
 		
-		ImageView image=(ImageView)rowView.findViewById(R.id.imageViewNotiImage);
-		TextView title=(TextView)rowView.findViewById(R.id.notification_title);
-		TextView text=(TextView)rowView.findViewById(R.id.notification_text);
-		TextView time=(TextView)rowView.findViewById(R.id.notification_time);
+		ImageView image=(ImageView)rowView.findViewById(R.id.imageViewListNotiImage);
+		TextView title=(TextView)rowView.findViewById(R.id.notification_list_title);
+		TextView time=(TextView)rowView.findViewById(R.id.notification_list_time);
 		
 		ImageLoader.getInstance().displayImage(Utility.getUserImage(values.get(position).sender_id), image);
 		title.setText(values.get(position).subject);
-		text.setText(values.get(position).text);
 		time.setText(values.get(position).time);
 		
 		return rowView;
