@@ -1,9 +1,35 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="50dp"
-    android:gravity="left|center"
-    android:drawableLeft="@drawable/ic_launcher"
-   	android:id="@+id/notification_attachemnt_file" 
-	android:textAppearance="?android:attr/textAppearanceMedium"
-	android:text="files"
-	/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_margin="5dp"
+     >
+
+    <ImageView
+        android:id="@+id/imageViewNotiFileImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_launcher" />
+
+    <TextView
+        android:id="@+id/textViewNotiFileDetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewNotiFileImage"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="5dp"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/textViewNotiFileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textViewNotiFileDetail"
+        android:layout_marginLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_toRightOf="@+id/imageViewNotiFileImage"
+        android:text="TextView" />
+
+</RelativeLayout>
