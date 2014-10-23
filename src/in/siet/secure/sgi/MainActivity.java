@@ -1,5 +1,7 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.Utility;
+import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.dao.DbHelper;
 import in.siet.secure.dao.DbStructure;
 import android.content.ContentValues;
@@ -21,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -48,12 +49,12 @@ public class MainActivity extends ActionBarActivity{
 			getSupportFragmentManager().beginTransaction()
 			.add(R.id.mainFrame,new FragmentNotification()).commit();
 			active_drawer_option=0;
-			
+		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
 		panelOption=getResources().getStringArray(R.array.panel_options);
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
-		drawerListView.setAdapter(new ArrayAdapter<String>(this,R.layout.list_item_drawer,panelOption));
+		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close){
 			
@@ -70,6 +71,7 @@ public class MainActivity extends ActionBarActivity{
 			public void onDrawerOpened(View view) {
                 super.onDrawerOpened(view);
                 getSupportActionBar().setTitle(getString(R.string.app_name));
+                getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
     //            Utility.RaiseToast(getApplicationContext(), "open", 0);
                 this.syncState();
                 
@@ -141,30 +143,25 @@ public class MainActivity extends ActionBarActivity{
 		finish();
 	}
 
-	public void fill_tmp_data(){
-		DbHelper dbHelper=new DbHelper(getApplicationContext());
-		SQLiteDatabase db=dbHelper.getWritableDatabase();
-		ContentValues values=new ContentValues();
-		values.put(DbStructure.FcultyContactsTable._ID,1);
-		values.put(DbStructure.FcultyContactsTable.COLUMN_FNAME, "pogo");
-		values.put(DbStructure.FcultyContactsTable.COLUMN_LNAME, "gopo");
-		db.insert(DbStructure.FcultyContactsTable.TABLE_NAME,null, values);
-
-		Utility.RaiseToast(getApplicationContext(), "inserted value", 1);
-		db=dbHelper.getReadableDatabase();
-		String[] projection={
-				DbStructure.FcultyContactsTable._ID,
-				DbStructure.FcultyContactsTable.COLUMN_FNAME,
-				DbStructure.FcultyContactsTable.COLUMN_LNAME,
-		};
-		Cursor c=db.query(DbStructure.FcultyContactsTable.TABLE_NAME,projection, null,null,null,null,null);
-		c.moveToFirst();
-		Utility.RaiseToast(getApplicationContext(), c.getString(c.getColumnIndexOrThrow(DbStructure.FcultyContactsTable.COLUMN_FNAME)), 1);
-	}
+	
 	
 	public void setTitle(){
 		Utility.RaiseToast(this, "changing title", 0);
 		getSupportActionBar().setTitle(panelOption[active_drawer_option]);
+		switch(active_drawer_option){
+		case 0:
+			getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
+			break;
+		case 1:
+			getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_chats_white));
+			break;
+		case 2:
+			getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_add_user_white));
+			break;
+		case 3:
+			getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_settings_white));
+			break;
+		}
 	}
 	
 	public void switch_fragment(int position){

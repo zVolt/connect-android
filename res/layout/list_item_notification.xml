@@ -1,57 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="@dimen/list_item_layout_height"
+    android:layout_margin="@dimen/default_margin"
+    android:padding="@dimen/list_item_layout_padding"
+    android:gravity="center_vertical">
 
-    <ListView
-        android:id="@+id/notification_list_attachments"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/notification_attachments" >
-
-    </ListView>
-
-    <TextView
-        android:id="@+id/notification_attachments"
+		<ImageView
+		    android:id="@+id/imageViewListNotiImage"
+		    android:layout_width="@dimen/list_item_image_width"
+		    android:layout_height="@dimen/list_item_content_height"
+		    android:src="@drawable/ic_action_notification" />
+		
+    <LinearLayout
+         android:id="@+id/notification_List_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/notification_time"
-        android:layout_centerHorizontal="true"
-        android:text="Attachments"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:id="@+id/notification_time"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+        
+        <TextView
+        android:id="@+id/notification_list_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/notification_text"
-        android:layout_marginRight="14dp"
-        android:text="12:00 pm"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-
-
-    <TextView
-        android:id="@+id/notification_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:drawableLeft="@drawable/ic_launcher"
+        android:layout_marginLeft="@dimen/list_item_maring_btwn_image_text"
         android:gravity="left|center"
         android:text="All Students are hereby informedAll Students are hereby informed"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <TextView
-        android:id="@+id/notification_text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <TextView
+        android:id="@+id/notification_list_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/notification_title"
-        android:layout_marginTop="17dp"
-        android:text="Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-</RelativeLayout>
+        android:layout_marginLeft="@dimen/list_item_maring_btwn_image_text"
+        android:text="12:00 pm"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+        
+    </LinearLayout>
+    
+</LinearLayout>

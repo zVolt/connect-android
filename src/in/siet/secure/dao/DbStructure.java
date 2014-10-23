@@ -20,9 +20,11 @@ public final class DbStructure {
 	public static abstract class NotificationTable implements BaseColumns{
 		public static final String TABLE_NAME = "notification";
 		public static final String COLUMN_TEXT = "text";
+		public static final String COLUMN_SUBJECT = "subject";
+		public static final String COLUMN_TIME = "time";
 		public static final String COLUMN_SENDER = "sender";
 		
-		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+COLUMN_TEXT+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_SENDER+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+COLUMN_TEXT+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_SENDER+DbConstants.TYPE_INT+DbConstants.COMMA+COLUMN_SUBJECT+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_TIME+DbConstants.TYPE_TEXT+DbConstants.COMMA+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_TRUNCATE = DbConstants.TRUNCATE_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
@@ -33,7 +35,7 @@ public final class DbStructure {
 		public static final String COLUMN_BRANCH = "branch";
 		public static final String COLUMN_YEAR = "year";
 		public static final String COLUMN_SECTION = "section";
-		public static final String COLUMN_PROFILE_PIC_ID = "pic_file_id";
+		public static final String COLUMN_PROFILE_PIC_ID = "pic_file_url";
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+COLUMN_FNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_LNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_BRANCH+DbConstants.TYPE_TEXT+DbConstants.COMMA+COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.COMMA+COLUMN_SECTION+DbConstants.TYPE_INT+DbConstants.COMMA+COLUMN_PROFILE_PIC_ID+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_TRUNCATE =DbConstants.TRUNCATE_TABLE+TABLE_NAME+DbConstants.SEMICOLON;

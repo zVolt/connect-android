@@ -1,5 +1,8 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.User;
+import in.siet.secure.Util.Utility;
+import in.siet.secure.adapters.UsersAdapter;
 import in.siet.secure.contants.Constants;
 
 import java.util.ArrayList;
@@ -35,7 +38,7 @@ public class FragmentUsers extends Fragment{
 		View rootView = inflater.inflate(R.layout.fragment_users, container,false);
 		sharedPreferences=getActivity().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE);
 		
-		getActivity().setTitle(getResources().getStringArray(R.array.panel_options)[2]);		
+	//	getActivity().setTitle(getResources().getStringArray(R.array.panel_options)[2]);		
 		Utility.log(TAG,"onCreate"+userType);
 		load();
 		return rootView;
@@ -69,6 +72,7 @@ public class FragmentUsers extends Fragment{
 		listview.setOnItemClickListener(new ItemClickListener());
 		Utility.log(TAG,"show_users");
 	}
+	
 	class ItemClickListener implements OnItemClickListener{
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {

@@ -41,16 +41,25 @@
 	<string name="radio_faculty">Faculty</string>
 	
 	<string name="user_image_desc">Image of the user</string>
+	<string name="userType">Select Type</string>
+	<string name="attachments">Attachments</string>
+	
 	<string-array name="panel_options">
 		<item >Notifications</item>
-		<item >Contacts</item>
-		<item >Users</item>
+		<item >Interactions</item>
+		<item >Add Users</item>
 		<item >Settings</item>
 	</string-array>
 	
-	<string name="userType">Select Type</string>
 	<string-array name="userTypeArray">
 		<item >Student</item>
 		<item >Faculty</item>
 	</string-array>
+	
+	<string-array name="state">
+		<item >Offline</item>
+		<item >Online</item>
+	</string-array>
+	
+	
 </resources>
