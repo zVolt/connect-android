@@ -18,6 +18,6 @@
         android:layout_marginLeft="@dimen/drawer_item_maring_btwn_image_text"
         android:gravity="center_vertical"
         android:text="TextView"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </LinearLayout>

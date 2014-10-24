@@ -36,6 +36,7 @@ public class LoginActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		SharedPreferences spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		if(spref.getBoolean(getString(R.string.logged_in), false)){
 			startMainActivity();
@@ -43,7 +44,9 @@ public class LoginActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_login);
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
-					.add(R.id.loginFrame, new FragmentSignin()).commit();
+				.setTransitionStyle(R.anim.abc_fade_out)
+				.add(R.id.loginFrame, new FragmentSignin())
+				.commit();
 		}
 		Log.d(TAG+" onCreate"," at End");
 	}

@@ -3,8 +3,9 @@ package in.siet.secure.dao;
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
+import in.siet.secure.sgi.FragmentDetailNotification;
+import in.siet.secure.sgi.FragmentNotification;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -12,8 +13,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 
 public class DbHelper extends SQLiteOpenHelper{
+	public static final String TAG="in.siet.secure.dao.DbHelper";
 	public static final String DATABASE_NAME="sgi_app.db";
 	public static final int DATABASE_VERSION=1;
 	public DbHelper(Context context){
@@ -41,54 +44,83 @@ public class DbHelper extends SQLiteOpenHelper{
 		onCreate(db);
 	}
 	
-	public ArrayList<Notification> getNotifications(){
-		ArrayList<Notification> notifications=new ArrayList<Notification>();
+	public void getNotifications(){
+		new FetchNotification().execute(this);
+	}
+	
+	public void getFilesOfNotification(int noti_id) {
+		new FetchFilesOfNotification().execute(this,noti_id);
+	}
+	
+	private class FetchNotification extends AsyncTask<DbHelper, Integer, ArrayList<Notification>>{
+
+		@Override
+		protected ArrayList<Notification> doInBackground(DbHelper... params) {
+			DbHelper This=params[0];
 			String[] projection={
-					
 					DbStructure.NotificationTable.COLUMN_SENDER,
 					DbStructure.NotificationTable.COLUMN_SUBJECT,
 					DbStructure.NotificationTable.COLUMN_TEXT,
 					DbStructure.NotificationTable.COLUMN_TIME,
 					DbStructure.NotificationTable._ID,
 			};
-			Cursor c=this.getReadableDatabase().query(DbStructure.NotificationTable.TABLE_NAME,projection,null,null,null,null,null);
+			Cursor c=This.getReadableDatabase().query(DbStructure.NotificationTable.TABLE_NAME,projection,null,null,null,null,null);
 			c.moveToFirst();
+			ArrayList<Notification> notifications=new ArrayList<Notification>();
 			while(c.isAfterLast()==false){
-						notifications.add(new Notification(c.getInt(c.getColumnIndexOrThrow(projection[4])),
-								c.getString(c.getColumnIndexOrThrow(projection[0])),
-								c.getString(c.getColumnIndexOrThrow(projection[1])),
-								c.getString(c.getColumnIndexOrThrow(projection[2])),
-								c.getString(c.getColumnIndexOrThrow(projection[3])),
-								null
-								));
+				Notification tmpnot=new Notification(c.getInt(c.getColumnIndexOrThrow(projection[4])),
+						c.getString(c.getColumnIndexOrThrow(projection[0])),
+						c.getString(c.getColumnIndexOrThrow(projection[1])),
+						c.getString(c.getColumnIndexOrThrow(projection[2])),
+						c.getString(c.getColumnIndexOrThrow(projection[3])),
+						null
+						);
+				notifications.add(tmpnot);
+				Utility.log(TAG," "+tmpnot.toString());
 				c.moveToNext();
 			}
-		
-		return notifications;
-	}
-	
-	public ArrayList<Attachment> getFilesOfNotification(int noti_id) {
-		String url;
-		ArrayList<Attachment> result=new ArrayList<Attachment>();
-		String[] projection={
-				DbStructure.FileTable.COLUMN_PATH
-		};
-		Cursor c=this.getReadableDatabase().rawQuery("select path from files join file_notification_map on files._ID=file_notification_map.file_id where file_notification_map.notification_id="+noti_id+";", null);//query(DbStructure.FileTable.TABLE_NAME, projection,DbStructure.FileTable._ID+"="+DbStructure.FileNotificationMapTable.TABLE_NAME+"."+DbStructure.FileMessageMapTable.COLUMN_FILE_ID+" and "+DbStructure.FileNotificationMapTable.TABLE_NAME+"."+DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID+"="+noti_id, null, null, null, null);
-		c.moveToFirst();
-		while(c.isAfterLast()==false){
-			url=c.getString(c.getColumnIndexOrThrow(DbStructure.FileTable.COLUMN_PATH));
-			try{
-			URL tmpurl=new URL(url);
-			result.add(new Attachment(tmpurl.getFile(), "5M", "12:00", url));
-			}catch(Exception e){
-				Utility.log("URL Parser","BAD URL");
-			}
-			
-			c.moveToNext();
+			return notifications;
 		}
-		return result;
+		
+		@Override
+		protected void onPostExecute(ArrayList<Notification> data){
+			FragmentNotification.setData(data);
+			FragmentNotification.refresh();
+		}
+		
 	}
 	
+	private class FetchFilesOfNotification extends AsyncTask<Object,Integer,ArrayList<Attachment>>{
+
+		@Override
+		protected ArrayList<Attachment> doInBackground(Object... params) {
+			DbHelper This=(DbHelper)params[0];
+			int noti_id=(Integer)params[1];
+			String url;
+			ArrayList<Attachment> attachments=new ArrayList<Attachment>();
+			Cursor c=This.getReadableDatabase().rawQuery("select path from files join file_notification_map on files._ID=file_notification_map.file_id where file_notification_map.notification_id="+noti_id+";", null);//query(DbStructure.FileTable.TABLE_NAME, projection,DbStructure.FileTable._ID+"="+DbStructure.FileNotificationMapTable.TABLE_NAME+"."+DbStructure.FileMessageMapTable.COLUMN_FILE_ID+" and "+DbStructure.FileNotificationMapTable.TABLE_NAME+"."+DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID+"="+noti_id, null, null, null, null);
+			c.moveToFirst();
+			while(c.isAfterLast()==false){
+				url=c.getString(c.getColumnIndexOrThrow(DbStructure.FileTable.COLUMN_PATH));
+				try{
+				URL tmpurl=new URL(url);
+				Attachment tmpattach=new Attachment(tmpurl.getFile(), "5M", "12:00", url);
+				attachments.add(tmpattach);
+				Utility.log(TAG, " "+tmpattach.toString());
+				}catch(Exception e){
+					Utility.log("URL Parser","BAD URL");
+				}
+				c.moveToNext();
+			}
+			return attachments;
+		}
+		
+		@Override
+		protected void onPostExecute(ArrayList<Attachment> result){
+			FragmentDetailNotification.setData(result);
+			FragmentDetailNotification.refresh();
+		}
+	}
 /*	
 	public void fill_tmp_data(){
 		DbHelper dbHelper=new DbHelper(getApplicationContext());

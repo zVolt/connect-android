@@ -18,7 +18,8 @@ import android.widget.TextView;
 
 public class NotificationAdapter extends ArrayAdapter<Notification>{
 	Context context;
-	ArrayList<Notification> values;
+	private static ArrayList<Notification> values;
+	private static String TAG="in.siet.secure.adapters.NotificationAdapter";
 	public NotificationAdapter(Context contxt,ArrayList<Notification> objects) {
 		super(contxt, R.layout.list_item_notification, objects);
 		context=contxt;
@@ -37,7 +38,8 @@ public class NotificationAdapter extends ArrayAdapter<Notification>{
 		ImageLoader.getInstance().displayImage(Utility.getUserImage(values.get(position).sender_id), image);
 		title.setText(values.get(position).subject);
 		time.setText(values.get(position).time);
-		
+		Utility.log(TAG, "view for "+position);
 		return rowView;
 	}
+	
 }

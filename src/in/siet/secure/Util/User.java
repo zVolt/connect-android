@@ -7,12 +7,19 @@ public class User {
 	public String state;
 	public int year;
 	public String dep;
+	public User(String n,String pu,String dp,int y){
+		name=n;
+		picUrl=pu;
+		dep=dp;
+		state="offline";
+		year=y;
+	}
 	public User(String n,String pu,String dp){
 		name=n;
 		picUrl=pu;
 		dep=dp;
-		id="b-11-xxx";
 		state="online";
+		year=0;
 	}
 	
 }

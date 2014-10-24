@@ -1,6 +1,7 @@
 package in.siet.secure.adapters;
 
 import in.siet.secure.Util.Attachment;
+import in.siet.secure.sgi.FragmentDetailNotification;
 import in.siet.secure.sgi.R;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import android.widget.TextView;
 
 
 public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment>{
-	ArrayList<Attachment> files;
+	private static ArrayList<Attachment> files;
 	Context context;
 	public NotificationAttachmentAdapter(Context contxt,ArrayList<Attachment> objects) {
 		super(contxt, R.layout.notification_attachements, objects);
@@ -34,4 +35,14 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment>{
 		size.setText((files.get(position).size_mb));
 		return rowView;
 	}
+	
+	@Override
+	public void notifyDataSetChanged(){
+		super.notifyDataSetChanged();
+		if(files!=null && files.size()==0){
+			FragmentDetailNotification.attachement_head.setVisibility(TextView.INVISIBLE);
+		}
+	}
+
+	
 }

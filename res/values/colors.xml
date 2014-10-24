@@ -4,4 +4,10 @@
 	<color name="green">#00ff00</color>
 	<color name="blue">#0000ff</color>
 	<color name="black">#000000</color>
+	
+	<color name="dark_gray">#111111</color>
+	<color name="light_gray">#333333</color>
+	<color name="lighter_gray">#666666</color>
+	
+	<color name="button_text_white">#DBDBDB</color>
 </resources>
