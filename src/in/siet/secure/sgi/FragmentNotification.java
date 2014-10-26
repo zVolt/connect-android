@@ -1,6 +1,7 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
 import in.siet.secure.dao.DbHelper;
 
@@ -19,12 +20,15 @@ public class FragmentNotification extends Fragment{
 	static String TAG="in.siet.secure.sgi.FragmentNotification";
 	public static ArrayList<Notification> notifications=new ArrayList<Notification>();
 	public static NotificationAdapter adapter;
+	public static View rootView;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
+		rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
 		adapter=new NotificationAdapter(getActivity(), notifications);
 		new DbHelper(getActivity()).getNotifications();
-		
+		ListView listView=(ListView)rootView.findViewById(R.id.fragment_notification_list);
+		listView.setOnItemClickListener(new itemClickListener());
+		listView.setAdapter(adapter);
 		return rootView;
 	}
 	@Override
@@ -33,17 +37,16 @@ public class FragmentNotification extends Fragment{
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_notification);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
 		
-	//	Utility.RaiseToast(getActivity(), "I am Notification", 0);
-	}
-	@Override
-	public void onStart(){
-		super.onStart();
-		ListView listView=(ListView)getActivity().findViewById(R.id.fragment_notification_list);
-		listView.setOnItemClickListener(new itemClickListener());
-		listView.setAdapter(adapter);
-		adapter.notifyDataSetChanged();
+		Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", 0);
 	}
 	
+/*	@Override
+	public void onStart(){
+		super.onStart();
+		Utility.RaiseToast(getActivity(), "stating notifications", 0);
+		//adapter.notifyDataSetChanged();
+	}
+*/	
 	class itemClickListener implements OnItemClickListener{
 
 		@Override

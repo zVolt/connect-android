@@ -5,6 +5,7 @@ import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.sgi.FragmentDetailNotification;
 import in.siet.secure.sgi.FragmentNotification;
+import in.siet.secure.sgi.R;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
+import android.view.View;
 
 public class DbHelper extends SQLiteOpenHelper{
 	public static final String TAG="in.siet.secure.dao.DbHelper";
@@ -78,6 +80,13 @@ public class DbHelper extends SQLiteOpenHelper{
 				notifications.add(tmpnot);
 				Utility.log(TAG," "+tmpnot.toString());
 				c.moveToNext();
+				synchronized(this){
+					try{
+						this.wait(250);
+					}catch(Exception e){
+						
+					}
+				}
 			}
 			return notifications;
 		}
@@ -86,6 +95,8 @@ public class DbHelper extends SQLiteOpenHelper{
 		protected void onPostExecute(ArrayList<Notification> data){
 			FragmentNotification.setData(data);
 			FragmentNotification.refresh();
+			FragmentNotification.rootView.findViewById(R.id.loading_notification).setVisibility(View.GONE);
+			FragmentNotification.rootView.findViewById(R.id.fragment_notification_list).setVisibility(View.VISIBLE);
 		}
 		
 	}
@@ -111,6 +122,13 @@ public class DbHelper extends SQLiteOpenHelper{
 					Utility.log("URL Parser","BAD URL");
 				}
 				c.moveToNext();
+				synchronized(this){
+					try{
+						this.wait(1000);
+					}catch(Exception e){
+						
+					}
+				}
 			}
 			return attachments;
 		}
@@ -118,7 +136,7 @@ public class DbHelper extends SQLiteOpenHelper{
 		@Override
 		protected void onPostExecute(ArrayList<Attachment> result){
 			FragmentDetailNotification.setData(result);
-			FragmentDetailNotification.refresh();
+			FragmentDetailNotification.showAttachments();
 		}
 	}
 /*	

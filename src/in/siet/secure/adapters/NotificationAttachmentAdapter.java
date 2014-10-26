@@ -35,14 +35,4 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment>{
 		size.setText((files.get(position).size_mb));
 		return rowView;
 	}
-	
-	@Override
-	public void notifyDataSetChanged(){
-		super.notifyDataSetChanged();
-		if(files!=null && files.size()==0){
-			FragmentDetailNotification.attachement_head.setVisibility(TextView.INVISIBLE);
-		}
-	}
-
-	
 }

@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+  
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/detail_notification_all_ui"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/default_margin"
     android:padding="@dimen/list_item_layout_padding"
+    android:orientation="vertical"
      >
 
     <LinearLayout
          android:id="@+id/notification_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
         android:gravity="center_vertical"
         >
         
@@ -37,7 +39,6 @@
         android:id="@+id/notification_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/notification_header"
         android:gravity="left|center"
         android:layout_marginTop="@dimen/default_margin"
         android:text="Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here Main Notification Text Here"
@@ -47,37 +48,38 @@
         android:id="@+id/notification_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/notification_text"
         android:layout_marginTop="@dimen/default_margin"
-        android:layout_alignParentRight="true"
         android:text="12:00 pm"
         android:textAppearance="?android:attr/textAppearanceSmall" />
      
-     <TextView
-        android:id="@+id/notification_attachments"
-        android:layout_width="wrap_content"
+     
+     <RelativeLayout 
+   		android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/default_margin"
-        android:layout_below="@+id/notification_time"
-        android:text="@string/attachments"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:layout_marginTop="@dimen/default_margin">
      
     <ListView
         android:id="@+id/notification_list_attachments"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/notification_attachments"
-        android:layout_marginTop="@dimen/default_margin"
+        android:dividerHeight="0dp"
+        android:divider="@null"
          >
-
+		
     </ListView>
 
-   
+	<RelativeLayout
+	    android:id="@+id/loading_attachments"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent" >
 
+	    <ProgressBar
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_centerInParent="true"
+	        android:indeterminate="true" />
+	</RelativeLayout>
     
-
+	</RelativeLayout>
     
-    
-</RelativeLayout>
+</LinearLayout>
