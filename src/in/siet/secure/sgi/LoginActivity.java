@@ -2,15 +2,19 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import in.siet.secure.dao.DbStructure;
 
 import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
@@ -45,6 +49,7 @@ public class LoginActivity extends ActionBarActivity {
 					.add(R.id.loginFrame, new FragmentSignin()).commit();
 		}
 		Log.d(TAG+" onCreate"," at End");
+		fill_tmp_data();
 	}
 	public void onClickButtonSignin(View view){
 		Utility.showProgressDialog(this);
@@ -74,6 +79,27 @@ public class LoginActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",1);
 		}
 	}
+	public void fill_tmp_data(){
+		DbHelper dbHelper=new DbHelper(getApplicationContext());
+		SQLiteDatabase db=dbHelper.getWritableDatabase();
+		ContentValues values=new ContentValues();
+		values.put(DbStructure.FcultyContactsTable._ID,1);
+		values.put(DbStructure.FcultyContactsTable.COLUMN_FNAME, "pogo");
+		values.put(DbStructure.FcultyContactsTable.COLUMN_LNAME, "gopo");
+		db.insert(DbStructure.FcultyContactsTable.TABLE_NAME,null, values);
+
+		Utility.RaiseToast(getApplicationContext(), "inserted value", 1);
+		db=dbHelper.getReadableDatabase();
+		String[] projection={
+				DbStructure.FcultyContactsTable._ID,
+				DbStructure.FcultyContactsTable.COLUMN_FNAME,
+				DbStructure.FcultyContactsTable.COLUMN_LNAME,
+		};
+		Cursor c=db.query(DbStructure.FcultyContactsTable.TABLE_NAME,projection, null,null,null,null,null);
+		c.moveToFirst();
+		Utility.RaiseToast(getApplicationContext(), c.getString(c.getColumnIndexOrThrow(DbStructure.FcultyContactsTable.COLUMN_FNAME)), 1);
+	}
+	
 	public void startMainActivity(){
 		Intent intent=new Intent(this,MainActivity.class);
 		Utility.log(TAG,"stating new Activity");
