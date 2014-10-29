@@ -1,34 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:orientation="vertical"
      >
 
- <LinearLayout
-     android:layout_width="match_parent"
-     android:layout_height="wrap_content"
-     android:layout_above="@+id/linearLayoutUsersButton"
-     android:layout_alignParentTop="true"
-     android:orientation="vertical"
-     style="@style/CardStyle"
-      >
-	
-         <ListView
-        android:id="@+id/listViewUsers"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        
-         />
-    
-    <include layout="@layout/list_empty_item"
-        
-        />
-   </LinearLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+         >
+
+        <ListView
+            android:id="@+id/listViewUsers"
+            style="@style/CardStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             >
+        </ListView>
+
+        <include
+            android:layout_alignTop="@+id/listViewUsers"
+            layout="@layout/list_empty_item" />
+    </RelativeLayout>
+
     <LinearLayout
         android:id="@+id/linearLayoutUsersButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" >
+        android:layout_height="wrap_content" >
 
         <ImageButton
             android:id="@+id/buttonShowPrev"
@@ -47,6 +46,4 @@
             android:src="@drawable/ic_action_forward_white" />
     </LinearLayout>
 
-   
-
-</RelativeLayout>
+</LinearLayout>

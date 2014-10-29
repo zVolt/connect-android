@@ -95,6 +95,7 @@
 	<string-array name="array_department">
 		<item >All</item>
 		<item >CSE</item>
+		<item >IT</item>
 		<item >ME</item>
 		<item >EE</item>
 		<item >EC</item>
