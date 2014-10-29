@@ -1,6 +1,7 @@
 package in.siet.secure.dao;
 
 public final class DbConstants {
+	public static final String DOT=".";
 	public static final String COMMA=" ,";
 	public static final String BRACES_OPEN=" (";
 	public static final String BRACES_CLOSE=") ";

@@ -21,14 +21,19 @@ public class FragmentNotification extends Fragment{
 	public static ArrayList<Notification> notifications=new ArrayList<Notification>();
 	public static NotificationAdapter adapter;
 	public static View rootView;
+	public static ListView listView;
+	//private static ProgressBar progressBar;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
 		adapter=new NotificationAdapter(getActivity(), notifications);
 		new DbHelper(getActivity()).getNotifications();
-		ListView listView=(ListView)rootView.findViewById(R.id.fragment_notification_list);
+		//progressBar=(ProgressBar)rootView.findViewById(R.id.loading_notification);
+		listView=(ListView)rootView.findViewById(R.id.fragment_notification_list);
 		listView.setOnItemClickListener(new itemClickListener());
 		listView.setAdapter(adapter);
+		listView.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+		//hideList();
 		return rootView;
 	}
 	@Override
@@ -36,11 +41,18 @@ public class FragmentNotification extends Fragment{
 		super.onResume();
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_notification);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
-		
+		refresh();
 		Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", 0);
 	}
-	
-/*	@Override
+/*	public void hideList(){
+		listView.setVisibility(View.GONE);
+		//progressBar.setVisibility(View.VISIBLE);
+	}
+	public static void showList(){
+		listView.setVisibility(View.VISIBLE);
+		//progressBar.setVisibility(View.GONE);
+	}
+*//*	@Override
 	public void onStart(){
 		super.onStart();
 		Utility.RaiseToast(getActivity(), "stating notifications", 0);
@@ -60,8 +72,7 @@ public class FragmentNotification extends Fragment{
 				bundle.putString(Notification.SUBJECT,notify.subject);
 				bundle.putString(Notification.TEXT,notify.text);
 				bundle.putString(Notification.TIME,notify.time);
-				bundle.putString(Notification.SENDER,notify.sender_id);
-				bundle.putIntArray(Notification.ATTACHMENT, notify.attachments_id);
+				bundle.putString(Notification.SENDER_IMAGE,notify.image);
 				bundle.putInt(Notification.ID, notify.id);
 				fragment.setArguments(bundle);
 			}
@@ -81,4 +92,5 @@ public class FragmentNotification extends Fragment{
 		adapter.clear();
 		adapter.addAll(data);
 	}
+	
 }

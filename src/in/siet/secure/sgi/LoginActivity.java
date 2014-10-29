@@ -45,6 +45,7 @@ public class LoginActivity extends ActionBarActivity {
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 				.setTransitionStyle(R.anim.abc_fade_out)
+				.add(R.id.welcomeFrame,new FragmentWelcome())
 				.add(R.id.loginFrame, new FragmentSignin())
 				.commit();
 		}
@@ -93,17 +94,17 @@ public class LoginActivity extends ActionBarActivity {
 		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
 	}
 	public void createdb(){
-		new DbHelper(getApplicationContext()).getReadableDatabase();
+		new DbHelper(getApplicationContext());
 		Utility.log(TAG,"donedb");
 	}
-	public void saveUser(){
+	public void saveUser(String token){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		String saved_user_id=sharedPref.getString("User Id", null);
 		String saved_password=sharedPref.getString("Password", null);
 		if (saved_user_id==null || saved_password!=null){
 			Editor editor=sharedPref.edit();
 			editor.putString(getString(R.string.user_id),userid);
-			editor.putString(getString(R.string.acess_token),Base64.encodeToString(Utility.sha1(pwd).getBytes(),Base64.DEFAULT));
+			editor.putString(getString(R.string.acess_token),token);
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
 			editor.commit();
@@ -120,26 +121,27 @@ public class LoginActivity extends ActionBarActivity {
 					try {
 						Utility.hideProgressDialog();
 						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
-							Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
-							saveUser();
+						//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
+							saveUser(response.getString("token"));
 							startMainActivity();
 						}
 						else{
 							Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
-							((TextView)findViewById(R.id.textView_error_msg)).setText("Login Failed");
+							
 							
 						}
 					} catch (JSONException e) {
 						Utility.log(TAG+" invokeWS exception ",e.getLocalizedMessage());
-						((TextView)findViewById(R.id.textView_error_msg)).setText("Try Again!!");
+						
 					}
 				}
 				
 				@Override
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
+					
 					Utility.hideProgressDialog();
-					Utility.RaiseToast(getApplicationContext(), "Unable to connect", 1);
-					Utility.log(TAG+" onFailure"," at start");
+					Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", 1);
+					Utility.log(TAG+" onFailure"," at start"+throwable.getMessage());
 				}
 			
 			

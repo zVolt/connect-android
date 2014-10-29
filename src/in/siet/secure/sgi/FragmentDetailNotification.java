@@ -8,12 +8,20 @@ import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
+import android.app.Application;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -21,10 +29,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class FragmentDetailNotification extends Fragment{
 	private int not_id;
-	private static ListView listViewAtachments;
+	public static LinearLayout listViewAtachments;
 	private static ArrayList<Attachment> attachments=new ArrayList<Attachment>();
 	private static NotificationAttachmentAdapter adapter;
 	public static View rootView;
+	public static final String TAG="in.siet.secure.sgi.FragmentDetailNotification";
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		
@@ -39,13 +48,13 @@ public class FragmentDetailNotification extends Fragment{
 		TextView subject=(TextView)rootView.findViewById(R.id.notification_title);
 		TextView text=(TextView)rootView.findViewById(R.id.notification_text);
 		TextView time=(TextView)rootView.findViewById(R.id.notification_time);
-		listViewAtachments=(ListView)rootView.findViewById(R.id.notification_list_attachments);
+		listViewAtachments=(LinearLayout)rootView.findViewById(R.id.notification_list_attachments);
 		
 		subject.setText(bundle.getString(Notification.SUBJECT));
 		text.setText(bundle.getString(Notification.TEXT));
 		time.setText(bundle.getString(Notification.TIME));
 		
-		ImageLoader.getInstance().displayImage(Utility.getUserImage(bundle.getString(Notification.SENDER)), image);
+		ImageLoader.getInstance().displayImage(bundle.getString(Notification.SENDER_IMAGE), image);
 		//adapter=new NotificationAttachmentAdapter(getActivity(), attachments);
 		hideAttachments();
 		return rootView;
@@ -53,7 +62,6 @@ public class FragmentDetailNotification extends Fragment{
 	@Override
 	public void onStart(){
 		super.onStart();
-		listViewAtachments.setAdapter(adapter);
 	}
 	@Override
 	public void onResume(){
@@ -61,8 +69,12 @@ public class FragmentDetailNotification extends Fragment{
 		
 	}
 	public static void refresh(){
-		if(adapter!=null)
+		if(adapter!=null){
 			adapter.notifyDataSetChanged();
+			for(int i=0;i<adapter.getCount();i++){
+				listViewAtachments.addView(adapter.getView(i,null,null));//;setAdapter(adapter);
+			}
+		}
 		
 	}
 	public static void setData(ArrayList<Attachment> data){
@@ -78,4 +90,6 @@ public class FragmentDetailNotification extends Fragment{
 		listViewAtachments.setVisibility(View.GONE);
 		rootView.findViewById(R.id.loading_attachments).setVisibility(View.VISIBLE);
 	}
+	
+	
 }

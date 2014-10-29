@@ -39,28 +39,32 @@ public class FragmentUsers extends Fragment{
 	SharedPreferences sharedPreferences=null;
 	private static ArrayList<User> users=new ArrayList<User>();
 	private static UsersAdapter adapter;
-	private ListView listview;
+	public static ListView listview;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		adapter=new UsersAdapter(getActivity(),users);
 		sharedPreferences=getActivity().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE);
 		View rootView = inflater.inflate(R.layout.fragment_users, container,false);
 		//Utility.log(TAG,"onCreate"+FilterOptions.USER_TYPE);
-	//	load();
 		setHasOptionsMenu(true);
 		Utility.log(TAG, "onCreateViewCalled");
 		listview=(ListView)rootView.findViewById(R.id.listViewUsers);
 		listview.setAdapter(adapter);
+		listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
 		listview.setOnItemClickListener(new ItemClickListener());
 		return rootView;
 	}
-	
+	@Override
+	public void onStart(){
+		super.onStart();
+		load();
+	}
 	@Override
 	public void onResume(){
 		super.onResume();
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_users);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_add_user_white));
-		load();
+		//load();
 	}
 	@Override
 	public void onCreateOptionsMenu(Menu menu,MenuInflater inflater){
@@ -76,10 +80,11 @@ public class FragmentUsers extends Fragment{
 		return false;
 	}
 	public void load(){ //called by filter dialog
-		
+		listview.setVisibility(View.GONE);
 		Utility.showProgressDialog(getActivity());
 		fetch_all();
 	}
+	
 	public static void refresh(){
 		if(adapter!=null)
 			adapter.notifyDataSetChanged();
@@ -90,8 +95,11 @@ public class FragmentUsers extends Fragment{
 		
 		if(adapter==null)
 			Utility.log(TAG+" setData()", "adapter is null");
-		adapter.clear();
-		adapter.addAll(data);
+		else{
+			adapter.clear();
+			adapter.addAll(data);
+			
+		}
 	}
 	public void show_users(JSONArray result,int size){
 		
@@ -110,7 +118,7 @@ public class FragmentUsers extends Fragment{
 	public void fetch_all(){
 		RequestParams params =new RequestParams();
 		params.put(getString(R.string.web_prm_usr),Base64.encodeToString(sharedPreferences.getString(getString(R.string.user_id), null).getBytes(), Base64.DEFAULT));
-		params.put(getString(R.string.web_prm_token),sharedPreferences.getString(getString(R.string.acess_token), null).trim());
+		params.put(getString(R.string.web_prm_token),Base64.encodeToString(sharedPreferences.getString(getString(R.string.acess_token), null).trim().getBytes(), Base64.DEFAULT));
 		params.put(getString(R.string.web_prm_query_user_type), FilterOptions.STUDENT);
 		params.put(getString(R.string.web_prm_query_year), FilterOptions.YEAR);
 		params.put(getString(R.string.web_prm_query_department), FilterOptions.DEPARTMENT);
@@ -149,10 +157,10 @@ public class FragmentUsers extends Fragment{
 				for(int i=0;i<size;i++){
 					JSONObject tmpobj=values.getJSONObject(i);
 					User tmpusr;
-					if(tmpobj.has("year")) //no optimize it we may have mixed users
-						tmpusr=new User(tmpobj.getString("name"),tmpobj.getString("profile_img").replace("\\/", "/"),tmpobj.getString("department"),tmpobj.getInt("year"));
+					if(tmpobj.has(User.YEAR)) //no optimize it we may have mixed users
+						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getString(User.ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.YEAR),tmpobj.getInt(User.SECTION),tmpobj.getInt(User.STATE));
 					else
-						tmpusr=new User(tmpobj.getString("name"),tmpobj.getString("profile_img").replace("\\/", "/"),tmpobj.getString("department"));
+						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getString(User.ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
 					tmpdata.add(tmpusr);
 				}
 			}catch(JSONException e){
@@ -165,6 +173,7 @@ public class FragmentUsers extends Fragment{
 		 protected void onPostExecute(ArrayList<User> data) {
 			setData(data);
 			refresh();
+			listview.setVisibility(View.VISIBLE);
 	        Utility.hideProgressDialog();
 	     }
 	}

@@ -1,37 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+     >
 
-    <ListView
+ <LinearLayout
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+     android:layout_above="@+id/linearLayoutUsersButton"
+     android:layout_alignParentTop="true"
+     android:orientation="vertical"
+     style="@style/CardStyle"
+      >
+	
+         <ListView
         android:id="@+id/listViewUsers"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.85"
-         >
-    </ListView>
-
+        android:layout_height="wrap_content"
+        
+         />
+    
+    <include layout="@layout/list_empty_item"
+        
+        />
+   </LinearLayout>
     <LinearLayout
+        android:id="@+id/linearLayoutUsersButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-         >
+        android:layout_alignParentBottom="true" >
 
         <ImageButton
             android:id="@+id/buttonShowPrev"
             android:layout_width="0dp"
             android:layout_height="@dimen/default_button_height"
             android:layout_weight="0.5"
-			android:background="@drawable/button_dark_gray"
+            android:background="@drawable/button_dark_gray"
             android:src="@drawable/ic_action_back_white" />
-        
+
         <ImageButton
             android:id="@+id/buttonShowNext"
             android:layout_width="0dp"
             android:layout_height="@dimen/default_button_height"
             android:layout_weight="0.5"
-			android:background="@drawable/button_dark_gray"
+            android:background="@drawable/button_dark_gray"
             android:src="@drawable/ic_action_forward_white" />
     </LinearLayout>
 
-</LinearLayout>
+   
+
+</RelativeLayout>

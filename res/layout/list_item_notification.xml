@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	    android:layout_width="match_parent"
-	    android:layout_height="@dimen/list_item_layout_height"
+	    android:layout_height="wrap_content"
 	    android:layout_margin="@dimen/default_margin"
 	    android:padding="@dimen/list_item_layout_padding"
 	    android:gravity="center_vertical">
@@ -22,8 +22,9 @@
 	        <TextView
 	        android:id="@+id/notification_list_title"
 	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+	        android:layout_height="0dp"
 	        android:layout_marginLeft="@dimen/list_item_maring_btwn_image_text"
+	        android:layout_weight="1"
 	        android:gravity="left|center"
 	        android:text="All Students are hereby informedAll Students are hereby informed"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />

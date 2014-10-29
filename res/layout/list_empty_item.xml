@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/drawer_item_layout_height"
     android:layout_margin="@dimen/default_margin"
-    android:text="@string/nothing_found"
     android:gravity="center"
+    android:visibility="gone"
     android:textAppearance="?android:attr/textAppearanceMedium"
+    android:text="@string/nothing_found"
      >
 </TextView>

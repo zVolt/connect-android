@@ -50,7 +50,7 @@ public class MainActivity extends ActionBarActivity{
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
-		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout, R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
+		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout,R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
 		drawerlayout.setDrawerListener(drawerToggle);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
@@ -156,5 +156,6 @@ public class MainActivity extends ActionBarActivity{
 			
 		}
 	}
+	
 	
 }

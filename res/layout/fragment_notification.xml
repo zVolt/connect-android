@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
      android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/CardStyle"
     >
-	<ListView 
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/fragment_notification_list"
-    android:visibility="gone"
-    />
-	
-    <RelativeLayout
-	    android:id="@+id/loading_notification"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	     >
-	    <ProgressBar
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_centerInParent="true"
-	        android:indeterminate="true" />
-	</RelativeLayout>
-    
+
+	    <ListView
+	        android:id="@+id/fragment_notification_list"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content" >
+	    </ListView>
+    <include layout="@layout/list_empty_item"/>
 </RelativeLayout>
