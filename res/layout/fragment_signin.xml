@@ -7,10 +7,10 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="in.siet.secure.sgi.MainActivity$PlaceholderFragment" >
+    tools:context="in.siet.secure.sgi.MainActivity$PlaceholderFragment"
+    style="@style/CardStyle"
+     >
 
-    
-	
     <EditText
         android:id="@+id/editText_userid"
         android:inputType="text"
@@ -66,15 +66,6 @@
 				    android:text="@string/radio_faculty" />
     </RadioGroup>
  
-
- 
- 
-	<TextView
-        android:id="@+id/textView_error_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/red"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
     <Button
         android:id="@+id/button_signin"
         android:layout_width="fill_parent"

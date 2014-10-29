@@ -1,0 +1,73 @@
+package in.siet.secure.adapters;
+
+import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.User;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.sgi.R;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+public class UsersAdapter extends ArrayAdapter<User>{
+	private static ArrayList<User> values;
+	private static Context context;
+	private static final String TAG="in.siet.secure.adapters.UsersAdapter";
+	
+	ViewHolder holder;
+	public UsersAdapter(Context contxt, ArrayList<User> value) {
+		super(contxt, R.layout.list_item_users, value);
+		values=value;
+		context=contxt;
+	}
+	@Override
+	public View getView(int position,View convertView,ViewGroup parent){
+		if(convertView==null){
+			LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			convertView=inflater.inflate(R.layout.list_item_users, parent, false);
+			holder=new ViewHolder();
+			holder.profile_image=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewPic);
+			holder.name=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewName);
+			holder.data=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewId);
+			holder.state=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewState);
+			convertView.setTag(holder);
+			
+		}
+		else{
+			holder=(ViewHolder)convertView.getTag();
+		}
+		String[] year=context.getResources().getStringArray(R.array.array_year);
+		User tmpuser=values.get(position);
+		
+		holder.name.setText(tmpuser.f_name+Constants.SPACE+tmpuser.l_name);
+		
+		if(FilterOptions.STUDENT)
+			holder.data.setText(tmpuser.dep+Constants.SPACE+year[tmpuser.year]+Constants.SPACE+context.getString(R.string.year));
+		else
+			holder.data.setText(tmpuser.dep);
+		
+		if (tmpuser.state==1)
+			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_online));
+		else
+			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_offline));
+		
+		ImageLoader.getInstance().displayImage(tmpuser.picUrl, holder.profile_image);
+		return convertView;
+	}
+	
+	
+	static class ViewHolder{
+		ImageView profile_image;
+		ImageView state;
+		TextView name;
+		TextView data;
+	}
+}

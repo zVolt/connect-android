@@ -10,8 +10,11 @@
     <string name="logged_in">logged_in</string>
     <string name="is_faculty">Is_Faulty</string>
     
-    <string name="load_next">Next</string>
-    <string name="load_prev">Previous</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Closed</string>
+    
+    <string name="load_next">&gt;</string>
+    <string name="load_prev">&lt;</string>
     
     <string name="wrong_choice">Wrong Choice.. Try Again</string>
     <string name="sendMsg">Send</string>
@@ -24,30 +27,78 @@
 	<string name="web_prm_token">token</string>
 	<string name="web_prm_pwd">password</string>
 	<string name="web_prm_isfac">is_faculty</string>
+	<string name="web_prm_query_user_type">user_type</string>
+	<string name="web_prm_query_department">department</string>
+	<string name="web_prm_query_year">year</string>
 	<string name="web_prm_query_id">query_id</string>
+	
 	<string name="password">Password</string>
 	<string name="preference_file_name">in.siet.secure.preference_file</string>
 	
 	<string name="action_settings">Setting</string>
+	<string name="action_filter">Filter</string>
 	<string name="action_logout">Logout</string>
 	<string name="action_about">About</string>
 	<string name="action_contacts">Contacts</string>
 	<string name="action_users">All Users</string>
+	<string name="action_Filter">Filter</string>
 	
 	<string name="radio_student">Student</string>
 	<string name="radio_faculty">Faculty</string>
 	
 	<string name="user_image_desc">Image of the user</string>
-	<string-array name="panel_options">
+	<string name="userType">Select Type</string>
+	<string name="attachments">Attachments</string>
+	
+	<string name="ok">OK</string>
+	<string name="cancle">Cancle</string>
+	<string name="filter_title">Filter Users</string>
+	
+	<string name="year">Year</string>
+	<string name="department">Department</string>
+	
+	<string name="fragemnt_title_notification">Notifications</string>
+	<string name="fragemnt_title_users">Add Users</string>
+	<string name="fragemnt_title_contacts">Interactions</string>
+	<string name="fragemnt_title_setting">Settings</string>
+	
+	<string name="SPACE"> </string>
+	
+	<string name="nothing_found">Nothing Found !!</string>
+	
+	
+	<string-array name="array_panel_options">
 		<item >Notifications</item>
-		<item >Contacts</item>
-		<item >Users</item>
+		<item >Interactions</item>
+		<item >Add Users</item>
 		<item >Settings</item>
 	</string-array>
 	
-	<string name="userType">Select Type</string>
-	<string-array name="userTypeArray">
+	<string-array name="array_user_type">
 		<item >Student</item>
 		<item >Faculty</item>
 	</string-array>
+	
+	<string-array name="array_state">
+		<item >Offline</item>
+		<item >Online</item>
+	</string-array>
+	
+	<string-array name="array_year">
+	    <item >All</item>
+		<item >First</item>
+		<item >Second</item>
+		<item >Third</item>
+		<item >Fourth</item>
+	</string-array>
+	
+	<string-array name="array_department">
+		<item >All</item>
+		<item >CSE</item>
+		<item >ME</item>
+		<item >EE</item>
+		<item >EC</item>
+		<item >Civil</item>
+	</string-array>
+	
 </resources>

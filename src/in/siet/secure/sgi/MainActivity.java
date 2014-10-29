@@ -1,13 +1,12 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.dao.DbHelper;
-import in.siet.secure.dao.DbStructure;
-import android.content.ContentValues;
+
+import in.siet.secure.adapters.DrawerListAdapter;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -33,26 +31,31 @@ public class MainActivity extends ActionBarActivity{
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
-	
-	
+	private static ActionBarDrawerToggle drawerToggle;
+	//private int active_drawer_option;
+	static final UserFilterDialog show=new UserFilterDialog();
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		
 		if(savedInstanceState==null){
-			
-			
 			setContentView(R.layout.activity_main);
 			getSupportFragmentManager().beginTransaction()
+			.setTransitionStyle(R.anim.abc_fade_out)
 			.add(R.id.mainFrame,new FragmentNotification()).commit();
+		//	active_drawer_option=0;
+		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
-		panelOption=getResources().getStringArray(R.array.panel_options);
+		panelOption=getResources().getStringArray(R.array.array_panel_options);
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
-		drawerListView.setAdapter(new ArrayAdapter<String>(this,R.layout.list_item_drawer,panelOption));
+		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
-
-		
+		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout,R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
+		drawerlayout.setDrawerListener(drawerToggle);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
 
 		
 		DisplayImageOptions options=new DisplayImageOptions.Builder()
@@ -63,15 +66,29 @@ public class MainActivity extends ActionBarActivity{
 		ImageLoaderConfiguration config=new ImageLoaderConfiguration.Builder(getApplicationContext())
 		.defaultDisplayImageOptions(options)
 		.build();
-		
 		ImageLoader.getInstance().init(config);
-
+		
 		}
 		
 	}
+	 @Override
+	    protected void onPostCreate(Bundle savedInstanceState) {
+	        super.onPostCreate(savedInstanceState);
+	        // Sync the toggle state after onRestoreInstanceState has occurred.
+	        drawerToggle.syncState();
+	 }
+	 
+	 @Override
+	    public void onConfigurationChanged(Configuration newConfig) {
+	        super.onConfigurationChanged(newConfig);
+	        drawerToggle.onConfigurationChanged(newConfig);
+	    }
+	 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
+		//super.onCreateOptionsMenu(menu);
+
 		return true;
 	}
 	@Override
@@ -79,6 +96,13 @@ public class MainActivity extends ActionBarActivity{
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
+		
+		//handle drawer open/close clicks
+		if (drawerToggle.onOptionsItemSelected(item)) {
+	          return true;
+		}
+		
+
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			return true;
@@ -98,8 +122,6 @@ public class MainActivity extends ActionBarActivity{
 		startActivity(intent);
 		finish();
 	}
-
-
 	public void switch_fragment(int position){
 		FragmentManager fragmentManager=getSupportFragmentManager();
 		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
@@ -107,39 +129,26 @@ public class MainActivity extends ActionBarActivity{
 		switch(position){
 		case 0:
 			if(fragment==null)
-				fragmentTransaction.replace(R.id.mainFrame,new FragmentNotification(),TAG+panelOption[position]);
-			else
-				fragmentTransaction.replace(R.id.mainFrame,fragment);
-			fragmentTransaction.addToBackStack(null);
-			fragmentTransaction.commit();
+				fragment=new FragmentNotification();
 			break;
 		case 1:
 			if(fragment==null)
-				fragmentTransaction.replace(R.id.mainFrame,new FragmentContacts(),TAG+panelOption[position]);
-			else
-				fragmentTransaction.replace(R.id.mainFrame,fragment);
-			fragmentTransaction.addToBackStack(null);
-			fragmentTransaction.commit();
+				fragment=new FragmentContacts();
 			break;
 		case 2:
-			
-			UserCategoryDialog show=new UserCategoryDialog();
 			show.show(fragmentManager, TAG+"UsersCategoryDialog");
-		/*	if(fragment==null)
-				fragmentTransaction.replace(R.id.mainFrame,new FragmentUsers(),TAG+panelOption[position]);
-			else
-				fragmentTransaction.replace(R.id.mainFrame,fragment);
-			fragmentTransaction.addToBackStack(null);
-			fragmentTransaction.commit();
-		*/	break;
+			return;
 		case 3:
-			//settings
 			Toast.makeText(getApplicationContext(),"settings are comming soon", Toast.LENGTH_SHORT).show();
-			break;
+			return;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
-			break;
+			return;
 		}
+		fragmentTransaction.setTransitionStyle(R.anim.abc_fade_out)
+		.replace(R.id.mainFrame,fragment,TAG+panelOption[position])
+		.commit();
+
 	}
 	public class DrawerClickListner implements OnItemClickListener {
 
@@ -147,6 +156,8 @@ public class MainActivity extends ActionBarActivity{
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			drawerListView.setItemChecked(position, true);
 			switch_fragment(position);
+			//active_drawer_option=position;
+
 			drawerlayout.closeDrawer(drawerListView);
 			
 		}

@@ -1,7 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:textSize="20sp"
+    android:layout_margin="5dp"
      >
-</TextView>
+
+    <ImageView
+        android:id="@+id/imageViewContactsImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_action_person" />
+
+    <TextView
+        android:id="@+id/textViewContactsName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/imageViewContactsImage"
+        android:textAppearance="?android:attr/textAppearanceLarge" 
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewContactsDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewContactsImage"
+        android:layout_alignLeft="@+id/textViewContactsName"
+        android:text="Small Text"
+        android:layout_marginBottom="5dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/textViewContactsExtra"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textViewContactsDetails"
+        android:layout_alignBottom="@+id/textViewContactsDetails"
+        android:layout_alignParentRight="true"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>
