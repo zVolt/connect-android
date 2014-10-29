@@ -23,8 +23,8 @@ public class Utility {
 	private final static String TAG="in.siet.secure.sgi.Utility";
 	private static ProgressDialog progress_dialog;
 	private static final String pathToApp="/in.secure.siet.sgi/download/";
-	public static void RaiseToast(Context context,String msg,int len){
-		Toast.makeText(context, msg, len==1?Toast.LENGTH_LONG:Toast.LENGTH_SHORT).show();
+	public static void RaiseToast(Context context,String msg,boolean for_long_time){
+		Toast.makeText(context, msg, for_long_time?Toast.LENGTH_LONG:Toast.LENGTH_SHORT).show();
 	}
 	public static void log(String tag,String txt){
 		Log.d(tag,txt);

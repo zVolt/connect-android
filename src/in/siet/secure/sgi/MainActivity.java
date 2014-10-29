@@ -1,14 +1,15 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -30,6 +31,7 @@ public class MainActivity extends ActionBarActivity{
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
+	private boolean back_pressed=false;
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
@@ -39,7 +41,7 @@ public class MainActivity extends ActionBarActivity{
 		
 		if(savedInstanceState==null){
 			setContentView(R.layout.activity_main);
-			getSupportFragmentManager().beginTransaction()
+			getFragmentManager().beginTransaction()
 			.setTransitionStyle(R.anim.abc_fade_out)
 			.add(R.id.mainFrame,new FragmentNotification()).commit();
 		//	active_drawer_option=0;
@@ -68,6 +70,11 @@ public class MainActivity extends ActionBarActivity{
 		}
 		
 	}
+	@Override
+	public void onResume(){
+		super.onResume();
+		back_pressed=false;
+	}
 	 @Override
 	    protected void onPostCreate(Bundle savedInstanceState) {
 	        super.onPostCreate(savedInstanceState);
@@ -94,32 +101,45 @@ public class MainActivity extends ActionBarActivity{
 		// as you specify a parent activity in AndroidManifest.xml.
 		
 		//handle drawer open/close clicks
+		back_pressed=false;
 		if (drawerToggle.onOptionsItemSelected(item)) {
 	          return true;
 		}
 		
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			//startActivity(SettingsActivity.class);
+			getFragmentManager().beginTransaction().replace(R.id.mainFrame, new FragmentSettings())
+			.commit();
 			return true;
 		}
 		else if(id == R.id.action_logout) {
 			getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE).edit().clear().commit();
 			Log.d(TAG,"pref cleared");
-			startLoginActivity();
+			startActivity(LoginActivity.class);
+			finish();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
-	public void startLoginActivity(){
-		Intent intent=new Intent(this,LoginActivity.class);
+	@Override
+	public void onBackPressed(){
+		if(!back_pressed){
+			back_pressed=true;
+			Utility.RaiseToast(getApplicationContext(), getString(R.string.exit_warning), true);
+		}
+		else{
+			super.onBackPressed();
+		}
+	}
+	public void startActivity(Class<?> activity){
+		Intent intent=new Intent(this,activity);
 		Log.d(TAG,"stating login Activity");
 		startActivity(intent);
-		finish();
 	}
 	
 	public void switch_fragment(int position){
-		FragmentManager fragmentManager=getSupportFragmentManager();
+		FragmentManager fragmentManager=getFragmentManager();
 		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
 		Fragment fragment=fragmentManager.findFragmentByTag(TAG+panelOption[position]);
 		switch(position){
@@ -135,8 +155,9 @@ public class MainActivity extends ActionBarActivity{
 			show.show(fragmentManager, TAG+"UsersCategoryDialog");
 			return;
 		case 3:
-			Toast.makeText(getApplicationContext(),"settings are comming soon", Toast.LENGTH_SHORT).show();
-			return;
+			if(fragment==null)
+				fragment=new FragmentSettings();
+			break;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;
@@ -151,7 +172,6 @@ public class MainActivity extends ActionBarActivity{
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			drawerListView.setItemChecked(position, true);
 			switch_fragment(position);
-			//active_drawer_option=position;
 			drawerlayout.closeDrawer(drawerListView);
 			
 		}

@@ -2,27 +2,18 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Notification;
-import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAttachmentAdapter;
 import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
-import android.app.Application;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;

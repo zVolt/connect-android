@@ -7,8 +7,8 @@ import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +32,7 @@ public class FragmentNotification extends Fragment{
 		listView=(ListView)rootView.findViewById(R.id.fragment_notification_list);
 		listView.setOnItemClickListener(new itemClickListener());
 		listView.setAdapter(adapter);
-		listView.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+	//	listView.setEmptyView(rootView.findViewById(R.id.e));
 		//hideList();
 		return rootView;
 	}
@@ -42,7 +42,7 @@ public class FragmentNotification extends Fragment{
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_notification);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
 		refresh();
-		Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", 0);
+		//Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", false);
 	}
 /*	public void hideList(){
 		listView.setVisibility(View.GONE);

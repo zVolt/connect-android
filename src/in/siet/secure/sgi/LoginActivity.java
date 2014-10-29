@@ -8,6 +8,7 @@ import org.apache.http.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +17,8 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -32,6 +35,8 @@ public class LoginActivity extends ActionBarActivity {
 	private static String TAG="in.siet.secure.sgi.LoginActivity"; 
 	private static String userid=null;
 	private static String pwd=null;
+	private static boolean back_pressed=false;
+	private static boolean in_settings=false;
 	private static boolean is_faculty=false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +48,67 @@ public class LoginActivity extends ActionBarActivity {
 		}
 		setContentView(R.layout.activity_login);
 		if (savedInstanceState == null) {
-			getSupportFragmentManager().beginTransaction()
+			getFragmentManager().beginTransaction()
 				.setTransitionStyle(R.anim.abc_fade_out)
-				.add(R.id.welcomeFrame,new FragmentWelcome())
 				.add(R.id.loginFrame, new FragmentSignin())
 				.commit();
 		}
 		Log.d(TAG+" onCreate"," at End");
 	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.login, menu);
+		//super.onCreateOptionsMenu(menu);
+		return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		
+		//handle drawer open/close clicks
+		back_pressed=false;
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			Fragment fragment=new FragmentSettings();
+			getFragmentManager().beginTransaction()
+			.replace(R.id.loginFrame, fragment)
+			.addToBackStack(null)
+			.commit();
+			Utility.log(TAG,"changing frame");
+			in_settings=true;
+			return true;
+		}
+		else if(id==R.id.action_about){
+			return true;
+		}
+		
+		return super.onOptionsItemSelected(item);
+	}
+	@Override
+	public void onBackPressed(){
+		if(in_settings){
+			getFragmentManager().popBackStack();
+			in_settings=false;
+		}
+		else{
+			if(!back_pressed){
+				back_pressed=true;
+				Utility.RaiseToast(getApplicationContext(), getString(R.string.exit_warning), true);
+			}
+			else{
+				super.onBackPressed();
+			}
+		}
+	}
+	@Override
+	public void onResume(){
+		super.onResume();
+		back_pressed=false;
+	}
 	public void onClickButtonSignin(View view){
+		back_pressed=false;
 		Utility.showProgressDialog(this);
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
@@ -76,7 +133,7 @@ public class LoginActivity extends ActionBarActivity {
 		else{
 			clearInput();
 			Utility.hideProgressDialog();
-			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",1);
+			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",true);
 		}
 	}
 	public void startMainActivity(){
@@ -114,7 +171,7 @@ public class LoginActivity extends ActionBarActivity {
 	public void invokeWS(RequestParams params){
 		Log.d(TAG+" invokeWS"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://"+Constants.SOCKET+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
+		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
 				@Override
 				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
 					Log.d(TAG+" onSucess"," at start");
@@ -140,7 +197,7 @@ public class LoginActivity extends ActionBarActivity {
 				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
 					
 					Utility.hideProgressDialog();
-					Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", 1);
+					Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", true);
 					Utility.log(TAG+" onFailure"," at start"+throwable.getMessage());
 				}
 			

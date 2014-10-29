@@ -13,11 +13,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -50,7 +50,7 @@ public class FragmentUsers extends Fragment{
 		Utility.log(TAG, "onCreateViewCalled");
 		listview=(ListView)rootView.findViewById(R.id.listViewUsers);
 		listview.setAdapter(adapter);
-		listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+	//	listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
 		listview.setOnItemClickListener(new ItemClickListener());
 		return rootView;
 	}
@@ -110,7 +110,7 @@ public class FragmentUsers extends Fragment{
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {
 			//add user to contacts. A db operation
 			//(view.findViewById(R.id.ListItemUsersTextViewName)).toString();
-			Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", 0);
+			Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
 		}
 		
 	}
@@ -123,7 +123,7 @@ public class FragmentUsers extends Fragment{
 		params.put(getString(R.string.web_prm_query_year), FilterOptions.YEAR);
 		params.put(getString(R.string.web_prm_query_department), FilterOptions.DEPARTMENT);
 		AsyncHttpClient client=new AsyncHttpClient();
-		client.get("http://"+Constants.SOCKET+"/SGI_webservice/query/type_resolver",params,new JsonHttpResponseHandler(){
+		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/query/type_resolver",params,new JsonHttpResponseHandler(){
 			@Override
 			public void onSuccess(int statusCode, Header[] headers,JSONArray response) {
 					new FillData().execute(response);

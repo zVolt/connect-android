@@ -65,7 +65,7 @@
 	<string name="SPACE"> </string>
 	
 	<string name="nothing_found">Nothing Found !!</string>
-	
+	<string name="exit_warning">Press again to exit</string>
 	
 	<string-array name="array_panel_options">
 		<item >Notifications</item>

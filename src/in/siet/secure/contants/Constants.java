@@ -1,8 +1,8 @@
 package in.siet.secure.contants;
-
-public interface Constants {
-	public final String SERVER="192.168.191.51";
-	public final String PORT="8080";
-	public final String SOCKET=SERVER+":"+PORT;
-	public final String SPACE=" ";
+public class Constants {
+	public static String SERVER="192.168.0.100";
+	public static final String PORT="8080";
+	//public static final String SOCKET=SERVER+":"+PORT;
+	public static final String SPACE=" ";
+	public static final String COLON=":";
 }

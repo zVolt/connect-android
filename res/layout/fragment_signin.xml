@@ -10,10 +10,11 @@
     tools:context="in.siet.secure.sgi.MainActivity$PlaceholderFragment"
     style="@style/CardStyle"
      >
-
+<include layout="@layout/fragment_welcome"/>
     <EditText
         android:id="@+id/editText_userid"
         android:inputType="text"
+        android:layout_marginTop="5dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="@string/user_login"
