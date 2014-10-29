@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="@dimen/default_margin"
+    android:padding="@dimen/default_margin"
+     >
+
+    
+        <RadioGroup
+            android:id="@+id/dialogFilterRadioGroup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/dialogFilterRadioFaculty"
+                android:layout_margin="@dimen/default_margin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="@string/radio_faculty" />
+
+            <RadioButton
+                android:id="@+id/dialogFilterRadioStudent"
+                android:layout_margin="@dimen/default_margin"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+               android:checked="true"
+                android:layout_height="wrap_content"
+                android:text="@string/radio_student" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             android:layout_margin="@dimen/default_margin"
+    android:padding="@dimen/default_margin"
+            android:gravity="center"
+             >
+            
+           <TextView
+            android:id="@+id/dialogFilterTextViewYear"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:text="Year"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/dialogFilterSpinnerYear"
+            android:layout_width="0dp"
+            android:gravity="center"
+            android:layout_weight="0.5"
+            android:layout_height="wrap_content"
+             />
+        </LinearLayout>
+
+       
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+             android:layout_margin="@dimen/default_margin"
+    android:padding="@dimen/default_margin"
+            >
+        <TextView
+            android:id="@+id/dialogFilterTextViewDepartment"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:text="Department"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/dialogFilterSpinnerDepartment"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:layout_height="wrap_content" />
+            
+        </LinearLayout>
+
+        
+        
+</LinearLayout>

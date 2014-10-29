@@ -1,6 +1,8 @@
 package in.siet.secure.adapters;
 
+import in.siet.secure.Util.FilterOptions;
 import in.siet.secure.Util.User;
+import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.R;
 
 import java.util.ArrayList;
@@ -16,8 +18,11 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class UsersAdapter extends ArrayAdapter<User>{
-	private final ArrayList<User> values;
-	private final Context context;
+	private static ArrayList<User> values;
+	private static Context context;
+	private static final String TAG="in.siet.secure.adapters.UsersAdapter";
+	
+	ViewHolder holder;
 	public UsersAdapter(Context contxt, ArrayList<User> value) {
 		super(contxt, R.layout.list_item_users, value);
 		values=value;
@@ -25,21 +30,44 @@ public class UsersAdapter extends ArrayAdapter<User>{
 	}
 	@Override
 	public View getView(int position,View convertView,ViewGroup parent){
-	
-		LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View rowView =inflater.inflate(R.layout.list_item_users, parent, false);
-	
-		ImageView profile_image=(ImageView) rowView.findViewById(R.id.ListItemUsersImageViewPic);
-		TextView name=(TextView) rowView.findViewById(R.id.ListItemUsersTextViewName);
-		TextView id=(TextView) rowView.findViewById(R.id.ListItemUsersTextViewId);
-		ImageView state=(ImageView) rowView.findViewById(R.id.ListItemUsersImageViewState);
+		if(convertView==null){
+			LayoutInflater inflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			convertView=inflater.inflate(R.layout.list_item_users, parent, false);
+			holder=new ViewHolder();
+			holder.profile_image=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewPic);
+			holder.name=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewName);
+			holder.data=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewId);
+			holder.state=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewState);
+			convertView.setTag(holder);
+			
+		}
+		else{
+			holder=(ViewHolder)convertView.getTag();
+		}
+		String[] year=context.getResources().getStringArray(R.array.array_year);
+		User tmpuser=values.get(position);
 		
-		name.setText(values.get(position).name);
-		id.setText(values.get(position).dep);
-		if (values.get(position).state.equalsIgnoreCase("online"))
-			state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_online));
-		ImageLoader.getInstance().displayImage(values.get(position).picUrl, profile_image);
+		holder.name.setText(tmpuser.f_name+Constants.SPACE+tmpuser.l_name);
 		
-		return rowView;
+		if(FilterOptions.STUDENT)
+			holder.data.setText(tmpuser.dep+Constants.SPACE+year[tmpuser.year]+Constants.SPACE+context.getString(R.string.year));
+		else
+			holder.data.setText(tmpuser.dep);
+		
+		if (tmpuser.state==1)
+			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_online));
+		else
+			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_offline));
+		
+		ImageLoader.getInstance().displayImage(tmpuser.picUrl, holder.profile_image);
+		return convertView;
+	}
+	
+	
+	static class ViewHolder{
+		ImageView profile_image;
+		ImageView state;
+		TextView name;
+		TextView data;
 	}
 }

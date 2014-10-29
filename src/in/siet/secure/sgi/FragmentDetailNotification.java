@@ -1,18 +1,27 @@
 package in.siet.secure.sgi;
 
-import java.util.ArrayList;
-
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAttachmentAdapter;
 import in.siet.secure.dao.DbHelper;
+
+import java.util.ArrayList;
+
+import android.app.Application;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -20,37 +29,67 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class FragmentDetailNotification extends Fragment{
 	private int not_id;
-	private ListView attachments;
-	private TextView attachement_head;
+	public static LinearLayout listViewAtachments;
+	private static ArrayList<Attachment> attachments=new ArrayList<Attachment>();
+	private static NotificationAttachmentAdapter adapter;
+	public static View rootView;
+	public static final String TAG="in.siet.secure.sgi.FragmentDetailNotification";
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		Utility.showProgressDialog(getActivity());
-		View rootView = inflater.inflate(R.layout.fragment_detailed_notification, container,false);
+		
+		adapter=new NotificationAttachmentAdapter(getActivity(),attachments);
+		Bundle bundle=getArguments();
+		not_id=bundle.getInt(Notification.ID);
+		new DbHelper(getActivity()).getFilesOfNotification(not_id);
+		
+		rootView = inflater.inflate(R.layout.fragment_detailed_notification, container,false);
+		
 		ImageView image=(ImageView)rootView.findViewById(R.id.imageViewNotiImage);
 		TextView subject=(TextView)rootView.findViewById(R.id.notification_title);
 		TextView text=(TextView)rootView.findViewById(R.id.notification_text);
 		TextView time=(TextView)rootView.findViewById(R.id.notification_time);
-		attachments=(ListView)rootView.findViewById(R.id.notification_list_attachments);
-		attachement_head=(TextView)rootView.findViewById(R.id.notification_attachments);
-		Bundle bundle=getArguments();
+		listViewAtachments=(LinearLayout)rootView.findViewById(R.id.notification_list_attachments);
+		
 		subject.setText(bundle.getString(Notification.SUBJECT));
 		text.setText(bundle.getString(Notification.TEXT));
 		time.setText(bundle.getString(Notification.TIME));
-		ImageLoader.getInstance().displayImage(Utility.getUserImage(bundle.getString(Notification.SENDER)), image);
-		not_id=bundle.getInt(Notification.ID);
+		
+		ImageLoader.getInstance().displayImage(bundle.getString(Notification.SENDER_IMAGE), image);
+		//adapter=new NotificationAttachmentAdapter(getActivity(), attachments);
+		hideAttachments();
 		return rootView;
 	}
-	
 	@Override
 	public void onStart(){
 		super.onStart();
-		DbHelper db=new DbHelper(getActivity());
-		ArrayList<Attachment> file=db.getFilesOfNotification(not_id);
-		if(file.size()==0){
-			attachement_head.setVisibility(TextView.INVISIBLE);
-		}
-		attachments.setAdapter(new NotificationAttachmentAdapter(getActivity(),file));
-		Utility.hideProgressDialog();
+	}
+	@Override
+	public void onResume(){
+		super.onResume();
 		
 	}
+	public static void refresh(){
+		if(adapter!=null){
+			adapter.notifyDataSetChanged();
+			for(int i=0;i<adapter.getCount();i++){
+				listViewAtachments.addView(adapter.getView(i,null,null));//;setAdapter(adapter);
+			}
+		}
+		
+	}
+	public static void setData(ArrayList<Attachment> data){
+		adapter.clear();
+		adapter.addAll(data);
+		refresh();
+	}
+	public static void showAttachments(){
+		rootView.findViewById(R.id.loading_attachments).setVisibility(View.GONE);
+		listViewAtachments.setVisibility(View.VISIBLE);
+	}
+	public void hideAttachments(){
+		listViewAtachments.setVisibility(View.GONE);
+		rootView.findViewById(R.id.loading_attachments).setVisibility(View.VISIBLE);
+	}
+	
+	
 }
