@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -26,7 +27,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity {
 	public static final String TAG="in.siet.secure.sgi.MainActivity";
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
@@ -141,6 +142,10 @@ public class MainActivity extends ActionBarActivity{
 		case 3:
 			Toast.makeText(getApplicationContext(),"settings are comming soon", Toast.LENGTH_SHORT).show();
 			return;
+		case 4:
+			if(fragment == null)
+				fragment = new FragmentBackground();
+			break;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;
@@ -162,5 +167,18 @@ public class MainActivity extends ActionBarActivity{
 			
 		}
 	}
+/*	public void onClickButtonStart(View view){
+		Intent intent=new Intent(getApplicationContext(), BackgroundActivity.class);
+		BackgroundResultReceiver resultreceiver;
+		Utility.log("onClick", "onClickButtonStart");
+		//intent.setData(Uri.parse("Background activity"));
+		
+		resultreceiver = new BackgroundResultReceiver(new Handler());
+		setReceiver(this);
+		intent.putExtra("count", "1");	
+		intent.putExtra("receiver", resultreceiver);
+		startService(intent);
+	}
+*/
 	
 }

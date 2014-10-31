@@ -50,6 +50,7 @@ public class LoginActivity extends ActionBarActivity {
 		}
 		Log.d(TAG+" onCreate"," at End");
 	}
+	
 	public void onClickButtonSignin(View view){
 		Utility.showProgressDialog(this);
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
