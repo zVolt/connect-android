@@ -42,6 +42,7 @@
 	<string name="action_contacts">Contacts</string>
 	<string name="action_users">All Users</string>
 	<string name="action_Filter">Filter</string>
+	<string name="action_refresh_notifications">Refresh Notifications</string>
 	
 	<string name="radio_student">Student</string>
 	<string name="radio_faculty">Faculty</string>
@@ -61,11 +62,16 @@
 	<string name="fragemnt_title_users">Add Users</string>
 	<string name="fragemnt_title_contacts">Interactions</string>
 	<string name="fragemnt_title_setting">Settings</string>
+	<string name="fragemnt_title_new">Create Notice</string>
 	
-	<string name="SPACE"> </string>
+	<string name="all">All</string>
 	
 	<string name="nothing_found">Nothing Found !!</string>
 	<string name="exit_warning">Press again to exit</string>
+	<string name="no_internet">Connect to a network first!!</string>
+	
+	<string name="type_message">Remaining body here</string>
+	<string name="type_subject">Subject here</string>
 	
 	<string-array name="array_panel_options">
 		<item >Notifications</item>
@@ -73,7 +79,13 @@
 		<item >Add Users</item>
 		<item >Settings</item>
 	</string-array>
-	
+	<string-array name="array_panel_options_fact">
+	    <item >Notifications</item>
+		<item >Interactions</item>
+		<item >Add Users</item>
+		<item >Settings</item>
+		<item >Create Notice</item>
+	    </string-array>
 	<string-array name="array_user_type">
 		<item >Student</item>
 		<item >Faculty</item>
@@ -84,14 +96,24 @@
 		<item >Online</item>
 	</string-array>
 	
-	<string-array name="array_year">
+	<string-array name="array_year_4">
 	    <item >All</item>
 		<item >First</item>
 		<item >Second</item>
 		<item >Third</item>
 		<item >Fourth</item>
 	</string-array>
-	
+	<string-array name="array_year_2">
+	    <item >All</item>
+		<item >First</item>
+		<item >Second</item>
+	</string-array>
+	<string-array name="array_year_3">
+	    <item >All</item>
+		<item >First</item>
+		<item >Second</item>
+		<item >Third</item>
+	</string-array>
 	<string-array name="array_department">
 		<item >All</item>
 		<item >CSE</item>

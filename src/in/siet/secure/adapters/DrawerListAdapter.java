@@ -47,6 +47,9 @@ public class DrawerListAdapter extends ArrayAdapter<String>{
 		case 3:
 			holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_setting));
 			break;
+		case 4:
+			holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_new_notice));
+			break;
 		}
 		return convertView;
 	}

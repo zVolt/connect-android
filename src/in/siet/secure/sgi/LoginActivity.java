@@ -1,10 +1,13 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import in.siet.secure.dao.DbStructure;
 
 import org.apache.http.Header;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,7 +18,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,11 +40,12 @@ public class LoginActivity extends ActionBarActivity {
 	private static boolean back_pressed=false;
 	private static boolean in_settings=false;
 	private static boolean is_faculty=false;
+	private SharedPreferences spref;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		SharedPreferences spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
+		spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
 		if(spref.getBoolean(getString(R.string.logged_in), false)){
 			startMainActivity();
 		}
@@ -109,36 +112,41 @@ public class LoginActivity extends ActionBarActivity {
 	}
 	public void onClickButtonSignin(View view){
 		back_pressed=false;
-		Utility.showProgressDialog(this);
-		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
-		Log.d(TAG+" onClick"," at start");
-		userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
-		pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
-		if(verifyInput()){
-			
-			if(((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked())
-				is_faculty=true;
-			else
-				is_faculty=false;
-			RequestParams params =new RequestParams();
-			params.put(getString(R.string.web_prm_usr),Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-			params.put(getString(R.string.web_prm_pwd),Base64.encodeToString(Utility.sha1(pwd).getBytes(),Base64.DEFAULT));
-			params.put(getString(R.string.web_prm_isfac),is_faculty);
-			Log.d("username",Base64.encodeToString(userid.getBytes(),Base64.DEFAULT));
-			Log.d("Password",Base64.encodeToString(pwd.getBytes(),Base64.DEFAULT));
-			invokeWS(params);
-			Log.d(TAG+" onClick"," at end");
-		}
-		else{
-			clearInput();
-			Utility.hideProgressDialog();
-			Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",true);
+		if(Utility.isConnected(getApplicationContext())){
+			Utility.showProgressDialog(this);
+			InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+			inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
+			Log.d(TAG+" onClick"," at start");
+			userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
+			pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
+			if(verifyInput()){
+				
+				if(((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked())
+					is_faculty=true;
+				else
+					is_faculty=false;
+				RequestParams params =new RequestParams();
+				params.put(getString(R.string.web_prm_usr),Utility.encode(userid));
+				params.put(getString(R.string.web_prm_pwd),Utility.encode(Utility.sha1(pwd)));
+				params.put(getString(R.string.web_prm_isfac),is_faculty);
+				Log.d("username",Utility.encode(userid));
+				Log.d("Password",Utility.encode(Utility.sha1(pwd)));
+				queryServer(params,true);
+				Log.d(TAG+" onClick"," at end");
+			}
+			else{
+				clearInput();
+				Utility.hideProgressDialog();
+				Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",true);
+			}
+		}else{
+			Utility.RaiseToast(getApplicationContext(), getString(R.string.no_internet), true);
 		}
 	}
 	public void startMainActivity(){
 		Intent intent=new Intent(this,MainActivity.class);
 		Utility.log(TAG,"stating new Activity");
+		intent.putExtra(getString(R.string.is_faculty),is_faculty);
 		startActivity(intent);
 		finish();
 	}
@@ -151,8 +159,13 @@ public class LoginActivity extends ActionBarActivity {
 		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
 	}
 	public void createdb(){
-		new DbHelper(getApplicationContext());
-		Utility.log(TAG,"donedb");
+		//get data from server
+		RequestParams params =new RequestParams();
+		params.put(getString(R.string.web_prm_usr), Utility.encode(spref.getString(getString(R.string.user_id), null)));
+		params.put(getString(R.string.web_prm_token), Utility.encode(spref.getString(getString(R.string.acess_token), null)));
+		queryServer(params, false);
+	//	new DbHelper(getApplicationContext());
+	//	Utility.log(TAG,"donedb");
 	}
 	public void saveUser(String token){
 		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
@@ -168,42 +181,103 @@ public class LoginActivity extends ActionBarActivity {
 		}
 		createdb();
 	}
-	public void invokeWS(RequestParams params){
-		Log.d(TAG+" invokeWS"," at start");
+	public void queryServer(RequestParams params,boolean login){
+		Log.d(TAG+" queryServer"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
-				@Override
-				public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
-					Log.d(TAG+" onSucess"," at start");
-					try {
-						Utility.hideProgressDialog();
-						if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
-						//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
-							saveUser(response.getString("token"));
-							startMainActivity();
-						}
-						else{
-							Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
+		if(login){
+			client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
+					@Override
+					public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
+						Log.d(TAG+" onSucess"," at start");
+						try {
+						//	Utility.hideProgressDialog();
+							if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
+							//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
+								saveUser(response.getString("token"));
+							//	startMainActivity(); //hide this line 
+							}
+							else{
+								Utility.hideProgressDialog();
+								Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
+							}
+						} catch (JSONException e) {
+							Utility.log(TAG+" invokeWS exception ",e.getLocalizedMessage());
 							
-							
 						}
-					} catch (JSONException e) {
-						Utility.log(TAG+" invokeWS exception ",e.getLocalizedMessage());
+					}
+					
+					@Override
+					public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
 						
+						Utility.hideProgressDialog();
+						Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", true);
+						Utility.log(TAG+" onFailure"," at start"+throwable.getMessage());
+					}
+					
+				
+				
+			});
+		}
+		else{
+			client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/getInitial",params ,new JsonHttpResponseHandler(){
+				@Override
+				public void onSuccess(int statusCode, Header[] headers,JSONArray response){
+					Utility.log(TAG,"in on Sucess");
+					try{
+						JSONArray tmparry=response.getJSONArray(0);
+						InitialData idata=new InitialData();
+						int x=tmparry.length();
+						InitialData.Courses c;
+						for(int i=0;i<x;i++){
+							c=new InitialData.Courses();
+							JSONObject obj=tmparry.getJSONObject(i);
+							c.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID);
+							c.duration=obj.getInt(DbStructure.COURSES.COLUMN_DURATION);
+							c.name=obj.getString(DbStructure.COURSES.COLUMN_NAME);
+							idata.courses.add(c);
+						}
+						tmparry=response.getJSONArray(1);
+						x=tmparry.length();
+						InitialData.Branches b;
+						for(int i=0;i<x;i++){
+							b=new InitialData.Branches();
+							JSONObject obj=tmparry.getJSONObject(i);
+							b.course_id=obj.getInt(DbStructure.BRANCHES.COLUMN_COURSE_ID);
+							b.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID);
+							b.name=obj.getString(DbStructure.BRANCHES.COLUMN_NAME);
+							b.year=obj.getInt(DbStructure.BRANCHES.COLUMN_YEAR);
+							idata.branches.add(b);
+						}
+						tmparry=response.getJSONArray(2);
+						x=tmparry.length();
+						InitialData.Sections s;
+						for(int i=0;i<x;i++){
+							s=new InitialData.Sections();
+							JSONObject obj=tmparry.getJSONObject(i);
+							s.branch_id=obj.getInt(DbStructure.SECTIONS.COLUMN_BRANCH_ID);
+							s.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID); 
+							s.name=obj.getString(DbStructure.SECTIONS.COLUMN_NAME);
+							idata.sections.add(s);
+						}
+						Utility.log(TAG,"data building sucessfull");
+					(new DbHelper(getApplicationContext())).addInitialData(idata);
+					startMainActivity();
+					}catch(Exception e){
+						Utility.log(TAG,e.getMessage());
+						Utility.RaiseToast(getApplicationContext(), "Fail to process data. Try Again!", false);
+					}
+					finally{
+						Utility.hideProgressDialog();
 					}
 				}
 				
 				@Override
-				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
-					
+				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONArray errorResponse){
+					Utility.RaiseToast(getApplicationContext(), "Fail to receive data. Try Again!", false);
 					Utility.hideProgressDialog();
-					Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", true);
-					Utility.log(TAG+" onFailure"," at start"+throwable.getMessage());
 				}
-			
-			
-		});
+			});
+		}
 		Utility.log(TAG+" invokeWS"," at end");
 	}
-	
 }

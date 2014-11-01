@@ -38,13 +38,15 @@ public class UsersAdapter extends ArrayAdapter<User>{
 			holder.name=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewName);
 			holder.data=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewId);
 			holder.state=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewState);
+			holder.user=values.get(position);
 			convertView.setTag(holder);
 			
 		}
 		else{
 			holder=(ViewHolder)convertView.getTag();
+			holder.user=values.get(position);
 		}
-		String[] year=context.getResources().getStringArray(R.array.array_year);
+		String[] year=context.getResources().getStringArray(R.array.array_year_4);
 		User tmpuser=values.get(position);
 		
 		holder.name.setText(tmpuser.f_name+Constants.SPACE+tmpuser.l_name);
@@ -64,10 +66,11 @@ public class UsersAdapter extends ArrayAdapter<User>{
 	}
 	
 	
-	static class ViewHolder{
+	public static class ViewHolder{
 		ImageView profile_image;
 		ImageView state;
 		TextView name;
 		TextView data;
+		public User user;
 	}
 }

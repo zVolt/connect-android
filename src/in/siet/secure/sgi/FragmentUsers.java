@@ -5,6 +5,7 @@ import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.UsersAdapter;
 import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
@@ -34,7 +35,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-public class FragmentUsers extends Fragment{
+public class FragmentUsers extends Fragment {
 	public static final String TAG="in.siet.secure.sgi.FragmentUsers";
 	SharedPreferences sharedPreferences=null;
 	private static ArrayList<User> users=new ArrayList<User>();
@@ -110,7 +111,11 @@ public class FragmentUsers extends Fragment{
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {
 			//add user to contacts. A db operation
 			//(view.findViewById(R.id.ListItemUsersTextViewName)).toString();
-			Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
+			UsersAdapter.ViewHolder holder=(UsersAdapter.ViewHolder)view.getTag();
+			if(new DbHelper(getActivity()).addUser(holder.user,FilterOptions.STUDENT))
+				Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
+			else
+				Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is not added to contacts", false);
 		}
 		
 	}

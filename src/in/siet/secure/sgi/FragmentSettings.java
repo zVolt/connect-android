@@ -2,15 +2,14 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
-import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.widget.FrameLayout;
+import android.support.v7.app.ActionBarActivity;
 
 public class FragmentSettings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
-	private static final String TAG="in.siet.secure.sgi.FragmentSettings";
+	public static final String TAG="in.siet.secure.sgi.FragmentSettings";
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -20,11 +19,10 @@ public class FragmentSettings extends PreferenceFragment implements OnSharedPref
 	
 	@Override
 	public void onResume() {
-	    super.onResume();
-	    ((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.action_settings);
-		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_settings_white));
-	    getPreferenceScreen().getSharedPreferences()
-	            .registerOnSharedPreferenceChangeListener(this);
+	    super.onResume();	
+	    ((ActionBarActivity)getActivity()).getActionBar().setTitle(R.string.action_settings);
+		((ActionBarActivity)getActivity()).getActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_settings_white));
+	    getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	}
 
 	@Override

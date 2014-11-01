@@ -2,54 +2,167 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.FilterOptions;
 import in.siet.secure.Util.Utility;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
+
+import java.util.ArrayList;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Spinner;
 
 public class UserFilterDialog extends DialogFragment{
-	private static final String TAG="in.siet.secure.sgi.UserCategoryDialog";
+	static final String TAG="in.siet.secure.sgi.UserCategoryDialog";
+	static final String FRAGMENT_TO_OPEN="fragment_id_to_open";
+	static ArrayList<String> course=new ArrayList<String>();
+	static ArrayList<String> branch=new ArrayList<String>();
+	static ArrayList<String> year=new ArrayList<String>();
+	static ArrayList<String> section=new ArrayList<String>();
+	static ArrayAdapter<String> adapterYear;
+	ArrayAdapter<String> adapterDepart;
+	ArrayAdapter<String> adapterSection;
+	static SQLiteDatabase db;
+	Bundle bundle;
+	boolean students_selected=true;
+	boolean all_department=true;
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState){
 		LayoutInflater inflater=(LayoutInflater) getActivity().getLayoutInflater();
 		AlertDialog.Builder builder =new AlertDialog.Builder(getActivity());
 		final View dialog=inflater.inflate(R.layout.filter_dialog, null);
+		final ViewHolder holder=new ViewHolder();
 		
-		final RadioGroup radiogruop=(RadioGroup)dialog.findViewById(R.id.dialogFilterRadioGroup);
-		radiogruop.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+		holder.radio_group=(RadioGroup)dialog.findViewById(R.id.dialogFilterRadioGroup);
+		holder.section_row=(LinearLayout)dialog.findViewById(R.id.dialogFilterSectionRow);
+		holder.year_row=(LinearLayout)dialog.findViewById(R.id.dialogFilterYearRow);
+		holder.sections=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerSection);
+		holder.courses=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerCourse);
+		holder.branches=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerDepartment);
+		holder.years=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerYear);
+		db=new DbHelper(getActivity()).getReadableDatabase();
+		
+		holder.radio_group.setOnCheckedChangeListener(new OnCheckedChangeListener(){
 
 			@Override
 			public void onCheckedChanged(RadioGroup group, int id) {
 				if(id==R.id.dialogFilterRadioFaculty){
-					dialog.findViewById(R.id.dialogFilterSpinnerYear).setEnabled(false);
+					students_selected=false;
+					holder.year_row.setVisibility(View.GONE);
+					holder.section_row.setVisibility(View.GONE);
 				}
 				else{
-					dialog.findViewById(R.id.dialogFilterSpinnerYear).setEnabled(true);
+					students_selected=true;
+					holder.year_row.setVisibility(View.VISIBLE);
+					//holder.section_row.setVisibility(View.VISIBLE);
 				}
 				
 			}
 			
 		});
 		
-		final Spinner yearSpinner=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerYear);
-		ArrayAdapter<CharSequence> adapterYear=ArrayAdapter.createFromResource(getActivity(), R.array.array_year,android.R.layout.simple_spinner_item);
-		adapterYear.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-		yearSpinner.setAdapter(adapterYear);
+		setCorses();
+		ArrayAdapter<String> courses_adapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,course);
+		courses_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		holder.courses.setAdapter(courses_adapter);
+		holder.courses.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View view,int position, long id) {
+				//set departments or branches
+				if(position==0){
+					holder.branches.setSelection(0);
+					holder.branches.setEnabled(false);
+					holder.years.setSelection(0);
+					holder.years.setEnabled(false);
+				}
+				else{
+					//set years and branches
+					setYearsAndBranches(course.get(position));
+					adapterDepart.notifyDataSetChanged();
+					adapterYear.notifyDataSetChanged();
+					holder.branches.setEnabled(true);
+					holder.years.setEnabled(true);
+				}
+			}
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+			}
+		});
+		
+		
+		
+		
+		adapterYear=new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item,year);
+		adapterYear.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		holder.years.setAdapter(adapterYear);
+		holder.years.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View view,int position, long id) {
+				all_department=position==0?true:false;
+				if(position!=0 && students_selected && holder.branches.getSelectedItemPosition()!=0){
+					holder.sections.setSelection(0);
+					setSections(course.get(holder.courses.getSelectedItemPosition()),branch.get(holder.branches.getSelectedItemPosition()),position);
+					adapterSection.notifyDataSetChanged();
+					dialog.findViewById(R.id.dialogFilterSectionRow).setVisibility(View.VISIBLE);
+				}
+				else{
+					dialog.findViewById(R.id.dialogFilterSectionRow).setVisibility(View.GONE);
+				}
+			}
 
-		final Spinner departSpinner=(Spinner)dialog.findViewById(R.id.dialogFilterSpinnerDepartment);
-		ArrayAdapter<CharSequence> adapterDepart=ArrayAdapter.createFromResource(getActivity(), R.array.array_department, android.R.layout.simple_spinner_item);
-		adapterDepart.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-		departSpinner.setAdapter(adapterDepart);
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		
+		adapterDepart=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,branch);
+		adapterDepart.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		holder.branches.setAdapter(adapterDepart);
+		holder.branches.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View view,int position, long id) {
+				all_department=position==0?true:false;
+				if(position!=0 && students_selected && holder.years.getSelectedItemPosition()!=0){
+					holder.sections.setSelection(0);
+					setSections(course.get(holder.courses.getSelectedItemPosition()),branch.get(position),holder.years.getSelectedItemPosition());
+					adapterSection.notifyDataSetChanged();
+					dialog.findViewById(R.id.dialogFilterSectionRow).setVisibility(View.VISIBLE);
+				}
+				else{
+					dialog.findViewById(R.id.dialogFilterSectionRow).setVisibility(View.GONE);
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+
+		adapterSection=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,section);
+		adapterSection.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		holder.sections.setAdapter(adapterSection);
+		
+		
 		builder.setView(dialog)
 		.setTitle(getString(R.string.filter_title))
 		
@@ -57,26 +170,24 @@ public class UserFilterDialog extends DialogFragment{
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				FilterOptions.STUDENT=((RadioButton)radiogruop.findViewById(R.id.dialogFilterRadioStudent)).isChecked();
+				FilterOptions.STUDENT=((RadioButton)holder.radio_group.findViewById(R.id.dialogFilterRadioStudent)).isChecked();
 				if(FilterOptions.STUDENT){
-					FilterOptions.YEAR=yearSpinner.getSelectedItemPosition();
+					FilterOptions.YEAR=holder.years.getSelectedItemPosition();
 				}
-				FilterOptions.DEPARTMENT=getResources().getStringArray(R.array.array_department)[departSpinner.getSelectedItemPosition()];
-				
-				Fragment fragment=getFragmentManager().findFragmentByTag(TAG+"FragmentUsers");
-				if(fragment==null){
-					fragment=new FragmentUsers();
-					getFragmentManager()
-					.beginTransaction()
-					.setTransitionStyle(R.anim.abc_fade_out)
-					.replace(R.id.mainFrame, fragment, TAG+"FragmentUsers")
-					.commit();
+				FilterOptions.DEPARTMENT=getResources().getStringArray(R.array.array_department)[holder.branches.getSelectedItemPosition()];
+				bundle=getArguments();
+				switch(bundle.getInt(UserFilterDialog.FRAGMENT_TO_OPEN, -1))
+				{
+				case Constants.DrawerIDs.ADD_USER:
+					((MainActivity)getActivity()).switch_fragment(Constants.DrawerIDs.ADD_USER);
+					break;
+				case Constants.DrawerIDs.CREATE_NOTICE:
+					((MainActivity)getActivity()).switch_fragment(Constants.DrawerIDs.CREATE_NOTICE);
+					break;
+				case -1:
+					Utility.RaiseToast(getActivity(),"dont know from where you reached on this dialog",true);
 				}
-				else{
-					((FragmentUsers)fragment).load();
-				}
-				
-				Utility.RaiseToast(getActivity(), FilterOptions.STUDENT+" "+FilterOptions.YEAR+" "+FilterOptions.DEPARTMENT, false);
+				Utility.RaiseToast(getActivity(), (FilterOptions.STUDENT?"Students of "+(FilterOptions.YEAR==0?"All":FilterOptions.YEAR)+" year":"Faculties")+" from "+FilterOptions.DEPARTMENT+" department"+(FilterOptions.DEPARTMENT.equalsIgnoreCase("All")?"s":""),true);
 			}
 		})
 		.setNegativeButton(R.string.cancle,new OnClickListener() {
@@ -88,26 +199,71 @@ public class UserFilterDialog extends DialogFragment{
 			}
 		});
 		
-	/*	builder.setItems(R.array.array_user_type, new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				//String[] type=getActivity().getResources().getStringArray(R.array.userTypeArray);
-				//userType=which;
-				Fragment fragment=getFragmentManager().findFragmentByTag(TAG+"FragmentUsers"+which);
-				if(fragment==null){
-					fragment=new FragmentUsers();
-					FilterOptions.USER_TYPE=which;
-					getFragmentManager().beginTransaction().replace(R.id.mainFrame,fragment,TAG+"FragmentUsers"+which).commit();
-				}
-				else{
-					FilterOptions.USER_TYPE=which;
-					getFragmentManager().beginTransaction().replace(R.id.mainFrame,fragment).commit();
-				}
-				//((FragmentUsers)fragment).fetch_all();
-				//Utility.RaiseToast(getActivity(), ""+which, 0);
-			}
-		});
-*/		return builder.create();
+		return builder.create();
+	}
+	
+	static class ViewHolder{
+		RadioGroup radio_group;
+		LinearLayout year_row;
+		LinearLayout section_row;
+		Spinner years;
+		Spinner branches;
+		Spinner courses;
+		Spinner sections;
+	}
+	public void setCorses(){
+		course.clear();
+		course.add("All");
+		year.clear();
+		year.add("All");
+		branch.clear();
+		branch.add("All");
+		section.clear();
+		section.add("All");
+		Cursor c=db.rawQuery("select name from courses",null);//DbStructure.COURSES.TABLE_NAME,courses_columns, null, null, null, null,null);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			course.add(c.getString(0));
+			c.moveToNext();
+		}
+		c.close();
+	}
+	
+	public void setYearsAndBranches(String course_name){
+		branch.clear();
+		branch.add("All");
+		Cursor c=db.rawQuery("select distinct branches.name from branches join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			branch.add(c.getString(0));
+			c.moveToNext();
+		}
+		c.close();
+		year.clear();
+		year.add("All");
+		c=db.rawQuery("select distinct branches.year from branches join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			year.add(c.getString(0));
+			c.moveToNext();
+		}
+		c.close();
+	}
+	public void setSections(String course_name,String branch_name,int year){
+		section.clear();
+		section.add("All");
+		String[] args={
+				course_name,
+				branch_name,
+				""+year
+		};
+		Cursor c=db.rawQuery("select sections.name from sections join branches on branch_id=branches._id join courses on course_id=courses._id where courses.name=? and branches.name=? and year=?",args);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			section.add(c.getString(0));
+			c.moveToNext();
+		}
+		c.close();
+		Utility.log(TAG, course_name+" "+branch_name+" "+year);
 	}
 }

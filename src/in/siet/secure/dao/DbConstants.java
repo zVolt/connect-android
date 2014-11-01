@@ -12,7 +12,7 @@ public final class DbConstants {
 	public static final String TYPE_REAL=" REAL";
 	public static final String CONSTRAIN_PRIMARY_KEY=" PRIMARY KEY";
 	
+	public static final String ALTER_TABLE="alter table ";
 	public static final String CREATE_TABLE="create table ";
-	public static final String TRUNCATE_TABLE="truncate table ";
-	public static final String DROP_TABLE="DROP TABLE IF EXIST";
+	public static final String DROP_TABLE="DROP TABLE IF EXISTS ";
 }
