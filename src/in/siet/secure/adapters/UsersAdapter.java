@@ -37,7 +37,7 @@ public class UsersAdapter extends ArrayAdapter<User>{
 			holder.profile_image=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewPic);
 			holder.name=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewName);
 			holder.data=(TextView) convertView.findViewById(R.id.ListItemUsersTextViewId);
-			holder.state=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewState);
+		//	holder.state=(ImageView) convertView.findViewById(R.id.ListItemUsersImageViewState);
 			holder.user=values.get(position);
 			convertView.setTag(holder);
 			
@@ -46,20 +46,15 @@ public class UsersAdapter extends ArrayAdapter<User>{
 			holder=(ViewHolder)convertView.getTag();
 			holder.user=values.get(position);
 		}
-		String[] year=context.getResources().getStringArray(R.array.array_year_4);
+		//String[] year=context.getResources().getStringArray(R.array.array_year_4);
 		User tmpuser=values.get(position);
 		
 		holder.name.setText(tmpuser.f_name+Constants.SPACE+tmpuser.l_name);
-		
+		holder.profile_image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_person));
 		if(FilterOptions.STUDENT)
-			holder.data.setText(tmpuser.dep+Constants.SPACE+year[tmpuser.year]+Constants.SPACE+context.getString(R.string.year));
+			holder.data.setText(tmpuser.course+Constants.SPACE+tmpuser.dep+Constants.SPACE+tmpuser.year+" Year ("+tmpuser.section+")");
 		else
-			holder.data.setText(tmpuser.dep);
-		
-		if (tmpuser.state==1)
-			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_online));
-		else
-			holder.state.setImageDrawable(getContext().getResources().getDrawable(R.drawable.ic_action_offline));
+			holder.data.setText(tmpuser.course+Constants.SPACE+tmpuser.dep);
 		
 		ImageLoader.getInstance().displayImage(tmpuser.picUrl, holder.profile_image);
 		return convertView;

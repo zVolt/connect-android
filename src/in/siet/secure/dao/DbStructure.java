@@ -8,18 +8,17 @@ public final class DbStructure {
 	public static abstract class UserTable implements BaseColumns{
 		public static final String TABLE_NAME = "user";
 		
-		public static final String COLUMN_LOGIN_ID = "login_id";
+		public static final String COLUMN_USER_ID = "user_id";
 		public static final String COLUMN_FNAME = "f_name";
 		public static final String COLUMN_LNAME = "l_name";
-		public static final String COLUMN_DEPARTMENT = "department";
+//		public static final String COLUMN_DEPARTMENT = "department";
 		public static final String COLUMN_PROFILE_PIC = "pic_url";
 		
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
-				COLUMN_LOGIN_ID+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_USER_ID+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 				COLUMN_FNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 				COLUMN_LNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
-				COLUMN_DEPARTMENT+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 				COLUMN_PROFILE_PIC+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
@@ -64,26 +63,27 @@ public final class DbStructure {
 	public static abstract class StudentContactsTable implements BaseColumns{
 		public static final String TABLE_NAME = "student";
 		
-		public static final String COLUMN_YEAR = "year";
-		public static final String COLUMN_SECTION = "section";
+//		public static final String COLUMN_YEAR = "year";
+		public static final String COLUMN_SECTION_ID = "section_id";
 		public static final String COLUMN_USER_ID = "user_id";
 
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
 													COLUMN_USER_ID+DbConstants.TYPE_INT+DbConstants.COMMA+
-													COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.COMMA+
-													COLUMN_SECTION+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+												//	COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.COMMA+
+													COLUMN_SECTION_ID+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 	
 	public static abstract class FcultyContactsTable implements BaseColumns{
 		public static final String TABLE_NAME = "faculty";
 		
-		public static final String COLUMN_MOB = "mobile_no";
+//		public static final String COLUMN_MOB = "mobile_no";
 		public static final String COLUMN_USER_ID = "user_id";
+		public static final String COLUMN_BRANCH_ID = "branch_id";
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
-													COLUMN_USER_ID+DbConstants.TYPE_TEXT+DbConstants.COMMA+
-													COLUMN_MOB+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+													COLUMN_USER_ID+DbConstants.TYPE_INT+DbConstants.COMMA+
+													COLUMN_BRANCH_ID+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 	
@@ -143,11 +143,11 @@ public final class DbStructure {
 		public static final String TABLE_NAME="sections";
 		
 		public static final String COLUMN_NAME="name";
-		public static final String COLUMN_BRANCH_ID="branch_id";
+		public static final String COLUMN_YEAR_ID="year_id";
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
 				COLUMN_NAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
-				COLUMN_BRANCH_ID+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+				COLUMN_YEAR_ID+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 	
@@ -155,13 +155,22 @@ public final class DbStructure {
 		public static final String TABLE_NAME="branches";
 		
 		public static final String COLUMN_NAME="name";
-		public static final String COLUMN_YEAR="year";
 		public static final String COLUMN_COURSE_ID="course_id";
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
 				COLUMN_NAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
-				COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.COMMA+
 				COLUMN_COURSE_ID+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
+	}
+	public static abstract class YEAR implements BaseColumns{
+		public static final String TABLE_NAME="year";
+		
+		public static final String COLUMN_BRANCH_ID="branch_id";
+		public static final String COLUMN_YEAR="year";
+		
+		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
+				COLUMN_BRANCH_ID+DbConstants.TYPE_INT+DbConstants.COMMA+
+				COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 }

@@ -46,7 +46,7 @@
             android:layout_weight="0.5"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:text="Course"
+            android:text="@string/filter_course"
             android:textAppearance="?android:attr/textAppearanceMedium" />
               <Spinner
             android:id="@+id/dialogFilterSpinnerCourse"
@@ -72,7 +72,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
                 android:gravity="center"
-                android:text="Branch"
+                android:text="@string/filter_branch"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <Spinner
@@ -98,7 +98,7 @@
             android:layout_weight="0.5"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:text="Year"
+            android:text="@string/filter_year"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Spinner

@@ -5,5 +5,8 @@ public class FilterOptions {
 		
 		public static boolean STUDENT=true;
 		public static int YEAR=0;
-		public static String DEPARTMENT="All";
+		public static String BRANCH="All";
+		public static String COURSE="All";
+		public static String SECTION="All";
+		
 }

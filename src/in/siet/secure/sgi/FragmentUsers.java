@@ -58,7 +58,7 @@ public class FragmentUsers extends Fragment {
 	@Override
 	public void onStart(){
 		super.onStart();
-		load();
+		load();//this will load data for listview
 	}
 	@Override
 	public void onResume(){
@@ -80,7 +80,7 @@ public class FragmentUsers extends Fragment {
 		}
 		return false;
 	}
-	public void load(){ //called by filter dialog
+	public void load(){ 
 		listview.setVisibility(View.GONE);
 		Utility.showProgressDialog(getActivity());
 		fetch_all();
@@ -102,31 +102,30 @@ public class FragmentUsers extends Fragment {
 			
 		}
 	}
-	public void show_users(JSONArray result,int size){
-		
-	}
-	
 	class ItemClickListener implements OnItemClickListener{
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {
 			//add user to contacts. A db operation
 			//(view.findViewById(R.id.ListItemUsersTextViewName)).toString();
-			UsersAdapter.ViewHolder holder=(UsersAdapter.ViewHolder)view.getTag();
-			if(new DbHelper(getActivity()).addUser(holder.user,FilterOptions.STUDENT))
-				Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
-			else
+		//	UsersAdapter.ViewHolder holder=(UsersAdapter.ViewHolder)view.getTag();
+		//	if(new DbHelper(getActivity()).addUser(holder.user,FilterOptions.STUDENT))
+		//		Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
+		//	else
 				Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is not added to contacts", false);
 		}
 		
 	}
 	
 	public void fetch_all(){
+		
 		RequestParams params =new RequestParams();
 		params.put(getString(R.string.web_prm_usr),Base64.encodeToString(sharedPreferences.getString(getString(R.string.user_id), null).getBytes(), Base64.DEFAULT));
 		params.put(getString(R.string.web_prm_token),Base64.encodeToString(sharedPreferences.getString(getString(R.string.acess_token), null).trim().getBytes(), Base64.DEFAULT));
 		params.put(getString(R.string.web_prm_query_user_type), FilterOptions.STUDENT);
+		params.put(getString(R.string.web_prm_query_course), FilterOptions.COURSE);
+		params.put(getString(R.string.web_prm_query_department), FilterOptions.BRANCH);
 		params.put(getString(R.string.web_prm_query_year), FilterOptions.YEAR);
-		params.put(getString(R.string.web_prm_query_department), FilterOptions.DEPARTMENT);
+		params.put(getString(R.string.web_prm_query_section), FilterOptions.SECTION);
 		AsyncHttpClient client=new AsyncHttpClient();
 		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/query/type_resolver",params,new JsonHttpResponseHandler(){
 			@Override
@@ -163,9 +162,9 @@ public class FragmentUsers extends Fragment {
 					JSONObject tmpobj=values.getJSONObject(i);
 					User tmpusr;
 					if(tmpobj.has(User.YEAR)) //no optimize it we may have mixed users
-						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getString(User.ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.YEAR),tmpobj.getInt(User.SECTION),tmpobj.getInt(User.STATE));
+						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.YEAR),tmpobj.getString(User.SECTION),tmpobj.getString(User.COURSE));
 					else
-						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getString(User.ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
+						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT));//,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
 					tmpdata.add(tmpusr);
 				}
 			}catch(JSONException e){

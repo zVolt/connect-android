@@ -245,7 +245,6 @@ public class LoginActivity extends ActionBarActivity {
 							b.course_id=obj.getInt(DbStructure.BRANCHES.COLUMN_COURSE_ID);
 							b.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID);
 							b.name=obj.getString(DbStructure.BRANCHES.COLUMN_NAME);
-							b.year=obj.getInt(DbStructure.BRANCHES.COLUMN_YEAR);
 							idata.branches.add(b);
 						}
 						tmparry=response.getJSONArray(2);
@@ -254,10 +253,21 @@ public class LoginActivity extends ActionBarActivity {
 						for(int i=0;i<x;i++){
 							s=new InitialData.Sections();
 							JSONObject obj=tmparry.getJSONObject(i);
-							s.branch_id=obj.getInt(DbStructure.SECTIONS.COLUMN_BRANCH_ID);
+							s.year_id=obj.getInt(DbStructure.SECTIONS.COLUMN_YEAR_ID);
 							s.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID); 
 							s.name=obj.getString(DbStructure.SECTIONS.COLUMN_NAME);
 							idata.sections.add(s);
+						}
+						tmparry=response.getJSONArray(3);
+						x=tmparry.length();
+						InitialData.Year y;
+						for(int i=0;i<x;i++){
+							y=new InitialData.Year();
+							JSONObject obj=tmparry.getJSONObject(i);
+							y.branch_id=obj.getInt(DbStructure.YEAR.COLUMN_BRANCH_ID);
+							y.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID); 
+							y.year=obj.getInt(DbStructure.YEAR.COLUMN_YEAR);
+							idata.years.add(y);
 						}
 						Utility.log(TAG,"data building sucessfull");
 					(new DbHelper(getApplicationContext())).addInitialData(idata);

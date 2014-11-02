@@ -44,9 +44,11 @@ public class DbHelper extends SQLiteOpenHelper{
 		db.execSQL(DbStructure.BRANCHES.COMMAND_CREATE);
 		db.execSQL(DbStructure.COURSES.COMMAND_CREATE);
 		db.execSQL(DbStructure.SECTIONS.COMMAND_CREATE);
+		db.execSQL(DbStructure.YEAR.COMMAND_CREATE);
 	}
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		db.execSQL(DbStructure.UserTable.COMMAND_CREATE);
 		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FileTable.COMMAND_DROP);
@@ -57,6 +59,7 @@ public class DbHelper extends SQLiteOpenHelper{
 		db.execSQL(DbStructure.BRANCHES.COMMAND_DROP);
 		db.execSQL(DbStructure.COURSES.COMMAND_DROP);
 		db.execSQL(DbStructure.SECTIONS.COMMAND_DROP);
+		db.execSQL(DbStructure.YEAR.COMMAND_DROP);
 		onCreate(db);
 	}
 	
@@ -153,7 +156,7 @@ public class DbHelper extends SQLiteOpenHelper{
 			FragmentDetailNotification.showAttachments();
 		}
 	}
-	
+	/*
 	public boolean addUser(User user,boolean is_student){
 		SQLiteDatabase db=this.getWritableDatabase();
 		int user_id;
@@ -193,7 +196,7 @@ public class DbHelper extends SQLiteOpenHelper{
 		}
 		
 		
-	}
+	}*/
 	public void addInitialData(InitialData idata){
 		if(db==null)
 			db=this.getWritableDatabase();
@@ -233,10 +236,12 @@ public class DbHelper extends SQLiteOpenHelper{
 			db.execSQL(DbStructure.BRANCHES.COMMAND_DROP);
 			db.execSQL(DbStructure.COURSES.COMMAND_DROP);
 			db.execSQL(DbStructure.SECTIONS.COMMAND_DROP);
+			db.execSQL(DbStructure.YEAR.COMMAND_DROP);
 			
 			db.execSQL(DbStructure.BRANCHES.COMMAND_CREATE);
 			db.execSQL(DbStructure.COURSES.COMMAND_CREATE);
 			db.execSQL(DbStructure.SECTIONS.COMMAND_CREATE);
+			db.execSQL(DbStructure.YEAR.COMMAND_CREATE);
 			
 			ContentValues values;
 			for(InitialData.Courses c:idata.courses){
@@ -252,7 +257,6 @@ public class DbHelper extends SQLiteOpenHelper{
 				values.put(DbStructure.BRANCHES._ID, b.id);
 				values.put(DbStructure.BRANCHES.COLUMN_NAME, b.name);
 				values.put(DbStructure.BRANCHES.COLUMN_COURSE_ID, b.course_id);
-				values.put(DbStructure.BRANCHES.COLUMN_YEAR, b.year);
 				db.insert(DbStructure.BRANCHES.TABLE_NAME, null, values);
 			}
 			
@@ -260,8 +264,16 @@ public class DbHelper extends SQLiteOpenHelper{
 				values=new ContentValues();
 				values.put(DbStructure.SECTIONS._ID, s.id);
 				values.put(DbStructure.SECTIONS.COLUMN_NAME, s.name);
-				values.put(DbStructure.SECTIONS.COLUMN_BRANCH_ID, s.branch_id);
+				values.put(DbStructure.SECTIONS.COLUMN_YEAR_ID, s.year_id);
 				db.insert(DbStructure.SECTIONS.TABLE_NAME, null, values);
+			}
+			
+			for(InitialData.Year y:idata.years){
+				values=new ContentValues();
+				values.put(DbStructure.YEAR._ID, y.id);
+				values.put(DbStructure.YEAR.COLUMN_BRANCH_ID, y.branch_id);
+				values.put(DbStructure.YEAR.COLUMN_YEAR, y.year);
+				db.insert(DbStructure.YEAR.TABLE_NAME, null, values);
 			}
 			return null;
 		}

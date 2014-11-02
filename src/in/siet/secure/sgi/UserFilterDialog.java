@@ -128,7 +128,7 @@ public class UserFilterDialog extends DialogFragment{
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				// TODO Auto-generated method stub
-				
+				return;
 			}
 		});
 		
@@ -154,7 +154,7 @@ public class UserFilterDialog extends DialogFragment{
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				// TODO Auto-generated method stub
-				
+				return;
 			}
 		});
 
@@ -173,8 +173,11 @@ public class UserFilterDialog extends DialogFragment{
 				FilterOptions.STUDENT=((RadioButton)holder.radio_group.findViewById(R.id.dialogFilterRadioStudent)).isChecked();
 				if(FilterOptions.STUDENT){
 					FilterOptions.YEAR=holder.years.getSelectedItemPosition();
+					FilterOptions.SECTION=section.get(holder.sections.getSelectedItemPosition());
 				}
-				FilterOptions.DEPARTMENT=getResources().getStringArray(R.array.array_department)[holder.branches.getSelectedItemPosition()];
+				FilterOptions.BRANCH=branch.get(holder.branches.getSelectedItemPosition());
+				FilterOptions.COURSE=course.get(holder.courses.getSelectedItemPosition());
+				
 				bundle=getArguments();
 				switch(bundle.getInt(UserFilterDialog.FRAGMENT_TO_OPEN, -1))
 				{
@@ -187,7 +190,7 @@ public class UserFilterDialog extends DialogFragment{
 				case -1:
 					Utility.RaiseToast(getActivity(),"dont know from where you reached on this dialog",true);
 				}
-				Utility.RaiseToast(getActivity(), (FilterOptions.STUDENT?"Students of "+(FilterOptions.YEAR==0?"All":FilterOptions.YEAR)+" year":"Faculties")+" from "+FilterOptions.DEPARTMENT+" department"+(FilterOptions.DEPARTMENT.equalsIgnoreCase("All")?"s":""),true);
+				Utility.RaiseToast(getActivity(), FilterOptions.COURSE+" "+(FilterOptions.STUDENT?"Students of "+FilterOptions.SECTION+" section "+(FilterOptions.YEAR==0?"All":FilterOptions.YEAR)+" year":"Faculties")+" from "+FilterOptions.BRANCH+" department"+(FilterOptions.BRANCH.equalsIgnoreCase("All")?"s":""),true);
 			}
 		})
 		.setNegativeButton(R.string.cancle,new OnClickListener() {
@@ -195,7 +198,7 @@ public class UserFilterDialog extends DialogFragment{
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				UserFilterDialog.this.getDialog().cancel();
-				
+				Utility.log(TAG,"dismiss");
 			}
 		});
 		
@@ -232,7 +235,7 @@ public class UserFilterDialog extends DialogFragment{
 	public void setYearsAndBranches(String course_name){
 		branch.clear();
 		branch.add("All");
-		Cursor c=db.rawQuery("select distinct branches.name from branches join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
+		Cursor c=db.rawQuery("select branches.name from branches join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
 		c.moveToFirst();
 		while(!c.isAfterLast()){
 			branch.add(c.getString(0));
@@ -241,7 +244,7 @@ public class UserFilterDialog extends DialogFragment{
 		c.close();
 		year.clear();
 		year.add("All");
-		c=db.rawQuery("select distinct branches.year from branches join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
+		c=db.rawQuery("select distinct year.year from year join branches on branch_id=branches._id join courses on course_id=courses._id where courses.name='"+course_name+"'", null);
 		c.moveToFirst();
 		while(!c.isAfterLast()){
 			year.add(c.getString(0));
@@ -253,11 +256,11 @@ public class UserFilterDialog extends DialogFragment{
 		section.clear();
 		section.add("All");
 		String[] args={
-				course_name,
+				""+year,
 				branch_name,
-				""+year
+				course_name
 		};
-		Cursor c=db.rawQuery("select sections.name from sections join branches on branch_id=branches._id join courses on course_id=courses._id where courses.name=? and branches.name=? and year=?",args);
+		Cursor c=db.rawQuery("select sections.name from sections join year on year_id=year._id join branches on branch_id=branches._id join courses on course_id=courses._id where year.year=? and branches.name=? and courses.name=? ",args);
 		c.moveToFirst();
 		while(!c.isAfterLast()){
 			section.add(c.getString(0));

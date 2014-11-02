@@ -29,6 +29,8 @@
 	<string name="web_prm_isfac">is_faculty</string>
 	<string name="web_prm_query_user_type">user_type</string>
 	<string name="web_prm_query_department">department</string>
+	<string name="web_prm_query_course">course</string>
+	<string name="web_prm_query_section">section</string>
 	<string name="web_prm_query_year">year</string>
 	<string name="web_prm_query_id">query_id</string>
 	
@@ -65,6 +67,10 @@
 	<string name="fragemnt_title_new">Create Notice</string>
 	
 	<string name="all">All</string>
+	
+	<string name="filter_branch">Branch</string>
+	<string name="filter_course">Course</string>
+	<string name="filter_year">Year</string>
 	
 	<string name="nothing_found">Nothing Found !!</string>
 	<string name="exit_warning">Press again to exit</string>
