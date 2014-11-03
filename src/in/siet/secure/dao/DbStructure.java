@@ -8,7 +8,7 @@ public final class DbStructure {
 	public static abstract class UserTable implements BaseColumns{
 		public static final String TABLE_NAME = "user";
 		
-		public static final String COLUMN_USER_ID = "user_id";
+		public static final String COLUMN_LOGIN_ID = "login_id";
 		public static final String COLUMN_FNAME = "f_name";
 		public static final String COLUMN_LNAME = "l_name";
 //		public static final String COLUMN_DEPARTMENT = "department";
@@ -16,7 +16,7 @@ public final class DbStructure {
 		
 		
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
-				COLUMN_USER_ID+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_LOGIN_ID+DbConstants.TYPE_TEXT+DbConstants.UNIQUE+DbConstants.COMMA+
 				COLUMN_FNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 				COLUMN_LNAME+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 				COLUMN_PROFILE_PIC+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
@@ -171,6 +171,27 @@ public final class DbStructure {
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
 				COLUMN_BRANCH_ID+DbConstants.TYPE_INT+DbConstants.COMMA+
 				COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
+	}
+	public static abstract class UserInfoTable implements BaseColumns{
+		public static final String TABLE_NAME="user_info";
+
+		public static final String COLUMN_USER_ID="user_id"; //fk of users._id
+		public static final String COLUMN_STREET="street";
+		public static final String COLUMN_CITY="city";
+		public static final String COLUMN_STATE="state";
+		public static final String COLUMN_PIN="pin";
+		public static final String COLUMN_P_MOB="p_mob";
+		public static final String COLUMN_H_MOB="h_mob";
+		
+		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
+				COLUMN_USER_ID+DbConstants.TYPE_INT+DbConstants.COMMA+
+				COLUMN_STREET+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_CITY+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_STATE+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_PIN+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_P_MOB+DbConstants.TYPE_TEXT+DbConstants.COMMA+
+				COLUMN_H_MOB+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 }

@@ -132,6 +132,12 @@ public class MainActivity extends ActionBarActivity{
 			finish();
 			return true;
 		}
+		else if(id==R.id.action_reset){
+			
+			DbHelper db=new DbHelper(getApplicationContext());
+			db.ClearDb(db.getWritableDatabase());
+			
+		}
 		return super.onOptionsItemSelected(item);
 	}
 	@Override

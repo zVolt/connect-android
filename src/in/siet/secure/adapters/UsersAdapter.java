@@ -60,7 +60,6 @@ public class UsersAdapter extends ArrayAdapter<User>{
 		return convertView;
 	}
 	
-	
 	public static class ViewHolder{
 		ImageView profile_image;
 		ImageView state;

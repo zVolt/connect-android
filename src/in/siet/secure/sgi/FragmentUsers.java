@@ -41,6 +41,8 @@ public class FragmentUsers extends Fragment {
 	private static ArrayList<User> users=new ArrayList<User>();
 	private static UsersAdapter adapter;
 	public static ListView listview;
+	public static TextView emptyText;
+//	public static View emptyView;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		adapter=new UsersAdapter(getActivity(),users);
@@ -50,8 +52,9 @@ public class FragmentUsers extends Fragment {
 		setHasOptionsMenu(true);
 		Utility.log(TAG, "onCreateViewCalled");
 		listview=(ListView)rootView.findViewById(R.id.listViewUsers);
+	
 		listview.setAdapter(adapter);
-	//	listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+		listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
 		listview.setOnItemClickListener(new ItemClickListener());
 		return rootView;
 	}
@@ -93,13 +96,13 @@ public class FragmentUsers extends Fragment {
 			Utility.log(TAG+" refresh()", "adapter is null");
 	}
 	public static void setData(ArrayList<User> data){
-		
-		if(adapter==null)
-			Utility.log(TAG+" setData()", "adapter is null");
-		else{
+		if(adapter!=null){
 			adapter.clear();
 			adapter.addAll(data);
-			
+			adapter.notifyDataSetChanged();
+		}
+		else{
+			Utility.log(TAG,"adapetr empty");
 		}
 	}
 	class ItemClickListener implements OnItemClickListener{
@@ -107,11 +110,11 @@ public class FragmentUsers extends Fragment {
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {
 			//add user to contacts. A db operation
 			//(view.findViewById(R.id.ListItemUsersTextViewName)).toString();
-		//	UsersAdapter.ViewHolder holder=(UsersAdapter.ViewHolder)view.getTag();
-		//	if(new DbHelper(getActivity()).addUser(holder.user,FilterOptions.STUDENT))
-		//		Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
-		//	else
-				Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is not added to contacts", false);
+			UsersAdapter.ViewHolder holder=(UsersAdapter.ViewHolder)view.getTag();
+			new DbHelper(getActivity()).addUser(holder.user,FilterOptions.STUDENT);
+			//	Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts", false);
+			
+			//	Utility.RaiseToast(getActivity(), ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is not added to contacts", false);
 		}
 		
 	}
@@ -164,7 +167,7 @@ public class FragmentUsers extends Fragment {
 					if(tmpobj.has(User.YEAR)) //no optimize it we may have mixed users
 						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.YEAR),tmpobj.getString(User.SECTION),tmpobj.getString(User.COURSE));
 					else
-						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT));//,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
+						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getString(User.COURSE));//,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
 					tmpdata.add(tmpusr);
 				}
 			}catch(JSONException e){

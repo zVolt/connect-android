@@ -181,6 +181,7 @@ public class LoginActivity extends ActionBarActivity {
 		}
 		createdb();
 	}
+	
 	public void queryServer(RequestParams params,boolean login){
 		Log.d(TAG+" queryServer"," at start");
 		AsyncHttpClient client = new AsyncHttpClient();

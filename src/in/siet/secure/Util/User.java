@@ -7,23 +7,24 @@ public class User {
 	public static String L_ID="l_id";
 	public static String DEPARTMENT="department";
 	
-	public static String ID="id";
+	public static String USER_ID="u_id";
 	public static String STATE="state";
 	public static String YEAR="year";
 	public static String SECTION="section";
 	public static String COURSE="course";
 	public static String MOBILE="mobile";
-
 	
 	
 	public String l_name;
 	public String f_name;
 	public String dep;
 	public String picUrl;
-	public int id;
+	public int id; //reference id 
 	public int year;
 	public String section;
 	public String course;
+	public String user_id;
+	
 	
 	//for student
 	public User(String f_n,String l_n,int l_id,String pu,String dp,int y,String sec,String cou){
@@ -37,12 +38,13 @@ public class User {
 		course=cou;
 	}
 	//for faculty
-	public User(String f_n,String l_n,int l_id,String pu,String dp){
+	public User(String f_n,String l_n,int l_id,String pu,String dp,String cou){
 		f_name=f_n;
 		l_name=l_n;
 		id=l_id;
 		picUrl=pu;
 		dep=dp;
+		course=cou;
 	}
 	
 }

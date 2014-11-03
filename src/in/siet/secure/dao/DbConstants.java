@@ -11,6 +11,7 @@ public final class DbConstants {
 	public static final String TYPE_INT=" INTEGER";
 	public static final String TYPE_REAL=" REAL";
 	public static final String CONSTRAIN_PRIMARY_KEY=" PRIMARY KEY";
+	public static final String UNIQUE=" UNIQUE";
 	
 	public static final String ALTER_TABLE="alter table ";
 	public static final String CREATE_TABLE="create table ";
