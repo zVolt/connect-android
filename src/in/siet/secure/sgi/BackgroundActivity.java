@@ -4,6 +4,7 @@ import in.siet.secure.Util.Utility;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -23,8 +24,7 @@ public class BackgroundActivity extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		// TODO Auto-generated method stub
-		Utility.log("BAckgroundAvtivity", "onHandleIntent");
-		
+		Utility.log("BAckgroundAvtivity", "onHandleIntent");		
 		final ResultReceiver receiver=intent.getParcelableExtra("receiver");
 		int count=Integer.parseInt(intent.getStringExtra("count"));
 		
@@ -57,11 +57,10 @@ public class BackgroundActivity extends IntentService {
 	
 
 	public void buildNotification() {
-		NotificationCompat.Builder mBuilder =
-			    new NotificationCompat.Builder(this)
-			    .setSmallIcon(R.drawable.ic_action_chats_white)
-			    .setContentTitle("New notification")
-			    .setContentText("created a new notification!");
+		NotificationCompat.Builder mBuilder = notificationBuilder(this,
+				R.drawable.ic_action_chats_white,
+				"New notification", 
+				"created a new notification!");		    
 		Intent resultIntent = new Intent(this, MainActivity.class);
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this,0,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setContentIntent(resultPendingIntent);
@@ -71,5 +70,15 @@ public class BackgroundActivity extends IntentService {
 
 	}
 
+	public NotificationCompat.Builder notificationBuilder(Context context,int icon,String title,String text) {
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+		.setSmallIcon(icon)
+	    .setContentTitle(title)
+	    .setContentText(text);
+		return mBuilder;	
+	}
+	
+	
+	
 	
 }
