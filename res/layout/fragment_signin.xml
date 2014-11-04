@@ -10,11 +10,12 @@
     tools:context="in.siet.secure.sgi.MainActivity$PlaceholderFragment"
     style="@style/CardStyle"
      >
-<include layout="@layout/fragment_welcome"/>
+
+	<include layout="@layout/fragment_welcome"/>
     <EditText
         android:id="@+id/editText_userid"
         android:inputType="text"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="20dp"	
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="@string/user_login"
@@ -22,13 +23,7 @@
         <requestFocus />
     </EditText>
     
-    <View
-    	android:layout_marginTop="5dp"
-    	android:layout_marginBottom="5dp"
-    	android:layout_width="fill_parent"
-    	android:layout_height="1dp"
-    	/>
-    
+   
 
     <EditText
         android:id="@+id/editText_userpassword"
@@ -36,22 +31,18 @@
         android:inputType="textPassword"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         
         android:ems="10" >
         
     </EditText>
- 	<View
-    	android:layout_marginTop="5dp"
-    	android:layout_marginBottom="5dp"
-    	android:layout_width="fill_parent"
-    	android:layout_height="1dp"
-    	/>
-
+ 	
  
         <RadioGroup
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="15dp"
              android:id="@+id/radioGroup_student_faculty"
             >
 				   <RadioButton
@@ -69,9 +60,12 @@
  
     <Button
         android:id="@+id/button_signin"
+        android:layout_marginTop="15dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/signin"
+        android:textColor="@color/white"
+       	android:background="@drawable/button_dark_gray"
         android:onClick="onClickButtonSignin" />
 
 </LinearLayout>
