@@ -1,15 +1,18 @@
 package in.siet.secure.sgi;
 
 
+import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -20,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -32,6 +36,7 @@ public class MainActivity extends ActionBarActivity {
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
+	private boolean back_pressed=false;
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
@@ -42,13 +47,22 @@ public class MainActivity extends ActionBarActivity {
 		
 		if(savedInstanceState==null){
 			setContentView(R.layout.activity_main);
-			getSupportFragmentManager().beginTransaction()
+			getFragmentManager().beginTransaction()
 			.setTransitionStyle(R.anim.abc_fade_out)
-			.add(R.id.mainFrame,new FragmentNotification()).commit();
+			.add(R.id.mainFrame,new FragmentNotification(),FragmentNotification.TAG).commit();
 		//	active_drawer_option=0;
 		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
-		panelOption=getResources().getStringArray(R.array.array_panel_options);
+		
+		if(getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getBoolean(getString(R.string.is_faculty), false))
+		{
+			panelOption=getResources().getStringArray(R.array.array_panel_options_fact);
+		}
+		else{
+			panelOption=getResources().getStringArray(R.array.array_panel_options);
+		}
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
@@ -71,6 +85,11 @@ public class MainActivity extends ActionBarActivity {
 		
 		}
 		
+	}
+	@Override
+	public void onResume(){
+		super.onResume();
+		back_pressed=false;
 	}
 	 @Override
 	    protected void onPostCreate(Bundle savedInstanceState) {
@@ -99,6 +118,7 @@ public class MainActivity extends ActionBarActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		
 		//handle drawer open/close clicks
+		back_pressed=false;
 		if (drawerToggle.onOptionsItemSelected(item)) {
 	          return true;
 		}
@@ -106,79 +126,122 @@ public class MainActivity extends ActionBarActivity {
 
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			//startActivity(SettingsActivity.class);
+			getFragmentManager().beginTransaction().replace(R.id.mainFrame, new FragmentSettings(),FragmentSettings.TAG)
+			.commit();
 			return true;
 		}
 		else if(id == R.id.action_logout) {
 			getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE).edit().clear().commit();
 			Log.d(TAG,"pref cleared");
-			startLoginActivity();
+			startActivity(LoginActivity.class);
+			finish();
 			return true;
+		}
+		else if(id==R.id.action_reset){
+			
+			DbHelper db=new DbHelper(getApplicationContext());
+			db.ClearDb(db.getWritableDatabase());
+			
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
-	public void startLoginActivity(){
-		Intent intent=new Intent(this,LoginActivity.class);
+	@Override
+	public void onBackPressed(){
+		if(!back_pressed){
+			back_pressed=true;
+			Utility.RaiseToast(getApplicationContext(), getString(R.string.exit_warning), true);
+		}
+		else{
+			super.onBackPressed();
+		}
+	}
+	public void startActivity(Class<?> activity){
+		Intent intent=new Intent(this,activity);
 		Log.d(TAG,"stating login Activity");
 		startActivity(intent);
-		finish();
 	}
 	public void switch_fragment(int position){
-		FragmentManager fragmentManager=getSupportFragmentManager();
-		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
-		Fragment fragment=fragmentManager.findFragmentByTag(TAG+panelOption[position]);
+		FragmentManager fragmentManager=getFragmentManager();
+		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction().setTransitionStyle(R.anim.abc_fade_out);
+		Fragment fragment;//=fragmentManager.findFragmentByTag(TAG+panelOption[position]);
 		switch(position){
-		case 0:
+		case Constants.DrawerIDs.NOTIFICATION:
+			fragment=fragmentManager.findFragmentByTag(FragmentNotification.TAG);
 			if(fragment==null)
 				fragment=new FragmentNotification();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNotification.TAG)
+			.commit();
 			break;
-		case 1:
+		case Constants.DrawerIDs.INTERACTION:
+			fragment=fragmentManager.findFragmentByTag(FragmentContacts.TAG);
 			if(fragment==null)
 				fragment=new FragmentContacts();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentContacts.TAG)
+			.commit();
 			break;
-		case 2:
-			show.show(fragmentManager, TAG+"UsersCategoryDialog");
-			return;
-		case 3:
-			Toast.makeText(getApplicationContext(),"settings are comming soon", Toast.LENGTH_SHORT).show();
-			return;
-		case 4:
-			if(fragment == null)
-				fragment = new FragmentBackground();
+		case Constants.DrawerIDs.ADD_USER:
+			fragment=getFragmentManager().findFragmentByTag(TAG+"FragmentUsers");
+			if(fragment==null)
+				fragment=new FragmentUsers();
+			fragmentTransaction.replace(R.id.mainFrame, fragment, FragmentUsers.TAG)
+			.commit();	
 			break;
+		case Constants.DrawerIDs.SETTING:
+			fragment=fragmentManager.findFragmentByTag(FragmentSettings.TAG);
+			if(fragment==null)
+				fragment=new FragmentSettings();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentSettings.TAG)
+			.commit();
+			break;
+		case Constants.DrawerIDs.CREATE_NOTICE: //only for faculty
+			fragment=fragmentManager.findFragmentByTag(FragmentNewNotification.TAG);
+			if(fragment==null)
+				fragment=new FragmentNewNotification();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNewNotification.TAG)
+			.commit();
+			break;
+
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;
 		}
-		fragmentTransaction.setTransitionStyle(R.anim.abc_fade_out)
-		.replace(R.id.mainFrame,fragment,TAG+panelOption[position])
-		.commit();
 
 	}
+	
 	public class DrawerClickListner implements OnItemClickListener {
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			drawerListView.setItemChecked(position, true);
-			switch_fragment(position);
-			//active_drawer_option=position;
+
+			Bundle bundle=new Bundle();
+			if(position==Constants.DrawerIDs.ADD_USER){
+				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,Constants.DrawerIDs.ADD_USER);
+				show.setArguments(bundle);
+				show.show(getFragmentManager(), UserFilterDialog.TAG);
+			}
+			else if(position==Constants.DrawerIDs.CREATE_NOTICE){
+				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,Constants.DrawerIDs.CREATE_NOTICE);
+				show.setArguments(bundle);
+				show.show(getFragmentManager(), UserFilterDialog.TAG);
+			}
+			else
+				switch_fragment(position);
+			
 
 			drawerlayout.closeDrawer(drawerListView);
 			
 		}
 	}
-/*	public void onClickButtonStart(View view){
-		Intent intent=new Intent(getApplicationContext(), BackgroundActivity.class);
-		BackgroundResultReceiver resultreceiver;
-		Utility.log("onClick", "onClickButtonStart");
-		//intent.setData(Uri.parse("Background activity"));
-		
-		resultreceiver = new BackgroundResultReceiver(new Handler());
-		setReceiver(this);
-		intent.putExtra("count", "1");	
-		intent.putExtra("receiver", resultreceiver);
-		startService(intent);
-	}
-*/
+
 	
+	public void sendNewNotification(View view){
+		
+		((TextView)(view.getRootView().findViewById(R.id.editTextNewNoticeSubject))).setText("");
+		((TextView)(view.getRootView().findViewById(R.id.editTextNewNoticeBody))).setText("");
+		new DbHelper(getApplicationContext()).addNewNotification((FragmentNewNotification.ViewHolder)(view.getRootView().getTag()));
+		Utility.RaiseToast(getApplicationContext(), "send new message", false);
+	}
+
 }

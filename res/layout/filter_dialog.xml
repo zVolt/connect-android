@@ -34,10 +34,61 @@
         </RadioGroup>
 
         <LinearLayout
+            android:id="@+id/dialogFilterCourseRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-             android:layout_margin="@dimen/default_margin"
-    android:padding="@dimen/default_margin"
+            android:layout_margin="@dimen/default_margin"
+   	 		android:padding="@dimen/default_margin"
+            android:gravity="center" >
+             <TextView
+            android:id="@+id/dialogFilterTextViewCourse"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_course"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+              <Spinner
+            android:id="@+id/dialogFilterSpinnerCourse"
+            android:layout_width="0dp"
+            android:gravity="center"
+            android:layout_weight="0.5"
+            android:prompt="@string/all"
+            android:layout_height="wrap_content"
+             />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dialogFilterDepartmentRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_margin"
+            android:gravity="center"
+            android:padding="@dimen/default_margin" >
+
+            <TextView
+                android:id="@+id/dialogFilterTextViewDepartment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:text="@string/filter_branch"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Spinner
+                android:id="@+id/dialogFilterSpinnerDepartment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dialogFilterYearRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_margin"
+   	 		android:padding="@dimen/default_margin"
             android:gravity="center"
              >
             
@@ -47,7 +98,7 @@
             android:layout_weight="0.5"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:text="Year"
+            android:text="@string/filter_year"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Spinner
@@ -58,34 +109,32 @@
             android:layout_height="wrap_content"
              />
         </LinearLayout>
-
-       
-
-        <LinearLayout
+        
+		<LinearLayout
+		    android:id="@+id/dialogFilterSectionRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:visibility="gone"
              android:layout_margin="@dimen/default_margin"
-    android:padding="@dimen/default_margin"
+    		android:padding="@dimen/default_margin"
             >
         <TextView
-            android:id="@+id/dialogFilterTextViewDepartment"
+            android:id="@+id/dialogFilterTextViewSection"
             android:layout_width="0dp"
             android:layout_weight="0.5"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:text="Department"
+            android:text="Section"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Spinner
-            android:id="@+id/dialogFilterSpinnerDepartment"
+            android:id="@+id/dialogFilterSpinnerSection"
             android:layout_width="0dp"
             android:layout_weight="0.5"
             android:gravity="center"
             android:layout_height="wrap_content" />
-            
         </LinearLayout>
-
         
         
 </LinearLayout>

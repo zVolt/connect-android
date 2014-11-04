@@ -1,6 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="@dimen/list_item_layout_height"
+    android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:padding="@dimen/list_item_layout_padding">
     
@@ -14,7 +14,7 @@
 
  <LinearLayout
      android:layout_width="0dp"
-     android:layout_height="match_parent"
+     android:layout_height="wrap_content"
      android:orientation="vertical"
      android:layout_weight="1">
      
@@ -39,13 +39,5 @@
         android:text="ID"
          />
  </LinearLayout>
- 
-
-    <ImageView
-        android:id="@+id/ListItemUsersImageViewState"
-        android:layout_width="@dimen/list_item_image_state"
-        android:layout_height="@dimen/list_item_image_state"
-        android:layout_marginRight="@dimen/default_margin"
-        android:src="@drawable/ic_action_offline" />
 
 </LinearLayout>

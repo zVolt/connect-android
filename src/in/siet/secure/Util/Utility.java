@@ -1,5 +1,6 @@
 package in.siet.secure.Util;
 
+import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
 import java.io.BufferedInputStream;
@@ -14,17 +15,18 @@ import java.security.MessageDigest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 public class Utility {
 	private final static String TAG="in.siet.secure.sgi.Utility";
 	private static ProgressDialog progress_dialog;
-	private static final String pathToApp="/in.secure.siet.sgi/download/";
-	public static void RaiseToast(Context context,String msg,int len){
-		Toast.makeText(context, msg, len==1?Toast.LENGTH_LONG:Toast.LENGTH_SHORT).show();
+	public static void RaiseToast(Context context,String msg,boolean for_long_time){
+		Toast.makeText(context, msg, for_long_time?Toast.LENGTH_LONG:Toast.LENGTH_SHORT).show();
 	}
 	public static void log(String tag,String txt){
 		Log.d(tag,txt);
@@ -62,6 +64,16 @@ public class Utility {
         	return null;
         }
     }
+	public static String encode(String str){
+		return Base64.encodeToString(str.getBytes(),Base64.DEFAULT);
+	}
+	public static boolean isConnected(Context context){
+		ConnectivityManager cm =
+		        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		 
+		NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+		return (activeNetwork != null && activeNetwork.isConnectedOrConnecting());
+	}
 	
 	public static class DownloadFile extends AsyncTask<String, Integer, Boolean>{
 		int id;
@@ -74,7 +86,7 @@ public class Utility {
 			URLConnection conection = url.openConnection();
 			conection.connect();
 			InputStream inputStream = new BufferedInputStream(url.openStream(),1024);
-			File file=new File(Environment.getExternalStorageDirectory().getPath()+pathToApp);
+			File file=new File(Constants.pathToApp);
 			file.mkdirs();
 			OutputStream fileOutput = new FileOutputStream(new File(file,filename));
 			byte buffer[] = new byte[1024];

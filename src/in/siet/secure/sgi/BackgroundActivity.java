@@ -39,7 +39,7 @@ public class BackgroundActivity extends IntentService {
 		}
 		count++;
 		for(int i = 0 ; i<10 ; i++ ) {
-			Utility.RaiseToast(getApplicationContext(), "activity started"+count, 0);
+			Utility.RaiseToast(getApplicationContext(), "activity started"+count, false);
 			bundle.putString("inBackground", "inBackgroundActivity");
 			receiver.send(count, bundle);
 			count++;

@@ -1,15 +1,18 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Notification;
-import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
 import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
+import android.app.Fragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,11 +31,12 @@ public class FragmentNotification extends Fragment{
 		rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
 		adapter=new NotificationAdapter(getActivity(), notifications);
 		new DbHelper(getActivity()).getNotifications();
+		setHasOptionsMenu(true);
 		//progressBar=(ProgressBar)rootView.findViewById(R.id.loading_notification);
 		listView=(ListView)rootView.findViewById(R.id.fragment_notification_list);
 		listView.setOnItemClickListener(new itemClickListener());
 		listView.setAdapter(adapter);
-		listView.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+	//	listView.setEmptyView(rootView.findViewById(R.id.e));
 		//hideList();
 		return rootView;
 	}
@@ -42,7 +46,7 @@ public class FragmentNotification extends Fragment{
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_notification);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
 		refresh();
-		Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", 0);
+		//Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", false);
 	}
 /*	public void hideList(){
 		listView.setVisibility(View.GONE);
@@ -59,12 +63,26 @@ public class FragmentNotification extends Fragment{
 		//adapter.notifyDataSetChanged();
 	}
 */	
+	@Override
+	public void onCreateOptionsMenu(Menu menu,MenuInflater inflater){
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.notification_refresh, menu);
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		if(item.getItemId()==R.id.action_refresh_notifications){
+			
+			new DbHelper(getActivity()).getNotifications();
+			return true;
+		}
+		return false;
+	}
 	class itemClickListener implements OnItemClickListener{
 
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view, int position,long id) {
 			Notification notify=((Notification)adapter.getItemAtPosition(position));
-			Fragment fragment=getFragmentManager().findFragmentByTag(TAG+"Notification");
+			Fragment fragment=getFragmentManager().findFragmentByTag(FragmentDetailNotification.TAG);
 			
 			if(fragment==null){
 				fragment =new FragmentDetailNotification();
@@ -79,7 +97,7 @@ public class FragmentNotification extends Fragment{
 				getFragmentManager()
 				.beginTransaction()
 				.setTransitionStyle(R.anim.abc_fade_out)
-				.replace(R.id.mainFrame,fragment,TAG+"Notification")
+				.replace(R.id.mainFrame,fragment,FragmentDetailNotification.TAG)
 				.addToBackStack(null)
 				.commit();
 		}
@@ -92,5 +110,13 @@ public class FragmentNotification extends Fragment{
 		adapter.clear();
 		adapter.addAll(data);
 	}
-	
+	public static class PullNotifications extends AsyncTask<Void, Void, Void>{
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			//pull notifications
+			return null;
+		}
+		
+	}
 }

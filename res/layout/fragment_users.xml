@@ -18,10 +18,17 @@
             android:layout_height="wrap_content"
              >
         </ListView>
-
-        <include
-            android:layout_alignTop="@+id/listViewUsers"
-            layout="@layout/list_empty_item" />
+        <TextView
+            android:id="@+id/test_view_empty_list"
+		    style="@style/CardStyle"
+		    android:layout_width="match_parent"
+		    android:layout_height="@dimen/list_item_content_height"
+		    android:gravity="center"
+		    android:textAppearance="?android:attr/textAppearanceMedium"
+		    android:text="@string/nothing_found"
+	     >
+		</TextView>
+		
     </RelativeLayout>
 
     <LinearLayout
