@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +36,10 @@ public class MainActivity extends ActionBarActivity{
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
 	private ListView drawerListView;
+	private LinearLayout fullDrawerLayout;
 	private boolean back_pressed=false;
+	private static ImageView user_pic;
+	private static TextView user_name;
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
@@ -62,6 +67,9 @@ public class MainActivity extends ActionBarActivity{
 		}
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
+		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);
+		user_name=(TextView)findViewById(R.id.textViewUser);
+		user_pic=(ImageView)findViewById(R.id.imageViewUser);
 		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout,R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
@@ -81,6 +89,12 @@ public class MainActivity extends ActionBarActivity{
 		
 		}
 		
+	}
+	@Override
+	public void onStart(){
+		super.onStart();
+		ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
+		user_name.setText("Zeeshan Khan");
 	}
 	@Override
 	public void onResume(){
@@ -221,7 +235,7 @@ public class MainActivity extends ActionBarActivity{
 			else
 				switch_fragment(position);
 			
-			drawerlayout.closeDrawer(drawerListView);
+			drawerlayout.closeDrawer(fullDrawerLayout);
 			
 		}
 	}
