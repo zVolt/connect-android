@@ -54,6 +54,9 @@ public class MainActivity extends ActionBarActivity {
 		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
 		
+		if(Utility.notification_msg_active==true)
+			Utility.CancelMessageNotification(this);
+			
 		if(getApplicationContext()
 				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
 				.getBoolean(getString(R.string.is_faculty), false))
@@ -201,7 +204,13 @@ public class MainActivity extends ActionBarActivity {
 			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNewNotification.TAG)
 			.commit();
 			break;
-
+		case Constants.DrawerIDs.TRIGGER:
+			fragment=fragmentManager.findFragmentByTag(FragmentBackground.TAG);
+			if(fragment==null)
+				fragment=new FragmentBackground();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentBackground.TAG)
+			.commit();
+			break;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;

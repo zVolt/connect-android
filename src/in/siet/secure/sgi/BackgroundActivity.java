@@ -2,13 +2,9 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
 import android.app.IntentService;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.support.v4.app.NotificationCompat;
 
 public class BackgroundActivity extends IntentService {
 
@@ -44,39 +40,24 @@ public class BackgroundActivity extends IntentService {
 			receiver.send(count, bundle);
 			count++;
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if(i == 5)
-				buildNotification();
+				{
+				Utility.AddLines("hiii");				
+				Utility.AddLines("hello");
+				Utility.buildNotification(this,MainActivity.class,Utility.notification_msg_id,null,null);
+				
+				}
 		}	
 		this.stopSelf();
 	}
 	
 
-	public void buildNotification() {
-		NotificationCompat.Builder mBuilder = notificationBuilder(this,
-				R.drawable.ic_action_chats_white,
-				"New notification", 
-				"created a new notification!");		    
-		Intent resultIntent = new Intent(this, MainActivity.class);
-		PendingIntent resultPendingIntent = PendingIntent.getActivity(this,0,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-		mBuilder.setContentIntent(resultPendingIntent);
-		
-		NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		mNotifyMgr.notify(1, mBuilder.build());
-
-	}
-
-	public NotificationCompat.Builder notificationBuilder(Context context,int icon,String title,String text) {
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-		.setSmallIcon(icon)
-	    .setContentTitle(title)
-	    .setContentText(text);
-		return mBuilder;	
-	}
+	
 	
 	
 	

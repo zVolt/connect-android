@@ -2,11 +2,12 @@ package in.siet.secure.sgi;
 
 
 import in.siet.secure.Util.Utility;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.support.v4.app.Fragment;
+//import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,7 +19,7 @@ public class FragmentBackground extends Fragment {
 	//BackgroundResultReceiver resultreceiver;
 	Button start;
 	private ResultReceiver mReceiver;
-	
+	public final static String TAG="in.siet.secure.sgi.FragmentBackgound"; 
 	// Constructor of fragment
 	public FragmentBackground(){
 		mReceiver = new ResultReceiver(new Handler()) {
