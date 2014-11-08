@@ -5,6 +5,9 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -21,11 +24,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -41,6 +44,17 @@ public class MainActivity extends ActionBarActivity {
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
 
+	public static final String EXTRA_MESSAGE = "message";
+    public static final String PROPERTY_REG_ID = "registration_id";
+    private static final String PROPERTY_APP_VERSION = "appVersion";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+    String SENDER_ID = "517958159344";						/*REPLACE YOUR SENDER ID HERE*/
+
+    GoogleCloudMessaging gcm;
+    AtomicInteger msgId = new AtomicInteger();
+    String regid;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -54,6 +68,7 @@ public class MainActivity extends ActionBarActivity {
 		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
 		
+		/* CANCEL THE NOTIFICATION PRESENT IN THE NOTIFICATION DRAWER ONCE THE USER HAS VIEWED IT */	
 		if(Utility.notification_msg_active==true)
 			Utility.CancelMessageNotification(this);
 			

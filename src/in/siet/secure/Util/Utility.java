@@ -131,7 +131,7 @@ public class Utility {
 	 * FUNCTION TO ADD TEXT IN THE notification_msg_text FOR 
 	 * EXPANDABLE NOTIFICATION TO BE DISPLAYED IN THE NOTOFICATION DRAWER
 	 * set the text in the notification according to length of the array
-	 * 
+	 * add only 10-15 lines...
 	 */
 	public static void AddLines(String txt) {
 		int i=0;
@@ -146,7 +146,8 @@ public class Utility {
 	 *  DRAWER AND TO CLEAR THE TEXT OF notification_msg_text
 	 */
 	public static void CancelMessageNotification(Context context) {
-		notification_msg_text=null;
+		for(int i=0 ; i<100 ; i++)
+			notification_msg_text[i]=null;
 		notification_msg_active=false;
 		NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotifyMgr.cancel(notification_msg_id);
