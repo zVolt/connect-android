@@ -183,6 +183,7 @@ public class LoginActivity extends ActionBarActivity {
 
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
+			
 			editor.commit();
 		}
 		createdb();

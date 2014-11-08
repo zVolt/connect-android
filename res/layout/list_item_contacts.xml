@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:layout_margin="5dp"
+    android:padding="@dimen/default_padding"    
      >
 
     <ImageView
@@ -18,8 +18,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="10dp"
+        android:singleLine="true"
         android:layout_toRightOf="@+id/imageViewContactsImage"
-        android:textAppearance="?android:attr/textAppearanceLarge" 
+        android:textAppearance="?android:attr/textAppearanceMedium" 
         android:text="TextView" />
 
     <TextView
@@ -28,17 +29,20 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/imageViewContactsImage"
         android:layout_alignLeft="@+id/textViewContactsName"
-        android:text="Small Text"
+        android:layout_alignRight="@+id/textViewContactsName"
         android:layout_marginBottom="5dp"
+        android:singleLine="true"
+        android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
         android:id="@+id/textViewContactsExtra"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textViewContactsDetails"
-        android:layout_alignBottom="@+id/textViewContactsDetails"
+        android:layout_alignBottom="@+id/imageViewContactsImage"
         android:layout_alignParentRight="true"
+        android:singleLine="true"
+         android:layout_marginBottom="5dp"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
