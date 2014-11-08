@@ -307,7 +307,7 @@ public class DbHelper extends SQLiteOpenHelper{
 		
 		
 	}
-	public void addInitialData(InitialData idata){
+	public void addInitialData(InitialData idata,String userid){
 		if(db==null)
 			db=this.getWritableDatabase();
 		new insertInitialData().execute(idata);
@@ -385,6 +385,7 @@ public class DbHelper extends SQLiteOpenHelper{
 				values.put(DbStructure.YEAR.COLUMN_YEAR, y.year);
 				db.insert(DbStructure.YEAR.TABLE_NAME, null, values);
 			}
+			
 			return null;
 		}
 		

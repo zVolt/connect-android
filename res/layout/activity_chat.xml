@@ -23,6 +23,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:background="@null"
+            android:onClick="sendMessage"
             android:src="@drawable/ic_action_send" />
 
         <EditText
@@ -35,7 +36,7 @@
             android:ems="10"
             android:inputType="textMultiLine" >
 
-            <requestFocus />
+            
         </EditText>
 
     </RelativeLayout>

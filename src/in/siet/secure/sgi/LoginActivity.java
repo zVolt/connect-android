@@ -177,7 +177,6 @@ public class LoginActivity extends ActionBarActivity {
 			editor.putString(getString(R.string.acess_token),token);
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
-			
 			editor.commit();
 		}
 		createdb();
@@ -272,7 +271,7 @@ public class LoginActivity extends ActionBarActivity {
 							idata.years.add(y);
 						}
 						Utility.log(TAG,"data building sucessfull");
-					(new DbHelper(getApplicationContext())).addInitialData(idata);
+					(new DbHelper(getApplicationContext())).addInitialData(idata,userid);
 					startMainActivity();
 					}catch(Exception e){
 						Utility.log(TAG,e.getMessage());

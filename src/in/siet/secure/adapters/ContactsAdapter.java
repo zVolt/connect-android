@@ -29,6 +29,7 @@ public class ContactsAdapter extends CursorAdapter{
 		holder.name.setText(c.getString(1)+c.getString(2));
 		holder.detail.setText(FragmentContacts.student?"hi i am a student":"hi i am a teacher");
 		holder.extra.setText(FragmentContacts.student?c.getString(4)+" "+c.getString(5)+" "+c.getString(6)+" "+c.getString(7):c.getString(4)+" "+c.getString(5));
+		holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_person));
 		ImageLoader.getInstance().displayImage(c.getString(3), holder.image);
 	}
 
