@@ -1,9 +1,13 @@
 package in.siet.secure.sgi;
 
+
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -26,12 +30,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity {
 	public static final String TAG="in.siet.secure.sgi.MainActivity";
 	private String[] panelOption;
 	private DrawerLayout drawerlayout;
@@ -43,6 +48,18 @@ public class MainActivity extends ActionBarActivity{
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
+
+	public static final String EXTRA_MESSAGE = "message";
+    public static final String PROPERTY_REG_ID = "registration_id";
+    private static final String PROPERTY_APP_VERSION = "appVersion";
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+    String SENDER_ID = "517958159344";						/*REPLACE YOUR SENDER ID HERE*/
+
+    GoogleCloudMessaging gcm;
+    AtomicInteger msgId = new AtomicInteger();
+    String regid;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -56,6 +73,10 @@ public class MainActivity extends ActionBarActivity{
 		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
 		
+		/* CANCEL THE NOTIFICATION PRESENT IN THE NOTIFICATION DRAWER ONCE THE USER HAS VIEWED IT */	
+		if(Utility.notification_msg_active==true)
+			Utility.CancelMessageNotification(this);
+			
 		if(getApplicationContext()
 				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
 				.getBoolean(getString(R.string.is_faculty), false))
@@ -76,6 +97,7 @@ public class MainActivity extends ActionBarActivity{
 		drawerlayout.setDrawerListener(drawerToggle);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
+
 		
 		DisplayImageOptions options=new DisplayImageOptions.Builder()
 		.cacheInMemory(true)
@@ -93,8 +115,16 @@ public class MainActivity extends ActionBarActivity{
 	@Override
 	public void onStart(){
 		super.onStart();
-		ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
-		user_name.setText("Zeeshan Khan");
+		ImageLoader.getInstance().displayImage(getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.profile_url), null), user_pic);
+		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
+		user_name.setText(getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.f_name), null) +" "+
+				getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.l_name), null) );
 	}
 	@Override
 	public void onResume(){
@@ -118,6 +148,7 @@ public class MainActivity extends ActionBarActivity{
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		//super.onCreateOptionsMenu(menu);
+
 		return true;
 	}
 	@Override
@@ -132,6 +163,7 @@ public class MainActivity extends ActionBarActivity{
 	          return true;
 		}
 		
+
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			//startActivity(SettingsActivity.class);
@@ -169,7 +201,6 @@ public class MainActivity extends ActionBarActivity{
 		Log.d(TAG,"stating login Activity");
 		startActivity(intent);
 	}
-	
 	public void switch_fragment(int position){
 		FragmentManager fragmentManager=getFragmentManager();
 		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction().setTransitionStyle(R.anim.abc_fade_out);
@@ -210,10 +241,18 @@ public class MainActivity extends ActionBarActivity{
 			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNewNotification.TAG)
 			.commit();
 			break;
+		case Constants.DrawerIDs.TRIGGER:
+			fragment=fragmentManager.findFragmentByTag(FragmentBackground.TAG);
+			if(fragment==null)
+				fragment=new FragmentBackground();
+			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentBackground.TAG)
+			.commit();
+			break;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;
 		}
+
 	}
 	
 	public class DrawerClickListner implements OnItemClickListener {
@@ -221,6 +260,7 @@ public class MainActivity extends ActionBarActivity{
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			drawerListView.setItemChecked(position, true);
+
 			Bundle bundle=new Bundle();
 			if(position==Constants.DrawerIDs.ADD_USER){
 				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,Constants.DrawerIDs.ADD_USER);
@@ -239,6 +279,7 @@ public class MainActivity extends ActionBarActivity{
 			
 		}
 	}
+
 	
 	public void sendNewNotification(View view){
 		
@@ -247,4 +288,5 @@ public class MainActivity extends ActionBarActivity{
 		new DbHelper(getApplicationContext()).addNewNotification((FragmentNewNotification.ViewHolder)(view.getRootView().getTag()));
 		Utility.RaiseToast(getApplicationContext(), "send new message", false);
 	}
+
 }

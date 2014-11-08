@@ -7,21 +7,24 @@
     <string name="user_password">Password</string>
     <string name="signin">Login</string>
     <string name="acess_token">token</string>
+    <string name="f_name">First name</string>
+    <string name="l_name">Last name</string>
+    <string name="profile_url">pic_url</string>
+    <string name="branch_fac">branch_faculty</string>
+    <string name="section_stu">section_student</string>
+    <string name="year">year</string>
     <string name="logged_in">logged_in</string>
     <string name="is_faculty">Is_Faulty</string>
-    
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Closed</string>
-    
     <string name="load_next">&gt;</string>
     <string name="load_prev">&lt;</string>
-    
     <string name="wrong_choice">Wrong Choice.. Try Again</string>
     <string name="sendMsg">Send</string>
     <string name="typeMsg">Type a Message</string>
     <string name="getMsg">Refresh</string>
 	<string name="user_list">Users</string>
-	
+	<string name="start">Start</string>
 	
 	<string name="web_prm_usr">username</string>
 	<string name="web_prm_token">token</string>
@@ -87,6 +90,7 @@
 		<item >Interactions</item>
 		<item >Add Users</item>
 		<item >Settings</item>
+		
 	</string-array>
 	<string-array name="array_panel_options_fact">
 	    <item >Notifications</item>
@@ -94,6 +98,7 @@
 		<item >Add Users</item>
 		<item >Settings</item>
 		<item >Create Notice</item>
+		<item >Trigger</item>
 	    </string-array>
 	<string-array name="array_user_type">
 		<item >Student</item>
@@ -132,5 +137,4 @@
 		<item >EC</item>
 		<item >Civil</item>
 	</string-array>
-	
 </resources>

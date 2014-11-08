@@ -3,22 +3,24 @@
     android:layout_height="wrap_content"
     style="@style/CardStyle"
     android:layout_gravity="center"
+    android:orientation="vertical"
      >
 
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/logo" />
-
+   
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginTop="15dp"
         android:gravity="center"
         android:text="Welcome to SGI"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-
+ <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+         android:gravity="center"
+        android:src="@drawable/logo" />
+    
 </LinearLayout>
