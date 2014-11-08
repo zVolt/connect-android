@@ -115,8 +115,16 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onStart(){
 		super.onStart();
-		ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
-		user_name.setText("Zeeshan Khan");
+		ImageLoader.getInstance().displayImage(getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.profile_url), null), user_pic);
+		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
+		user_name.setText(getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.f_name), null) +" "+
+				getApplicationContext()
+				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+				.getString(getString(R.string.l_name), null) );
 	}
 	@Override
 	public void onResume(){

@@ -7,6 +7,12 @@
     <string name="user_password">Password</string>
     <string name="signin">Login</string>
     <string name="acess_token">token</string>
+    <string name="f_name">First name</string>
+    <string name="l_name">Last name</string>
+    <string name="profile_url">pic_url</string>
+    <string name="branch_fac">branch_faculty</string>
+    <string name="section_stu">section_student</string>
+    <string name="year">year</string>
     <string name="logged_in">logged_in</string>
     <string name="is_faculty">Is_Faulty</string>
     <string name="drawer_open">Open</string>

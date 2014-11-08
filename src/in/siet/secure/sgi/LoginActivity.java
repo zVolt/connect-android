@@ -39,6 +39,12 @@ public class LoginActivity extends ActionBarActivity {
 	private static String TAG="in.siet.secure.sgi.LoginActivity"; 
 	private static String userid=null;
 	private static String pwd=null;
+	private static String f_name=null;
+	private static String l_name=null;
+	private static String profile_url=null;
+	private static String branch_fac=null;
+	private static String section_stu=null;
+	private static String year=null;
 	private static boolean back_pressed=false;
 	private static boolean in_settings=false;
 	private static boolean is_faculty=false;
@@ -180,7 +186,15 @@ public class LoginActivity extends ActionBarActivity {
 			Editor editor=sharedPref.edit();
 			editor.putString(getString(R.string.user_id),userid);
 			editor.putString(getString(R.string.acess_token),token);
-
+			editor.putString(getString(R.string.f_name),f_name);
+			editor.putString(getString(R.string.l_name),l_name);
+			editor.putString(getString(R.string.profile_url),profile_url);
+			if(is_faculty)
+				editor.putString(getString(R.string.branch_fac),branch_fac);
+			else {
+				editor.putString(getString(R.string.section_stu),section_stu);
+				editor.putString(getString(R.string.year),year);
+			}
 			editor.putBoolean(getString(R.string.logged_in), true);
 			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
 			
@@ -201,6 +215,15 @@ public class LoginActivity extends ActionBarActivity {
 						//	Utility.hideProgressDialog();
 							if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
 							//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
+								f_name=response.getString("f_name");
+								l_name=response.getString("l_name");
+								profile_url=response.getString("profile_url");
+								if(is_faculty)
+									branch_fac=response.getString("branch_fac");
+								else {
+									section_stu=response.getString("section_stu");
+									year=response.getString("year");
+								}
 								saveUser(response.getString("token"));
 							//	startMainActivity(); //hide this line 
 							}

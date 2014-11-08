@@ -59,6 +59,7 @@ public class Utility {
 		}
 	}
 	public static String getUserImage(String id){
+		//return 
 		return "http://www.secure.siet.in/images/std_photo/"+id.toLowerCase().trim()+".jpg";
 	}
 	public static String sha1(String input){
