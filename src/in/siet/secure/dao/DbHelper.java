@@ -313,14 +313,15 @@ public class DbHelper extends SQLiteOpenHelper{
 		new insertInitialData().execute(idata);
 	}
 	public void addNewNotification(FragmentNewNotification.ViewHolder holder){
-		//get faculty login_id first
+	/*	//get faculty login_id first
 		String fid=context.getSharedPreferences(context.getString(R.string.preference_file_name), Context.MODE_PRIVATE).getString(context.getString(R.string.user_id),null);
 		Date time=Calendar.getInstance().getTime();
 		Notification new_noti=new Notification(holder.subject.getText().toString(),holder.body.getText().toString(),time,fid);
 	//	new InsertNotification().execute(new_noti);
 			
 		//create new notification
-		//	
+		//
+		 */
 	}
 	
 	private static class InsertNotification extends AsyncTask<Notification, Void, Boolean>{
