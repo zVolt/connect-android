@@ -215,13 +215,13 @@ public class LoginActivity extends ActionBarActivity {
 						//	Utility.hideProgressDialog();
 							if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
 							//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
-								f_name=response.getString("f_name");
-								l_name=response.getString("l_name");
-								profile_url=response.getString("profile_url");
+								f_name=response.getString("first_name");
+								l_name=response.getString("last_name");
+								profile_url=response.getString("profile_image");
 								if(is_faculty)
-									branch_fac=response.getString("branch_fac");
+									branch_fac=response.getString("department");
 								else {
-									section_stu=response.getString("section_stu");
+									section_stu=response.getString("section");
 									year=response.getString("year");
 								}
 								saveUser(response.getString("token"));
