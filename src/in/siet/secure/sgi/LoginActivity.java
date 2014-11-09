@@ -1,7 +1,6 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.InitialData;
-
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
@@ -13,7 +12,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Fragment;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,8 +40,8 @@ public class LoginActivity extends ActionBarActivity {
 	private static String f_name=null;
 	private static String l_name=null;
 	private static String profile_url=null;
-	private static String branch_fac=null;
-	private static String section_stu=null;
+	private static String branch=null;
+	private static String section=null;
 	private static String year=null;
 	private static boolean back_pressed=false;
 	private static boolean in_settings=false;
@@ -53,9 +51,9 @@ public class LoginActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		spref=getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
+		spref=getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
 
-		if(spref.getBoolean(getString(R.string.logged_in), false)){
+		if(spref.getBoolean(Constants.PreferenceKeys.logged_in, false)){
 			startMainActivity();
 		}
 		setContentView(R.layout.activity_login);
@@ -136,9 +134,10 @@ public class LoginActivity extends ActionBarActivity {
 				else
 					is_faculty=false;
 				RequestParams params =new RequestParams();
-				params.put(getString(R.string.web_prm_usr),Utility.encode(userid));
-				params.put(getString(R.string.web_prm_pwd),Utility.encode(Utility.sha1(pwd)));
-				params.put(getString(R.string.web_prm_isfac),is_faculty);
+				params.put(Constants.QueryParameters.USERNAME,Utility.encode(userid));
+				params.put(Constants.QueryParameters.PASSWORD,Utility.encode(Utility.sha1(pwd)));
+				params.put(Constants.QueryParameters.IS_FACULTY,is_faculty);
+				
 				Log.d("username",Utility.encode(userid));
 				Log.d("Password",Utility.encode(Utility.sha1(pwd)));
 				queryServer(params,true);
@@ -157,7 +156,7 @@ public class LoginActivity extends ActionBarActivity {
 	public void startMainActivity(){
 		Intent intent=new Intent(this,MainActivity.class);
 		Utility.log(TAG,"stating new Activity");
-		intent.putExtra(getString(R.string.is_faculty),is_faculty);
+		intent.putExtra(Constants.PreferenceKeys.is_faculty,is_faculty);
 		startActivity(intent);
 		finish();
 	}
@@ -172,31 +171,31 @@ public class LoginActivity extends ActionBarActivity {
 	public void createdb(){
 		//get data from server
 		RequestParams params =new RequestParams();
-		params.put(getString(R.string.web_prm_usr), Utility.encode(spref.getString(getString(R.string.user_id), null)));
-		params.put(getString(R.string.web_prm_token), Utility.encode(spref.getString(getString(R.string.acess_token), null)));
+		params.put(Constants.QueryParameters.USERNAME, Utility.encode(spref.getString(Constants.PreferenceKeys.user_id, null)));
+		params.put(Constants.QueryParameters.TOKEN, Utility.encode(spref.getString(Constants.PreferenceKeys.token, null)));
 		queryServer(params, false);
 	//	new DbHelper(getApplicationContext());
 	//	Utility.log(TAG,"donedb");
 	}
 	public void saveUser(String token){
-		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE);
-		String saved_user_id=sharedPref.getString("User Id", null);
-		String saved_password=sharedPref.getString("Password", null);
-		if (saved_user_id==null || saved_password!=null){
+		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
+		String saved_user_id=sharedPref.getString(Constants.PreferenceKeys.user_id, null);
+		String saved_token=sharedPref.getString(Constants.PreferenceKeys.token, null);
+		if (saved_user_id==null || saved_token!=null){ // if detail doesnt exist
 			Editor editor=sharedPref.edit();
-			editor.putString(getString(R.string.user_id),userid);
-			editor.putString(getString(R.string.acess_token),token);
-			editor.putString(getString(R.string.f_name),f_name);
-			editor.putString(getString(R.string.l_name),l_name);
-			editor.putString(getString(R.string.profile_url),profile_url);
+			editor.putString(Constants.PreferenceKeys.user_id,userid);
+			editor.putString(Constants.PreferenceKeys.token,token);
+			editor.putString(Constants.PreferenceKeys.f_name,f_name);
+			editor.putString(Constants.PreferenceKeys.l_name,l_name);
+			editor.putString(Constants.PreferenceKeys.pic_url,profile_url);
 			if(is_faculty)
-				editor.putString(getString(R.string.branch_fac),branch_fac);
+				editor.putString(Constants.PreferenceKeys.branch,branch);
 			else {
-				editor.putString(getString(R.string.section_stu),section_stu);
-				editor.putString(getString(R.string.year),year);
+				editor.putString(Constants.PreferenceKeys.section,section);
+				editor.putString(Constants.PreferenceKeys.year,year);
 			}
-			editor.putBoolean(getString(R.string.logged_in), true);
-			editor.putBoolean(getString(R.string.is_faculty),is_faculty);
+			editor.putBoolean(Constants.PreferenceKeys.logged_in, true);
+			editor.putBoolean(Constants.PreferenceKeys.is_faculty,is_faculty);
 			editor.commit();
 		}
 		createdb();
@@ -212,18 +211,20 @@ public class LoginActivity extends ActionBarActivity {
 						Log.d(TAG+" onSucess"," at start");
 						try {
 						//	Utility.hideProgressDialog();
-							if(response.getString("tag").equalsIgnoreCase("login") && response.getBoolean("status")){
+							
+							if(response.getString(Constants.JSONKeys.TAG).equalsIgnoreCase(Constants.JSONKeys.TAG_MSGS.LOGIN) && response.getBoolean(Constants.JSONKeys.STATUS)){
 							//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
-								f_name=response.getString("f_name");
-								l_name=response.getString("l_name");
-								profile_url=response.getString("profile_url");
+								f_name=response.getString(Constants.JSONKeys.FIRST_NAME);
+								l_name=response.getString(Constants.JSONKeys.LAST_NAME);
+								profile_url=response.getString(Constants.JSONKeys.PROFILE_IMAGE);
+								
 								if(is_faculty)
-									branch_fac=response.getString("branch_fac");
-								else {
-									section_stu=response.getString("section_stu");
-									year=response.getString("year");
+									branch=response.getString(Constants.JSONKeys.BRANCH);
+								else{
+									section=response.getString(Constants.JSONKeys.SECTION);
+									year=response.getString(Constants.JSONKeys.YEAR);
 								}
-								saveUser(response.getString("token"));
+								saveUser(response.getString(Constants.JSONKeys.TOKEN));
 							//	startMainActivity(); //hide this line 
 							}
 							else{
@@ -231,7 +232,7 @@ public class LoginActivity extends ActionBarActivity {
 								Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
 							}
 						} catch (JSONException e) {
-							Utility.log(TAG+" invokeWS exception ",e.getLocalizedMessage());
+							Utility.log(TAG+" queryServer exception ",e.getLocalizedMessage());
 							
 						}
 					}
@@ -319,6 +320,6 @@ public class LoginActivity extends ActionBarActivity {
 				}
 			});
 		}
-		Utility.log(TAG+" invokeWS"," at end");
+		Utility.log(TAG+" queryServer"," at end");
 	}
 }

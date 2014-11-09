@@ -9,11 +9,8 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.FragmentDetailNotification;
 import in.siet.secure.sgi.FragmentNewNotification;
 import in.siet.secure.sgi.FragmentNotification;
-import in.siet.secure.sgi.R;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -38,9 +35,11 @@ public class DbHelper extends SQLiteOpenHelper{
 	public static int DATABASE_VERSION=1;
 	public static SQLiteDatabase db;
 	public static Context context;
+	public static SharedPreferences spf;
 	public DbHelper(Context contxt){
 		super(contxt,DATABASE_NAME,null,DATABASE_VERSION);
 		context=contxt;
+		spf=context.getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
 	}
 	@Override
 	public void onCreate(SQLiteDatabase db){
@@ -200,11 +199,11 @@ public class DbHelper extends SQLiteOpenHelper{
 			db=this.getWritableDatabase();
 		
 		RequestParams params =new RequestParams();
-		SharedPreferences spf=context.getSharedPreferences(context.getString(R.string.preference_file_name), Context.MODE_PRIVATE);
-		params.put(context.getString(R.string.web_prm_usr),Base64.encodeToString(spf.getString(context.getString(R.string.user_id), null).getBytes(), Base64.DEFAULT));
-		params.put(context.getString(R.string.web_prm_token),Base64.encodeToString(spf.getString(context.getString(R.string.acess_token), null).trim().getBytes(), Base64.DEFAULT));
-		params.put(context.getString(R.string.web_prm_login_id), user.id);
-		params.put(context.getString(R.string.web_prm_query_user_type), is_student);
+		//SharedPreferences spf=context.getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
+		params.put(Constants.QueryParameters.USERNAME,Base64.encodeToString(spf.getString(Constants.PreferenceKeys.user_id, null).getBytes(), Base64.DEFAULT));
+		params.put(Constants.QueryParameters.TOKEN,Base64.encodeToString(spf.getString(Constants.PreferenceKeys.token, null).trim().getBytes(), Base64.DEFAULT));
+		params.put(Constants.QueryParameters.LOGIN_ID, user.id);
+		params.put(Constants.QueryParameters.USER_TYPE, is_student);
 		AsyncHttpClient client=new AsyncHttpClient();
 		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/query/get_user_info",params,new JsonHttpResponseHandler(){
 			@Override
@@ -217,7 +216,7 @@ public class DbHelper extends SQLiteOpenHelper{
 					values.put(DbStructure.UserTable.COLUMN_LNAME, user.l_name);
 					values.put(DbStructure.UserTable.COLUMN_PROFILE_PIC, user.picUrl);
 					Utility.log(TAG,response.toString());
-					values.put(DbStructure.UserTable.COLUMN_LOGIN_ID, response.getString(User.USER_ID));
+					values.put(DbStructure.UserTable.COLUMN_LOGIN_ID, response.getString(Constants.JSONKeys.USER_ID));
 					
 					long user_id=db.insertWithOnConflict(DbStructure.UserTable.TABLE_NAME, null,values,SQLiteDatabase.CONFLICT_IGNORE);
 					
@@ -307,10 +306,10 @@ public class DbHelper extends SQLiteOpenHelper{
 		
 		
 	}
-	public void addInitialData(InitialData idata,String userid){
+	public void addInitialData(InitialData idata,String userid){ 
 		if(db==null)
 			db=this.getWritableDatabase();
-		new insertInitialData().execute(idata);
+		new insertInitialData().execute(idata);//add initial data and logged in user
 	}
 	public void addNewNotification(FragmentNewNotification.ViewHolder holder){
 	/*	//get faculty login_id first
@@ -343,7 +342,7 @@ public class DbHelper extends SQLiteOpenHelper{
 		@Override
 		protected Boolean doInBackground(InitialData... params) {
 			InitialData idata=params[0];
-			
+			//drop tables not safe yet 
 			db.execSQL(DbStructure.BRANCHES.COMMAND_DROP);
 			db.execSQL(DbStructure.COURSES.COMMAND_DROP);
 			db.execSQL(DbStructure.SECTIONS.COMMAND_DROP);
@@ -353,7 +352,7 @@ public class DbHelper extends SQLiteOpenHelper{
 			db.execSQL(DbStructure.COURSES.COMMAND_CREATE);
 			db.execSQL(DbStructure.SECTIONS.COMMAND_CREATE);
 			db.execSQL(DbStructure.YEAR.COMMAND_CREATE);
-			
+			//adding branches and 
 			ContentValues values;
 			for(InitialData.Courses c:idata.courses){
 				values=new ContentValues();
@@ -386,7 +385,10 @@ public class DbHelper extends SQLiteOpenHelper{
 				values.put(DbStructure.YEAR.COLUMN_YEAR, y.year);
 				db.insert(DbStructure.YEAR.TABLE_NAME, null, values);
 			}
-			
+			//adding user
+			//SharedPreferences spf=context.getSharedPreferences(context.getString(R.string.preference_file_name), Context.MODE_PRIVATE);
+			String query="insert into user(login_id,f_name,l_name,pic_url) values('"+spf.getString(DbStructure.UserTable.COLUMN_LOGIN_ID, null)+"','"+spf.getString(DbStructure.UserTable.COLUMN_FNAME,null)+"','"+spf.getString(DbStructure.UserTable.COLUMN_LNAME,null)+"','"+spf.getString(DbStructure.UserTable.COLUMN_PROFILE_PIC, null);
+			query="";
 			return null;
 		}
 		

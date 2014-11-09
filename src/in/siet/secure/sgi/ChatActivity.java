@@ -1,6 +1,7 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
+import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 import in.siet.secure.dao.DbStructure;
 
@@ -24,7 +25,7 @@ public class ChatActivity extends ActionBarActivity{
 	EditText msg;
 	Cursor  c;
 	SimpleCursorAdapter adapter;
-	static final String query="select messages._id,text,time from messages join user on sender=user._id where sender=? or user.login_id=?)";
+	static final String query="select messages._id,text,time from messages join user on sender=user._id where sender=? or user.login_id=?";
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -36,7 +37,7 @@ public class ChatActivity extends ActionBarActivity{
 			title=intent.getStringExtra("user_name");
 			String[] args={
 					""+intent.getIntExtra("user_id",-1),
-					getSharedPreferences(getString(R.string.preference_file_name),Context.MODE_PRIVATE).getString(getString(R.string.user_id), "")
+					getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE).getString(Constants.PreferenceKeys.user_id, "")
 			};
 			c=new DbHelper(getApplicationContext()).getReadableDatabase().rawQuery(query, args);
 			String from[]={
@@ -71,7 +72,7 @@ public class ChatActivity extends ActionBarActivity{
 		Calendar cal=Calendar.getInstance();
 		values.put(DbStructure.MessageTable.COLUMN_TEXT,msg.getText().toString());
 		values.put(DbStructure.MessageTable.COLUMN_TIME,cal.getTime().toString());
-		//values.put(DbStructure.MessageTable.COLUMN_SENDER,);
+	//	values.put(DbStructure.MessageTable.COLUMN_SENDER,);
 		db.insert(DbStructure.MessageTable.TABLE_NAME, null, values);
 		msg.setText("");
 		Utility.RaiseToast(getApplicationContext(), "send", false);
