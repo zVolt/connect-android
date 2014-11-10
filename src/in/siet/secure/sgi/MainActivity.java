@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -114,7 +115,13 @@ public class MainActivity extends ActionBarActivity {
 	public void onStart(){
 		super.onStart();
 		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
-		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic);
+		DisplayImageOptions options = new DisplayImageOptions.Builder()
+		 // this will make circle, pass the width of image 
+		.cacheOnDisk(true)
+		.displayer(new RoundedBitmapDisplayer(35))
+		.build(); 
+		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,options);
+//		ImageLoader.getInstance().displayImage();
 		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
 		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
 	}

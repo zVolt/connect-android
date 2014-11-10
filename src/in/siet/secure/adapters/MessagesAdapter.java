@@ -31,7 +31,7 @@ public class MessagesAdapter extends CursorAdapter{
 	@Override
 	public View newView(Context context, Cursor c, ViewGroup parent) {
 		LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view=inflater.inflate(R.layout.list_item_chats, null);
+		View view=inflater.inflate(R.layout.list_item_chats,parent,false);
 		ViewHolder holder=new ViewHolder();
 		holder.text=(TextView)view.findViewById(R.id.textViewMessagesText);
 		holder.time=(TextView)view.findViewById(R.id.textViewMessagesTime);
