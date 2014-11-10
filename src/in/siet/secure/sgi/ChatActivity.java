@@ -14,7 +14,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -68,6 +70,7 @@ public class ChatActivity extends ActionBarActivity{
 			list.setAdapter(adapter);
 			
 			Utility.RaiseToast(getApplicationContext(), "onCreate null "+title, false);
+			getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
 		else
 			Utility.RaiseToast(getApplicationContext(), "onCreate", false);
@@ -78,16 +81,32 @@ public class ChatActivity extends ActionBarActivity{
 	public void onStart(){
 		super.onStart();
 	}
-	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	    // Respond to the action bar's Up/Home button
+	    case android.R.id.home:
+	        NavUtils.navigateUpFromSameTask(this);
+	        return true;
+	    }
+	    return super.onOptionsItemSelected(item);
+	}
 	@Override
 	public void onResume(){
 		super.onResume();
 		if(title!=null)
 			getActionBar().setTitle(title);
-		
 		Utility.RaiseToast(getApplicationContext(), "resume "+user_id+" "+sender_id, false);
 	}
-	
+	public void updateCursor(){
+		Cursor cc;
+		String[] args={
+				""+user_id,
+				""+user_id
+		};
+		cc=db.rawQuery(query, args);
+		adapter.changeCursor(cc);
+	}
 	public void sendMessage(View view){
 		SQLiteDatabase db=new DbHelper(getApplicationContext()).getWritableDatabase();
 		ContentValues values=new ContentValues();
@@ -103,6 +122,6 @@ public class ChatActivity extends ActionBarActivity{
 		msg.setText("");
 	//	Utility.RaiseToast(getApplicationContext(), "send", false);
 		//((LinearLayout)(view.getParent().getParent()));
-		
+		updateCursor();
 	}
 }

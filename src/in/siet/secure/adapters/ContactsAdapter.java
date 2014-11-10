@@ -38,7 +38,7 @@ public class ContactsAdapter extends CursorAdapter{
 	@Override
 	public View newView(Context context, Cursor c, ViewGroup parent) {
 		LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view=inflater.inflate(R.layout.list_item_contacts, null);
+		View view=inflater.inflate(R.layout.list_item_contacts, parent,false);
 		ViewHolder holder=new ViewHolder();
 		
 		holder.name=(TextView)view.findViewById(R.id.textViewContactsName);

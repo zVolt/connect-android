@@ -5,9 +5,6 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -35,10 +32,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -55,7 +52,8 @@ public class MainActivity extends ActionBarActivity {
 	static final UserFilterDialog show=new UserFilterDialog();
 	private static SharedPreferences spf;
 	public static final String EXTRA_MESSAGE = "message";
-    public static final String PROPERTY_REG_ID = "registration_id";
+
+/*	public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -64,7 +62,7 @@ public class MainActivity extends ActionBarActivity {
     GoogleCloudMessaging gcm;
     AtomicInteger msgId = new AtomicInteger();
     String regid;
-
+*/
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -121,7 +119,13 @@ public class MainActivity extends ActionBarActivity {
 	public void onStart(){
 		super.onStart();
 		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
-		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic);
+		DisplayImageOptions options = new DisplayImageOptions.Builder()
+		 // this will make circle, pass the width of image 
+		.cacheOnDisk(true)
+		.displayer(new RoundedBitmapDisplayer(35))
+		.build(); 
+		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,options);
+//		ImageLoader.getInstance().displayImage();
 		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
 		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
 	}
