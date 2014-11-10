@@ -13,6 +13,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -54,7 +55,7 @@ public class MainActivity extends ActionBarActivity {
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    String SENDER_ID = "517958159344";						/*REPLACE YOUR SENDER ID HERE*/
+    String SENDER_ID = "517958159344";											/*REPLACE YOUR SENDER ID HERE*/
 
     GoogleCloudMessaging gcm;
     AtomicInteger msgId = new AtomicInteger();
@@ -141,6 +142,15 @@ public class MainActivity extends ActionBarActivity {
 	 @Override
 	    public void onConfigurationChanged(Configuration newConfig) {
 	        super.onConfigurationChanged(newConfig);
+	        
+	        int orientation=ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+	        setRequestedOrientation(orientation);
+	        
+	        setContentView(R.layout.activity_main);
+			getFragmentManager().beginTransaction()
+			.setTransitionStyle(R.anim.abc_fade_out)
+			.add(R.id.mainFrame,new FragmentNotification(),FragmentNotification.TAG).commit();
+		
 	        drawerToggle.onConfigurationChanged(newConfig);
 	    }
 	 
