@@ -51,7 +51,11 @@ public class Constants {
 		public static String IS_FACULTY="is_faculty";
 		
 	}
-	
+	public static interface MsgState{
+		int RECEIVED=0;
+		int SENT_SUCESSFULLY=1;
+		int TO_SEND=2;
+	}
 	public static interface JSONKeys{
 		public static String FIRST_NAME="FirstName";
 		public static String LAST_NAME="LastName";

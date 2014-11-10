@@ -59,7 +59,7 @@ public class FragmentContacts extends Fragment implements OnItemClickListener{
 	@Override
 	public void onResume(){
 		super.onResume();
-		student=true;
+	//	student=true;
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_contacts);
 		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_chats_white));
 	}

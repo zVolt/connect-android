@@ -26,10 +26,12 @@ public class ContactsAdapter extends CursorAdapter{
 	@Override
 	public void bindView(View view, Context context, Cursor c) {
 		ViewHolder holder=(ViewHolder)view.getTag();
-		holder.name.setText(c.getString(1)+c.getString(2));
+		holder.name.setText(holder.user_name=c.getString(1)+c.getString(2));
 		holder.detail.setText(FragmentContacts.student?"hi i am a student":"hi i am a teacher");
 		holder.extra.setText(FragmentContacts.student?c.getString(4)+" "+c.getString(5)+" "+c.getString(6)+" "+c.getString(7):c.getString(4)+" "+c.getString(5));
 		holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_person));
+		holder.user_id=c.getInt(0);
+		
 		ImageLoader.getInstance().displayImage(c.getString(3), holder.image);
 	}
 
@@ -45,10 +47,12 @@ public class ContactsAdapter extends CursorAdapter{
 		holder.image=(ImageView)view.findViewById(R.id.imageViewContactsImage);
 		
 		holder.user_id=c.getInt(0);
-		holder.name.setText(c.getString(1)+c.getString(2));
-		holder.extra.setText(FragmentContacts.student?c.getString(4)+" "+c.getString(5)+" "+c.getString(6)+" "+c.getString(7):c.getString(4)+" "+c.getString(5));
 		
+		holder.name.setText(holder.user_name=c.getString(1)+c.getString(2));
+		holder.detail.setText(FragmentContacts.student?"hi i am a student":"hi i am a teacher");
+		holder.extra.setText(FragmentContacts.student?c.getString(4)+" "+c.getString(5)+" "+c.getString(6)+" "+c.getString(7):c.getString(4)+" "+c.getString(5));
 		ImageLoader.getInstance().displayImage(c.getString(3), holder.image);
+		
 		view.setTag(holder);
 		return view;
 	}
