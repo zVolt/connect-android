@@ -10,11 +10,12 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<!-- 
 	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
 	<uses-permission android:name="android.permission.GET_ACCOUNTS"/>
 	<uses-permission android:name="android.permission.WAKE_LOCK"/>
 	<uses-permission android:name="in.siet.secure.permission.C2D_MESSAGE" />
-	
+	 -->
     <application
         android:allowBackup="true"
         android:configChanges="orientation|keyboardHidden"
@@ -38,6 +39,7 @@
             android:name="in.siet.secure.sgi.MainActivity"
             android:label="@string/user_list" >
         </activity>
+        <!-- 
         <receiver
             android:name=".FragmentBackground"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -46,11 +48,10 @@
                 <category android:name="in.siet.secure" />
             </intent-filter>
         </receiver>
-        
+         -->
         <service 
             android:name=".BackgroundActivity"
             android:exported="false" >
-            
         </service>
        <activity
             android:name="in.siet.secure.sgi.ChatActivity"
