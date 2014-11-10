@@ -1,7 +1,7 @@
 package in.siet.secure.Util;
 
 public class User {
-	public static String FIRST_NAME="first_name";
+/*	public static String FIRST_NAME="first_name";
 	public static String LAST_NAME="last_name";
 	public static String PROFILE_IMAGE="profile_image";
 	public static String L_ID="l_id";
@@ -13,7 +13,7 @@ public class User {
 	public static String SECTION="section";
 	public static String COURSE="course";
 	public static String MOBILE="mobile";
-	
+*/	
 	
 	public String l_name;
 	public String f_name;

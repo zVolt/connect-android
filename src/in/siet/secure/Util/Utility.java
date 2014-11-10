@@ -62,6 +62,11 @@ public class Utility {
 		//return 
 		return "http://www.secure.siet.in/images/std_photo/"+id.toLowerCase().trim()+".jpg";
 	}
+	
+	public static User getUser(String id){
+		
+		return null;
+	}
 	public static String sha1(String input){
 		try{
 	        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
@@ -182,10 +187,7 @@ public class Utility {
 			}
 			
 		}
-		@Override
-		protected void onPreExecute() {
-			
-		}
+		
 		@Override 
 		protected void onPostExecute(Boolean result){
 			if(result){

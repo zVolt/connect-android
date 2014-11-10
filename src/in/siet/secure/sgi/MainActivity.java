@@ -13,7 +13,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
+
+//import android.content.pm.ActivityInfo;
+
+import android.content.SharedPreferences;
+
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -49,7 +53,7 @@ public class MainActivity extends ActionBarActivity {
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
-
+	private static SharedPreferences spf;
 	public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
@@ -79,8 +83,8 @@ public class MainActivity extends ActionBarActivity {
 			Utility.CancelMessageNotification(this);
 			
 		if(getApplicationContext()
-				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
-				.getBoolean(getString(R.string.is_faculty), false))
+				.getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE)
+				.getBoolean(Constants.PreferenceKeys.is_faculty, false))
 		{
 			panelOption=getResources().getStringArray(R.array.array_panel_options_fact);
 		}
@@ -116,16 +120,10 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onStart(){
 		super.onStart();
-		ImageLoader.getInstance().displayImage(getApplicationContext()
-				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
-				.getString(getString(R.string.profile_url), null), user_pic);
+		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
+		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic);
 		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
-		user_name.setText(getApplicationContext()
-				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
-				.getString(getString(R.string.f_name), null) +" "+
-				getApplicationContext()
-				.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
-				.getString(getString(R.string.l_name), null) );
+		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
 	}
 	@Override
 	public void onResume(){
@@ -182,7 +180,7 @@ public class MainActivity extends ActionBarActivity {
 			return true;
 		}
 		else if(id == R.id.action_logout) {
-			getApplicationContext().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE).edit().clear().commit();
+			spf.edit().clear().commit();
 			Log.d(TAG,"pref cleared");
 			startActivity(LoginActivity.class);
 			finish();

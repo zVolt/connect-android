@@ -27,6 +27,7 @@ public final class DbStructure {
 		public static final String TABLE_NAME = "messages";
 		
 		public static final String COLUMN_SENDER = "sender";
+		public static final String COLUMN_RECEIVER = "receiver";
 		public static final String COLUMN_TEXT = "text";
 		public static final String COLUMN_STATE = "state";
 		public static final String COLUMN_IS_GRP_MSG = "is_group_msg";
@@ -35,9 +36,10 @@ public final class DbStructure {
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE+TABLE_NAME+DbConstants.BRACES_OPEN+_ID+DbConstants.TYPE_INT+DbConstants.CONSTRAIN_PRIMARY_KEY+DbConstants.COMMA+
 													COLUMN_TEXT+DbConstants.TYPE_TEXT+DbConstants.COMMA+
 													COLUMN_SENDER+DbConstants.TYPE_INT+DbConstants.COMMA+
+													COLUMN_RECEIVER+DbConstants.TYPE_INT+DbConstants.COMMA+
 													COLUMN_STATE+DbConstants.TYPE_INT+DbConstants.COMMA+
 													COLUMN_IS_GRP_MSG+DbConstants.TYPE_INT+DbConstants.COMMA+
-													COLUMN_TIME+DbConstants.TYPE_TEXT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
+													COLUMN_TIME+DbConstants.TYPE_INT+DbConstants.BRACES_CLOSE+DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE+TABLE_NAME+DbConstants.SEMICOLON;
 	}
 	

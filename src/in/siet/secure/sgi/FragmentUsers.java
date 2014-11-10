@@ -46,7 +46,7 @@ public class FragmentUsers extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		adapter=new UsersAdapter(getActivity(),users);
-		sharedPreferences=getActivity().getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE);
+		sharedPreferences=getActivity().getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
 		View rootView = inflater.inflate(R.layout.fragment_users, container,false);
 		//Utility.log(TAG,"onCreate"+FilterOptions.USER_TYPE);
 		setHasOptionsMenu(true);
@@ -122,13 +122,13 @@ public class FragmentUsers extends Fragment {
 	public void fetch_all(){
 		
 		RequestParams params =new RequestParams();
-		params.put(getString(R.string.web_prm_usr),Base64.encodeToString(sharedPreferences.getString(getString(R.string.user_id), null).getBytes(), Base64.DEFAULT));
-		params.put(getString(R.string.web_prm_token),Base64.encodeToString(sharedPreferences.getString(getString(R.string.acess_token), null).trim().getBytes(), Base64.DEFAULT));
-		params.put(getString(R.string.web_prm_query_user_type), FilterOptions.STUDENT);
-		params.put(getString(R.string.web_prm_query_course), FilterOptions.COURSE);
-		params.put(getString(R.string.web_prm_query_department), FilterOptions.BRANCH);
-		params.put(getString(R.string.web_prm_query_year), FilterOptions.YEAR);
-		params.put(getString(R.string.web_prm_query_section), FilterOptions.SECTION);
+		params.put(Constants.QueryParameters.USERNAME,Base64.encodeToString(sharedPreferences.getString(Constants.PreferenceKeys.user_id, null).getBytes(), Base64.DEFAULT));
+		params.put(Constants.QueryParameters.TOKEN,Base64.encodeToString(sharedPreferences.getString(Constants.PreferenceKeys.token, null).trim().getBytes(), Base64.DEFAULT));
+		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.STUDENT);
+		params.put(Constants.QueryParameters.COURSE, FilterOptions.COURSE);
+		params.put(Constants.QueryParameters.BRANCH, FilterOptions.BRANCH);
+		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);
+		params.put(Constants.QueryParameters.SECTION, FilterOptions.SECTION);
 		AsyncHttpClient client=new AsyncHttpClient();
 		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/query/type_resolver",params,new JsonHttpResponseHandler(){
 			@Override
@@ -164,10 +164,10 @@ public class FragmentUsers extends Fragment {
 				for(int i=0;i<size;i++){
 					JSONObject tmpobj=values.getJSONObject(i);
 					User tmpusr;
-					if(tmpobj.has(User.YEAR)) //no optimize it we may have mixed users
-						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getInt(User.YEAR),tmpobj.getString(User.SECTION),tmpobj.getString(User.COURSE));
+					if(tmpobj.has(Constants.JSONKeys.YEAR)) //no optimize it we may have mixed users
+						tmpusr=new User(tmpobj.getString(Constants.JSONKeys.FIRST_NAME),tmpobj.getString(Constants.JSONKeys.LAST_NAME),tmpobj.getInt(Constants.JSONKeys.L_ID),tmpobj.getString(Constants.JSONKeys.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(Constants.JSONKeys.BRANCH),tmpobj.getInt(Constants.JSONKeys.YEAR),tmpobj.getString(Constants.JSONKeys.SECTION),tmpobj.getString(Constants.JSONKeys.COURSE));
 					else
-						tmpusr=new User(tmpobj.getString(User.FIRST_NAME),tmpobj.getString(User.LAST_NAME),tmpobj.getInt(User.L_ID),tmpobj.getString(User.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(User.DEPARTMENT),tmpobj.getString(User.COURSE));//,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
+						tmpusr=new User(tmpobj.getString(Constants.JSONKeys.FIRST_NAME),tmpobj.getString(Constants.JSONKeys.LAST_NAME),tmpobj.getInt(Constants.JSONKeys.L_ID),tmpobj.getString(Constants.JSONKeys.PROFILE_IMAGE).replace("\\/","/"),tmpobj.getString(Constants.JSONKeys.BRANCH),tmpobj.getString(Constants.JSONKeys.COURSE));//,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
 					tmpdata.add(tmpusr);
 				}
 			}catch(JSONException e){
