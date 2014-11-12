@@ -2,20 +2,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+   android:background="@color/gray15"
     android:orientation="vertical" >
 
     <ListView
         android:id="@+id/listViewChats"
         android:layout_width="match_parent"
-        android:layout_marginStart="@dimen/default_margin"
-        android:layout_marginEnd="@dimen/default_margin"
         android:layout_height="0dp"
-        android:layout_weight="1" >
+        android:divider="@null"
+        android:dividerHeight="3dp"
+        android:stackFromBottom="true"
+		android:transcriptMode="normal"
+        android:layout_weight="1"
+         >
     </ListView>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp" >
+        android:background="@color/white"
+        android:layout_height="55dp" >
 
         <ImageButton
             android:id="@+id/buttonSendChats"
@@ -30,7 +35,7 @@
 
         <EditText
             android:id="@+id/editTextChats"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"

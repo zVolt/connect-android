@@ -190,7 +190,34 @@ public class DbHelper extends SQLiteOpenHelper{
 			FragmentDetailNotification.showAttachments();
 		}
 	}
-	
+	public void fillMessages(JSONArray messages,int receiver_id){
+		if(db==null)
+			db=this.getWritableDatabase();
+		int len=messages.length();
+		String query="insert into messages(sender,receiver,text,time,is_group_msg) values";
+		JSONObject obj;
+		int j;
+		String[] args=new String[len*5];
+		try{
+			for(int i=0;i<len;i++){
+				query+="((select _id from user where login_id=?),?,?,?,?)"+((i==len-1)?"":",");
+				
+					obj=messages.getJSONObject(i);
+					j=i*5;
+					args[j]=obj.getString(Constants.JSONMEssageKeys.SENDER);
+					args[j+1]=receiver_id+"";//me
+					args[j+2]=obj.getString(Constants.JSONMEssageKeys.TEXT);
+					args[j+3]=(obj.getLong(Constants.JSONMEssageKeys.TIME))+"";
+					args[j+4]=obj.getInt(Constants.JSONMEssageKeys.IS_GROUP_MESSAGE)+"";
+				
+			}
+			db.execSQL(query, args);
+			Utility.log(TAG, "done inserting messages \n"+query);
+		}catch(Exception e){
+			Utility.log(TAG,""+e.getMessage());
+		}
+		
+	}
 	public void addUser(final User user,final boolean is_student){
 		//get user info from server asynchronously
 		//add it to db
