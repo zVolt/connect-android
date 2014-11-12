@@ -42,7 +42,7 @@ public class MainActivity extends ActionBarActivity {
 	private LinearLayout fullDrawerLayout;
 	private boolean back_pressed=false;
 	private static ImageView user_pic;
-	private static TextView user_name;
+	private static TextView user_name,user_id;
 	private static ActionBarDrawerToggle drawerToggle;
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
@@ -88,7 +88,8 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);
-		user_name=(TextView)findViewById(R.id.textViewUser);
+		user_name=(TextView)findViewById(R.id.textViewUserName);
+		user_id=(TextView)findViewById(R.id.textViewUserExtra);
 		user_pic=(ImageView)findViewById(R.id.imageViewUser);
 		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
@@ -115,15 +116,13 @@ public class MainActivity extends ActionBarActivity {
 	public void onStart(){
 		super.onStart();
 		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
-		DisplayImageOptions options = new DisplayImageOptions.Builder()
-		 // this will make circle, pass the width of image 
+		DisplayImageOptions round_options = new DisplayImageOptions.Builder()
+		.cacheInMemory(true)
 		.cacheOnDisk(true)
-		.displayer(new RoundedBitmapDisplayer(35))
-		.build(); 
-		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,options);
-//		ImageLoader.getInstance().displayImage();
-		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
+		.displayer(new RoundedBitmapDisplayer(40)).build();
+		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,round_options);
 		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
+		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
 	}
 	@Override
 	public void onResume(){

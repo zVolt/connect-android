@@ -23,6 +23,13 @@
 	<color name="gray14">#e0e0e0</color>
 	<color name="gray15">#f0f0f0</color>
 	<color name="white">#FFFFFF</color>
+	<!-- B2FFC4 BFFFCE  -->
+	<color name="msg_send">#A2C481</color>
+	<color name="msg_receive">#7FC1BB</color>
+	
+	<color name="drawer_header">#3293BA</color>
+	
+	
 	
 	
 	
