@@ -50,6 +50,8 @@ public class Constants {
 		public static String YEAR="year";
 		public static String LOGIN_ID="login_id";
 		public static String IS_FACULTY="is_faculty";
+		public static String MSGIDS="message_ids";
+		public static String MESSAGES="messages";
 		
 	}
 	public static interface MsgState{
@@ -57,6 +59,17 @@ public class Constants {
 		int SENT_SUCESSFULLY=1;
 		int TO_SEND=2;
 	}
+	
+	public static interface JSONMEssageKeys{
+		public static String ID="Id";
+		public static String MESSAGE="Message";
+		public static String RECEIVER="Receiver";
+		public static String TEXT="Text";
+		public static String SENDER="Sender";
+		public static String IS_GROUP_MESSAGE="is_group_msg";
+		public static String TIME="Time";
+	}
+	
 	public static interface JSONKeys{
 		public static String FIRST_NAME="FirstName";
 		public static String LAST_NAME="LastName";
@@ -76,7 +89,9 @@ public class Constants {
 		public static String Error="Error";
 		
 		public static String TOKEN="Token";
-
+		
+		
+		
 		public static String STATUS="Status";
 		public static String TAG="Tag";
 		public static interface TAG_MSGS{
