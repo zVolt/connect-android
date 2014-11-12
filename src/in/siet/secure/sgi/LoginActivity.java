@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.pushbots.push.Pushbots;
 
 public class LoginActivity extends ActionBarActivity {
 	//ProgressDialog progDialog;
@@ -48,9 +49,14 @@ public class LoginActivity extends ActionBarActivity {
 	private static boolean in_settings=false;
 	private static boolean is_faculty=false;
 	private SharedPreferences spref;
+	
+	String SENDER_ID = "908918972098";											/*REPLACE YOUR SENDER ID HERE*/
+    String PUSHBOTS_APPLICATION_ID = "54634c131d0ab10f4a8b458e";
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Pushbots.init(this, SENDER_ID, PUSHBOTS_APPLICATION_ID);
 		
 		spref=getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
 
@@ -119,9 +125,10 @@ public class LoginActivity extends ActionBarActivity {
 		super.onResume();
 		back_pressed=false;
 	}
-	  public void onConfigurationChanged(Configuration newConfig) {
-	        super.onConfigurationChanged(newConfig);
-	  }
+	@Override
+	 public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	 }
 	public void onClickButtonSignin(View view){
 		back_pressed=false;
 		if(Utility.isConnected(getApplicationContext())){

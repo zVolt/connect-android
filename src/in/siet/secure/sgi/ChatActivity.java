@@ -17,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -135,6 +136,10 @@ public class ChatActivity extends ActionBarActivity{
 		//Utility.log(TAG,"count is "+adapter.getCount());
 		//list.smoothScrollToPosition(adapter.getCount()); //to show latest messages
 	}
+	@Override
+	 public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	 }
 	public void updateCursor(){
 		Cursor cc;
 		String[] args={

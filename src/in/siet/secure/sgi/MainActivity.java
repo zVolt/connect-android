@@ -48,6 +48,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import com.pushbots.push.Pushbots;
 //import android.content.pm.ActivityInfo;
 
 
@@ -64,14 +65,15 @@ public class MainActivity extends ActionBarActivity {
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
 	private static SharedPreferences spf;
-/*	public static final String EXTRA_MESSAGE = "message";
-
+	public static final String EXTRA_MESSAGE = "message";
+/*
 	public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-
-    String SENDER_ID = "517958159344";											/*REPLACE YOUR SENDER ID HERE*/
-/*
+*/
+    String SENDER_ID = "908918972098";											/*REPLACE YOUR SENDER ID HERE*/
+ //   String PUSHBOTS_APPLICATION_ID = "54634c131d0ab10f4a8b458e";
+/*    
     GoogleCloudMessaging gcm=null;
     AtomicInteger msgId = new AtomicInteger();
     String regid;
@@ -109,8 +111,9 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);		/* WHOLE ACTIVITY LAYOUT */
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);		/* LISTVIEW TO SHOW IN THE DRAWER */
 		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);			/* ACTUAL DRAWER IN THE LINEAR LAYOUT */
-		user_name=(TextView)findViewById(R.id.textViewUser);				/* USERNAME TO BE DISPLAYED IN THE NAVIGATION DRAWER */
+		user_name=(TextView)findViewById(R.id.textViewUserName);				/* USERNAME TO BE DISPLAYED IN THE NAVIGATION DRAWER */
 		user_pic=(ImageView)findViewById(R.id.imageViewUser);				/* IMAGE TO BE DISPLAYED IN THE NAVIGATION DRAWER */
+		user_id=(TextView)findViewById(R.id.textViewUserExtra);
 		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));	
 
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
@@ -128,8 +131,9 @@ public class MainActivity extends ActionBarActivity {
 		.defaultDisplayImageOptions(options)
 		.build();
 		ImageLoader.getInstance().init(config);
-		/*
-		context=getApplicationContext();
+		
+		
+	/*	context=getApplicationContext();
 		if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
             regid = getRegistrationId(context);
@@ -153,8 +157,9 @@ public class MainActivity extends ActionBarActivity {
 		.cacheOnDisk(true)
 		.displayer(new RoundedBitmapDisplayer(40)).build();
 		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,round_options);
-]		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
-		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
+		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
+		System.out.println(spf.getString(Constants.PreferenceKeys.user_id,null));
+		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));				////exception
 	}
 	@Override
 	public void onResume(){
@@ -257,12 +262,12 @@ public class MainActivity extends ActionBarActivity {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void registerInBackground() {
 	    new AsyncTask() {
-	/*        
-	    	@Override
+	  */      
+	    /*	@Override
 	        protected String doInBackground(String... params) {
 	           
-	        }
-*//*
+	        } */
+	/*
 			@Override
 			protected String doInBackground(Object... arg0) {
 				// TODO Auto-generated method stub
@@ -312,10 +317,10 @@ public class MainActivity extends ActionBarActivity {
 	 * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP
 	 * or CCS to send messages to your app. 
 	 */
-	/*
+/*
 	private void sendRegistrationIdToBackend() {
-	/*	Log.d(TAG+" sendRegistrationIdToBackend"," at start");
-		AsyncHttpClient client = new AsyncHttpClient();
+		Log.d(TAG+" sendRegistrationIdToBackend"," at start");*/
+/*		AsyncHttpClient client = new AsyncHttpClient();
 		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/Gcm/",
 				new JsonHttpResponseHandler(){
 			@Override
@@ -338,10 +343,10 @@ public class MainActivity extends ActionBarActivity {
 			
 		
 		
-	});
+	}); */
 		
 		// Your implementation here.
-	} */
+//	} 
 	/**
 	 * Stores the registration ID and app versionCode in the application's
 	 * {@code SharedPreferences}.
