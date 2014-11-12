@@ -5,17 +5,24 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.http.Header;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-
-//import android.content.pm.ActivityInfo;
-
 import android.content.SharedPreferences;
-
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -32,10 +39,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+//import android.content.pm.ActivityInfo;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -51,27 +64,30 @@ public class MainActivity extends ActionBarActivity {
 	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
 	private static SharedPreferences spf;
-	public static final String EXTRA_MESSAGE = "message";
+/*	public static final String EXTRA_MESSAGE = "message";
 
-/*	public static final String PROPERTY_REG_ID = "registration_id";
+	public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     String SENDER_ID = "517958159344";											/*REPLACE YOUR SENDER ID HERE*/
-
-    GoogleCloudMessaging gcm;
+/*
+    GoogleCloudMessaging gcm=null;
     AtomicInteger msgId = new AtomicInteger();
     String regid;
+    Context context;
 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		
+		System.out.println("oncreate");
 		if(savedInstanceState==null){
 			setContentView(R.layout.activity_main);
 			getFragmentManager().beginTransaction()
 			.setTransitionStyle(R.anim.abc_fade_out)
 			.add(R.id.mainFrame,new FragmentNotification(),FragmentNotification.TAG).commit();
+		}		
+		
 		//	active_drawer_option=0;
 		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
 		//set drawer
@@ -89,19 +105,18 @@ public class MainActivity extends ActionBarActivity {
 		else{
 			panelOption=getResources().getStringArray(R.array.array_panel_options);
 		}
-		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
-		drawerListView=(ListView)findViewById(R.id.drawer_listview);
-		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);
-		user_name=(TextView)findViewById(R.id.textViewUser);
-		user_pic=(ImageView)findViewById(R.id.imageViewUser);
-		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));
+		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);		/* WHOLE ACTIVITY LAYOUT */
+		drawerListView=(ListView)findViewById(R.id.drawer_listview);		/* LISTVIEW TO SHOW IN THE DRAWER */
+		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);			/* ACTUAL DRAWER IN THE LINEAR LAYOUT */
+		user_name=(TextView)findViewById(R.id.textViewUser);				/* USERNAME TO BE DISPLAYED IN THE NAVIGATION DRAWER */
+		user_pic=(ImageView)findViewById(R.id.imageViewUser);				/* IMAGE TO BE DISPLAYED IN THE NAVIGATION DRAWER */
+		drawerListView.setAdapter(new DrawerListAdapter(this,panelOption));	
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle=new ActionBarDrawerToggle(this, drawerlayout,R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close);
 		drawerlayout.setDrawerListener(drawerToggle);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
-		
 		DisplayImageOptions options=new DisplayImageOptions.Builder()
 		.cacheInMemory(true)
 		.cacheOnDisk(true)
@@ -111,10 +126,22 @@ public class MainActivity extends ActionBarActivity {
 		.defaultDisplayImageOptions(options)
 		.build();
 		ImageLoader.getInstance().init(config);
-		
+		/*
+		context=getApplicationContext();
+		if (checkPlayServices()) {
+            gcm = GoogleCloudMessaging.getInstance(this);
+            regid = getRegistrationId(context);
+
+            if (regid.isEmpty()) {
+                registerInBackground();
+                System.out.println(TAG+"  "+regid);
+            }
+        } else {
+            Utility.log(TAG, "No valid Google Play Services APK found.");
+        	//Log.i(TAG, "No valid Google Play Services APK found.");
+        } */
 		}
 		
-	}
 	@Override
 	public void onStart(){
 		super.onStart();
@@ -124,9 +151,10 @@ public class MainActivity extends ActionBarActivity {
 		.cacheOnDisk(true)
 		.displayer(new RoundedBitmapDisplayer(35))
 		.build(); 
+		System.out.println(spf.getString(Constants.PreferenceKeys.pic_url, null));
 		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,options);
 //		ImageLoader.getInstance().displayImage();
-		//ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
+	//	ImageLoader.getInstance().displayImage(Utility.getUserImage("b-11-136"), user_pic);
 		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
 	}
 	@Override
@@ -140,19 +168,10 @@ public class MainActivity extends ActionBarActivity {
 	        // Sync the toggle state after onRestoreInstanceState has occurred.
 	        drawerToggle.syncState();
 	 }
-	 
+
 	 @Override
 	    public void onConfigurationChanged(Configuration newConfig) {
 	        super.onConfigurationChanged(newConfig);
-	        
-	        int orientation=ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-	        setRequestedOrientation(orientation);
-	        
-	        setContentView(R.layout.activity_main);
-			getFragmentManager().beginTransaction()
-			.setTransitionStyle(R.anim.abc_fade_out)
-			.add(R.id.mainFrame,new FragmentNotification(),FragmentNotification.TAG).commit();
-		
 	        drawerToggle.onConfigurationChanged(newConfig);
 	    }
 	 
@@ -163,6 +182,188 @@ public class MainActivity extends ActionBarActivity {
 
 		return true;
 	}
+	/*
+	private boolean checkPlayServices() {
+	    int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+	    if (resultCode != ConnectionResult.SUCCESS) {
+	        if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+	            GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+	                    PLAY_SERVICES_RESOLUTION_REQUEST).show();
+	        } else {
+	            Log.i(TAG, "This device is not supported.");
+	            finish();
+	        }
+	        return false;
+	    }
+	    return true;
+	}
+	*/
+	/**
+	 * Gets the current registration ID for application on GCM service.
+	 * If result is empty, the app needs to register.
+	 *
+	 * @return registration ID, or empty string if there is no existing
+	 *         registration ID.
+	 */
+	/*
+	private String getRegistrationId(Context context) {
+	    final SharedPreferences prefs = getGCMPreferences(context);
+	    String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+	    if (registrationId.isEmpty()) {
+	    	Utility.log(TAG, "Registration not found.");
+	        return "";
+	    }
+	    // Check if app was updated; if so, it must clear the registration ID
+	    // since the existing regID is not guaranteed to work with the new
+	    // app version.
+	    int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+	    int currentVersion = getAppVersion(context);
+	    if (registeredVersion != currentVersion) {
+	        Utility.log(TAG,"App version changed.");
+	        return "";
+	    }
+	    return registrationId;
+	}
+	*/
+	/**
+	 * @return Application's {@code SharedPreferences}.
+	 */
+	/*
+	private SharedPreferences getGCMPreferences(Context context) {
+	    return getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
+	}
+	*/
+	/**
+	 * @return Application's version code from the {@code PackageManager}.
+	 */
+	/*
+	private static int getAppVersion(Context context) {
+	    try {
+	        PackageInfo packageInfo = context.getPackageManager()
+	                .getPackageInfo(context.getPackageName(), 0);
+	        return packageInfo.versionCode;
+	    } catch (NameNotFoundException e) {
+	        // should never happen
+	        throw new RuntimeException("Could not get package name: " + e);
+	    }
+	}
+	*/
+	/**
+	 * Registers the application with GCM servers asynchronously.
+	 * <p>
+	 * Stores the registration ID and app versionCode in the application's
+	 * shared preferences.
+	 */
+	/*
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void registerInBackground() {
+	    new AsyncTask() {
+	/*        
+	    	@Override
+	        protected String doInBackground(String... params) {
+	           
+	        }
+*//*
+			@Override
+			protected String doInBackground(Object... arg0) {
+				// TODO Auto-generated method stub
+				System.out.println("in background");
+				String msg = "";
+	            try {
+	                if (gcm == null) {
+	                    gcm = GoogleCloudMessaging.getInstance(context);
+	                    System.out.println("in background's iffff");
+	    				
+	                }
+	                regid = gcm.register(SENDER_ID);
+	                msg = "Device registered, registration ID=" + regid;
+	                System.out.println("in background " + msg);
+					
+	                // You should send the registration ID to your server over HTTP,
+	                // so it can use GCM/HTTP or CCS to send messages to your app.
+	                // The request to your server should be authenticated if your app
+	                // is using accounts.
+	                sendRegistrationIdToBackend();
+	                System.out.println("registration id : "+regid);
+	                // For this demo: we don't need to send it because the device
+	                // will send upstream messages to a server that echo back the
+	                // message using the 'from' address in the message.
+
+	                // Persist the regID - no need to register again.
+	                storeRegistrationId(context, regid);
+	            } catch (IOException ex) {
+	                msg = "Error :" + ex.getMessage();
+	                System.out.println("in backgroundcatch"+msg);
+					
+	                // If there is an error, don't just keep trying to register.
+	                // Require the user to click a button again, or perform
+	                // exponential back-off.
+	            }
+	            return msg;
+				//return null;
+			}
+
+	    //    protected void onPostExecute(String msg) {
+	       //     mDisplay.append(msg + "\n");
+	      //  }
+	    }.execute(null, null, null);  
+	}
+	*/
+	/**
+	 * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP
+	 * or CCS to send messages to your app. 
+	 */
+	/*
+	private void sendRegistrationIdToBackend() {
+	/*	Log.d(TAG+" sendRegistrationIdToBackend"," at start");
+		AsyncHttpClient client = new AsyncHttpClient();
+		client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/Gcm/",
+				new JsonHttpResponseHandler(){
+			@Override
+			public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
+				Log.d(TAG+" onSucess"," at start");
+				try {
+			
+				}catch (JSONException e) {
+					Utility.log(TAG+" JSON exception ",e.getLocalizedMessage());
+					
+				}
+			}
+			
+			@Override
+			public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){	
+				Utility.hideProgressDialog();
+				Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", true);
+				Utility.log(TAG," incatch"+throwable.getMessage());
+			}
+			
+		
+		
+	});
+		
+		// Your implementation here.
+	} */
+	/**
+	 * Stores the registration ID and app versionCode in the application's
+	 * {@code SharedPreferences}.
+	 *
+	 * @param context application's context.
+	 * @param regId registration ID
+	 */
+/*
+	private void storeRegistrationId(Context context, String regId) {
+	    final SharedPreferences prefs = getGCMPreferences(context);
+	    int appVersion = getAppVersion(context);
+	    Utility.log(TAG,"Saving regId on app version " + appVersion);
+	    //spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
+	    SharedPreferences.Editor editor = prefs.edit();
+	    editor.putString(PROPERTY_REG_ID, regId);			//store these variables in constant
+	    editor.putInt(PROPERTY_APP_VERSION, appVersion);
+	    editor.commit();
+	}
+	
+	*/
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -213,6 +414,8 @@ public class MainActivity extends ActionBarActivity {
 		Log.d(TAG,"stating login Activity");
 		startActivity(intent);
 	}
+	
+	
 	public void switch_fragment(int position){
 		FragmentManager fragmentManager=getFragmentManager();
 		FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction().setTransitionStyle(R.anim.abc_fade_out);
@@ -279,13 +482,14 @@ public class MainActivity extends ActionBarActivity {
 				show.setArguments(bundle);
 				show.show(getFragmentManager(), UserFilterDialog.TAG);
 			}
-			else if(position==Constants.DrawerIDs.CREATE_NOTICE){
+			else
+				if(position==Constants.DrawerIDs.CREATE_NOTICE){
 				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,Constants.DrawerIDs.CREATE_NOTICE);
 				show.setArguments(bundle);
 				show.show(getFragmentManager(), UserFilterDialog.TAG);
-			}
-			else
-				switch_fragment(position);
+				}
+				else
+					switch_fragment(position);
 			
 			drawerlayout.closeDrawer(fullDrawerLayout);
 			

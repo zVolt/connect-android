@@ -34,7 +34,6 @@ public class FragmentDetailNotification extends Fragment implements OnClickListe
 	public static final String TAG="in.siet.secure.sgi.FragmentDetailNotification";
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		
 		adapter=new NotificationAttachmentAdapter(getActivity(),attachments);
 		Bundle bundle=getArguments();
 		not_id=bundle.getInt(Notification.ID);

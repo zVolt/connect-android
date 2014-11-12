@@ -25,6 +25,7 @@ public class FragmentNotification extends Fragment{
 	public static NotificationAdapter adapter;
 	public static View rootView;
 	public static ListView listView;
+	public static Boolean refresh_active=false;
 	//private static ProgressBar progressBar;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class FragmentNotification extends Fragment{
 		listView.setAdapter(adapter);
 	//	listView.setEmptyView(rootView.findViewById(R.id.e));
 		//hideList();
+		rootView.setId(0);
 		return rootView;
 	}
 	@Override
@@ -56,17 +58,18 @@ public class FragmentNotification extends Fragment{
 		listView.setVisibility(View.VISIBLE);
 		//progressBar.setVisibility(View.GONE);
 	}
-*//*	@Override
+*/	@Override
 	public void onStart(){
 		super.onStart();
-		Utility.RaiseToast(getActivity(), "stating notifications", 0);
+	//	Utility.RaiseToast(getActivity(), "stating notifications", 0);
 		//adapter.notifyDataSetChanged();
 	}
-*/	
+	
 	@Override
 	public void onCreateOptionsMenu(Menu menu,MenuInflater inflater){
 		super.onCreateOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.notification_refresh, menu);
+		
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
@@ -77,6 +80,7 @@ public class FragmentNotification extends Fragment{
 		}
 		return false;
 	}
+	 
 	class itemClickListener implements OnItemClickListener{
 
 		@Override

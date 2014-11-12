@@ -38,7 +38,6 @@ public class FragmentBackground extends Fragment {
 			Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_background, container,
 				false);	
-		setRetainInstance(true);
 		start = (Button)rootView.findViewById(R.id.buttonstart);
 		start.setOnClickListener(
 				new OnClickListener() {

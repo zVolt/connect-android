@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -118,6 +119,9 @@ public class LoginActivity extends ActionBarActivity {
 		super.onResume();
 		back_pressed=false;
 	}
+	  public void onConfigurationChanged(Configuration newConfig) {
+	        super.onConfigurationChanged(newConfig);
+	  }
 	public void onClickButtonSignin(View view){
 		back_pressed=false;
 		if(Utility.isConnected(getApplicationContext())){
