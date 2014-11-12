@@ -50,14 +50,10 @@ public class LoginActivity extends ActionBarActivity {
 	private static boolean is_faculty=false;
 	private SharedPreferences spref;
 	
-	String SENDER_ID = "908918972098";											/*REPLACE YOUR SENDER ID HERE*/
-    String PUSHBOTS_APPLICATION_ID = "54634c131d0ab10f4a8b458e";
-    
+	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Pushbots.init(this, SENDER_ID, PUSHBOTS_APPLICATION_ID);
-		
 		spref=getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
 
 		if(spref.getBoolean(Constants.PreferenceKeys.logged_in, false)){
@@ -125,7 +121,7 @@ public class LoginActivity extends ActionBarActivity {
 		super.onResume();
 		back_pressed=false;
 	}
-	@Override
+	
 	 public void onConfigurationChanged(Configuration newConfig) {
 	    super.onConfigurationChanged(newConfig);
 	 }

@@ -136,7 +136,7 @@ public class ChatActivity extends ActionBarActivity{
 		//Utility.log(TAG,"count is "+adapter.getCount());
 		//list.smoothScrollToPosition(adapter.getCount()); //to show latest messages
 	}
-	@Override
+	
 	 public void onConfigurationChanged(Configuration newConfig) {
 	    super.onConfigurationChanged(newConfig);
 	 }
