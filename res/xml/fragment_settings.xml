@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/action_settings"
+    android:fragment="in.siet.secure.sgi.FragmentSettings"
+    
+    >
+    
+	<EditTextPreference 
+    android:key="server_ip"
+    android:title="Server"
+    android:summary="default value"
+    android:defaultValue="192.168.0.100"
+    />
+</PreferenceScreen>

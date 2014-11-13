@@ -24,4 +24,11 @@
         android:title="@string/action_settings"
         app:showAsAction="never"
         />
+	<item
+        android:id="@+id/action_reset"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_action_settings_white"
+        android:title="@string/action_reset"
+        app:showAsAction="never"
+        />
 </menu>
