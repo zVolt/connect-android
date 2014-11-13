@@ -23,7 +23,6 @@ public class FragmentBackground extends Fragment {
 	// Constructor of fragment
 	public FragmentBackground(){
 		mReceiver = new ResultReceiver(new Handler()) {
-		
 			@Override
 			protected void onReceiveResult(int resultCode,Bundle resultData){
 				EditText showcount;
@@ -57,7 +56,13 @@ public class FragmentBackground extends Fragment {
 		return rootView;		
 				
 	}
-	
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 	
 	public ResultReceiver getResultReceiver() {
         return mReceiver;

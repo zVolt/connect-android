@@ -26,6 +26,7 @@ public class FragmentNotification extends Fragment{
 	public static View rootView;
 	public static ListView listView;
 	//private static ProgressBar progressBar;
+	public FragmentNotification(){}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.fragment_notification, container,	false);
@@ -40,6 +41,13 @@ public class FragmentNotification extends Fragment{
 		//hideList();
 		return rootView;
 	}
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 	@Override
 	public void onResume(){
 		super.onResume();

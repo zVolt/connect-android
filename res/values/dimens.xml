@@ -21,8 +21,11 @@
 	<dimen name="drawer_item_content_height">30dp</dimen>
 	<dimen name="drawer_item_image_width">30dp</dimen>
 	<dimen name="drawer_item_maring_btwn_image_text">5dp</dimen>
+	<dimen name="drawer_user_image_width">30dp</dimen>
+	<dimen name="drawer_user_image_height">60dp</dimen>
+	<dimen name="drawer_user_image_radius">30dp</dimen>
 	
-	<dimen name="list_item_image_state">30dp</dimen>
+	<dimen name="list_item_image_state">60dp</dimen>
 	
 	<dimen name="default_button_height">45dp</dimen>
 	<dimen name="default_button_width">200dp</dimen>
@@ -34,4 +37,6 @@
 	<dimen name="very_small_text">5sp</dimen>
 	<dimen name="image_width_detail_not">70dp</dimen>
 	<dimen name="image_height_detail_not">70dp</dimen>
+	
+	
 </resources>

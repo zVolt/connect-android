@@ -43,6 +43,8 @@ public class FragmentUsers extends Fragment {
 	public static ListView listview;
 	public static TextView emptyText;
 //	public static View emptyView;
+	
+	public FragmentUsers(){}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		adapter=new UsersAdapter(getActivity(),users);
@@ -58,6 +60,13 @@ public class FragmentUsers extends Fragment {
 		listview.setOnItemClickListener(new ItemClickListener());
 		return rootView;
 	}
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 	@Override
 	public void onStart(){
 		super.onStart();

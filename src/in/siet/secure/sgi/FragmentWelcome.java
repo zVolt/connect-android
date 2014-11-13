@@ -17,4 +17,11 @@ public class FragmentWelcome extends Fragment{
 				false);
 		return rootView;
 	}
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 }

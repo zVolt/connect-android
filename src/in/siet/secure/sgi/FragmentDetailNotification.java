@@ -32,6 +32,8 @@ public class FragmentDetailNotification extends Fragment implements OnClickListe
 	private static NotificationAttachmentAdapter adapter;
 	public static View rootView;
 	public static final String TAG="in.siet.secure.sgi.FragmentDetailNotification";
+	
+	public FragmentDetailNotification(){}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		
@@ -57,6 +59,13 @@ public class FragmentDetailNotification extends Fragment implements OnClickListe
 		hideAttachments();
 		return rootView;
 	}
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 	@Override
 	public void onStart(){
 		super.onStart();

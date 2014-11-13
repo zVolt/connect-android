@@ -10,11 +10,12 @@ import android.support.v7.app.ActionBarActivity;
 
 public class FragmentSettings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
 	public static final String TAG="in.siet.secure.sgi.FragmentSettings";
+	public FragmentSettings(){}
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.fragment_settings);
-		
+		setRetainInstance(true);
 	}
 	
 	@Override
@@ -24,6 +25,7 @@ public class FragmentSettings extends PreferenceFragment implements OnSharedPref
 		((ActionBarActivity)getActivity()).getActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_settings_white));
 	    getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	}
+	 
 
 	@Override
 	public void onPause() {

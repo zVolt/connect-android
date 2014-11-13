@@ -19,8 +19,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +33,7 @@ import android.widget.ListView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class ChatActivity extends ActionBarActivity{
 	String title;
@@ -39,7 +43,7 @@ public class ChatActivity extends ActionBarActivity{
 	MessagesAdapter adapter;
 	SharedPreferences spref;
 	static int receiver_id; //this is id of the receiver to whom user will text
-	static String receiver_lid;
+	static String receiver_lid,user_image_url;
 	static int sender_id; //sender is the user itself who is using the app
 	static String sender_lid;
 	private static SQLiteDatabase db;
@@ -51,53 +55,39 @@ public class ChatActivity extends ActionBarActivity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
 		
-		if(savedInstanceState==null){
-			Intent intent=getIntent();
-			title=intent.getStringExtra("name");
-			receiver_id=intent.getIntExtra("user_id",-1);
-			
-			db=new DbHelper(getApplicationContext()).getWritableDatabase();
-			spref=getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
-			String tmpq="select _id,login_id from user where login_id='"+(sender_lid=spref.getString(Constants.PreferenceKeys.user_id,null))+"' or _id="+receiver_id;
-			c=db.rawQuery(tmpq, null);
-			c.moveToFirst();
-			while(!c.isAfterLast()){
-				if(c.getInt(0)==receiver_id)
-					receiver_lid=c.getString(1);
-				else
-					sender_id=c.getInt(0);
-				c.moveToNext();
+		//if(savedInstanceState==null)
+		Intent intent=getIntent();
+		title=intent.getStringExtra("name");
+		receiver_id=intent.getIntExtra("user_id",-1);
+		Utility.RaiseToast(getApplicationContext(), "onCreate null "+title, false);
+		db=new DbHelper(getApplicationContext()).getWritableDatabase();
+		spref=getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
+		String tmpq="select _id,login_id,pic_url from user where login_id='"+(sender_lid=spref.getString(Constants.PreferenceKeys.user_id,null))+"' or _id="+receiver_id;
+		c=db.rawQuery(tmpq, null);
+		c.moveToFirst();
+		while(!c.isAfterLast()){
+			if(c.getInt(0)==receiver_id){
+				receiver_lid=c.getString(1);
+				user_image_url=c.getString(2);
 			}
-			
-			list=(ListView)findViewById(R.id.listViewChats);
-			msg=(EditText)findViewById(R.id.editTextChats);
-			String[] args={
-					""+receiver_id,
-					""+receiver_id
-			};
-			c=db.rawQuery(query, args);
-	/*		
-			String from[]={
-			//	DbStructure.MessageTable.COLUMN_SENDER,
-			//	DbStructure.MessageTable.COLUMN_STATE,
-			//	DbStructure.MessageTable.COLUMN_IS_GRP_MSG,
-				DbStructure.MessageTable.COLUMN_TEXT,
-				DbStructure.MessageTable.COLUMN_TIME,
-			};
-			int to[]={
-				R.id.textViewMessagesText,
-				R.id.textViewMessagesTime
-			};*/
-			
-			adapter=new MessagesAdapter(getApplicationContext(),c,0);
-			list.setAdapter(adapter);
-			
-			Utility.RaiseToast(getApplicationContext(), "onCreate null "+title, false);
-			getActionBar().setDisplayHomeAsUpEnabled(true);
-			
+			else
+				sender_id=c.getInt(0);
+			c.moveToNext();
 		}
-		else
-			Utility.RaiseToast(getApplicationContext(), "onCreate", false);
+		
+		list=(ListView)findViewById(R.id.listViewChats);
+		msg=(EditText)findViewById(R.id.editTextChats);
+		String[] args={
+				""+receiver_id,
+				""+receiver_id
+		};
+		c=db.rawQuery(query, args);
+		adapter=new MessagesAdapter(getApplicationContext(),c,0);
+		list.setAdapter(adapter);
+		Utility.RaiseToast(getApplicationContext(), "onCreate "+title, false);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setLogo(new BitmapDrawable(ImageLoader.getInstance().loadImageSync(user_image_url)));
+		
 		
 	}
 	
@@ -116,12 +106,11 @@ public class ChatActivity extends ActionBarActivity{
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
-	    // Respond to the action bar's Up/Home button
+	    case android.R.id.home:
+	        NavUtils.navigateUpFromSameTask(this);
+	        return true;
 	    case R.id.action_refresh_messages:
-	        //refersh messages;
-	    	//send and get messages
 	    	fetchMessages();
-	    	
 	        return true;
 	    }
 	    return super.onOptionsItemSelected(item);

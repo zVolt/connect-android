@@ -10,6 +10,7 @@ import android.widget.EditText;
 
 public class FragmentNewNotification extends Fragment{
 	public static final String TAG="in.siet.secure.sgi.FragmentNewNotification";
+	public FragmentNewNotification(){}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		
@@ -20,7 +21,13 @@ public class FragmentNewNotification extends Fragment{
 		rootView.setTag(holder);
 		return rootView;
 	}
-	
+	 @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+	        // retain this fragment
+	        setRetainInstance(true);
+	    }
+
 	@Override
 	public void onResume(){
 		((ActionBarActivity)getActivity()).getActionBar().setTitle(R.string.fragemnt_title_new);

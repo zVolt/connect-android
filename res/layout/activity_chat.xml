@@ -17,35 +17,27 @@
          >
     </ListView>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:background="@color/white"
-        android:layout_height="55dp" >
+        android:layout_height="wrap_content"
+        android:padding="@dimen/default_padding"
+        android:background="@color/white" >
 
+         <EditText
+            android:id="@+id/editTextChats"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="fill_parent"
+            android:ems="10"
+            android:inputType="textMultiLine" ></EditText>
         <ImageButton
             android:id="@+id/buttonSendChats"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
+            android:layout_height="fill_parent"
             android:background="@null"
             android:onClick="sendMessage"
             android:src="@drawable/ic_action_send" />
-
-        <EditText
-            android:id="@+id/editTextChats"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/buttonSendChats"
-            android:ems="10"
-            android:inputType="textMultiLine" >
-
-            
-        </EditText>
-
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>

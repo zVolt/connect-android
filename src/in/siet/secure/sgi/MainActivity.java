@@ -44,47 +44,50 @@ public class MainActivity extends ActionBarActivity {
 	private static ImageView user_pic;
 	private static TextView user_name,user_id;
 	private static ActionBarDrawerToggle drawerToggle;
-	//private int active_drawer_option;
 	static final UserFilterDialog show=new UserFilterDialog();
 	private static SharedPreferences spf;
 	public static final String EXTRA_MESSAGE = "message";
-
-/*	public static final String PROPERTY_REG_ID = "registration_id";
-    private static final String PROPERTY_APP_VERSION = "appVersion";
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    
-    String SENDER_ID = "517958159344";						//REPLACE YOUR SENDER ID HERE
-
-    GoogleCloudMessaging gcm;
-    AtomicInteger msgId = new AtomicInteger();
-    String regid;
-*/
+	public static String ACTIVE_FRAGMENT_TAG;
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		if(savedInstanceState==null)
+		{
+			ACTIVE_FRAGMENT_TAG=FragmentNotification.TAG;
+	}
+		DisplayImageOptions options=new DisplayImageOptions.Builder()
+		.cacheInMemory(true)
+		.cacheOnDisk(true)
+		.build();
 		
-		if(savedInstanceState==null){
-			setContentView(R.layout.activity_main);
-			getFragmentManager().beginTransaction()
-			.setTransitionStyle(R.anim.abc_fade_out)
-			.add(R.id.mainFrame,new FragmentNotification(),FragmentNotification.TAG).commit();
-		//	active_drawer_option=0;
-		//	getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
-		//set drawer
+		ImageLoaderConfiguration config=new ImageLoaderConfiguration.Builder(getApplicationContext())
+		.defaultDisplayImageOptions(options)
+		.build();
+		ImageLoader.getInstance().init(config);
+		
+		Fragment notification=getFragmentManager().findFragmentByTag(ACTIVE_FRAGMENT_TAG);	
+		if(notification==null || ACTIVE_FRAGMENT_TAG==null){
+			notification=new FragmentNotification();
+			Utility.log(TAG,"active fragment null");
+		}
+	
+		getFragmentManager().beginTransaction()
+		.setTransitionStyle(R.anim.abc_fade_out)
+		.replace(R.id.mainFrame,notification,ACTIVE_FRAGMENT_TAG).commit();
 		
 		/* CANCEL THE NOTIFICATION PRESENT IN THE NOTIFICATION DRAWER ONCE THE USER HAS VIEWED IT */	
 		if(Utility.notification_msg_active==true)
 			Utility.CancelMessageNotification(this);
-			
-		if(getApplicationContext()
-				.getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE)
-				.getBoolean(Constants.PreferenceKeys.is_faculty, false))
-		{
+		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
+		
+		if(spf.getBoolean(Constants.PreferenceKeys.is_faculty, false)){
 			panelOption=getResources().getStringArray(R.array.array_panel_options_fact);
 		}
 		else{
 			panelOption=getResources().getStringArray(R.array.array_panel_options);
 		}
+		
 		drawerlayout=(DrawerLayout)findViewById(R.id.drawer_layout);
 		drawerListView=(ListView)findViewById(R.id.drawer_listview);
 		fullDrawerLayout=(LinearLayout)findViewById(R.id.drawer);
@@ -99,27 +102,16 @@ public class MainActivity extends ActionBarActivity {
 		getSupportActionBar().setHomeButtonEnabled(true);
 
 		
-		DisplayImageOptions options=new DisplayImageOptions.Builder()
-		.cacheInMemory(true)
-		.cacheOnDisk(true)
-		.build();
-		
-		ImageLoaderConfiguration config=new ImageLoaderConfiguration.Builder(getApplicationContext())
-		.defaultDisplayImageOptions(options)
-		.build();
-		ImageLoader.getInstance().init(config);
-		
-		}
-		
+			
 	}
 	@Override
 	public void onStart(){
 		super.onStart();
-		spf=getSharedPreferences(Constants.pref_file_name, Context.MODE_PRIVATE);
+		
 		DisplayImageOptions round_options = new DisplayImageOptions.Builder()
 		.cacheInMemory(true)
 		.cacheOnDisk(true)
-		.displayer(new RoundedBitmapDisplayer(40)).build();
+		.displayer(new RoundedBitmapDisplayer(getResources().getDimensionPixelSize(R.dimen.drawer_user_image_radius))).build();
 		ImageLoader.getInstance().displayImage(spf.getString(Constants.PreferenceKeys.pic_url, null), user_pic,round_options);
 		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null) +" "+spf.getString(Constants.PreferenceKeys.l_name, null) );
 		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
@@ -146,7 +138,6 @@ public class MainActivity extends ActionBarActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		//super.onCreateOptionsMenu(menu);
-
 		return true;
 	}
 	@Override
@@ -205,59 +196,54 @@ public class MainActivity extends ActionBarActivity {
 		Fragment fragment;//=fragmentManager.findFragmentByTag(TAG+panelOption[position]);
 		switch(position){
 		case Constants.DrawerIDs.NOTIFICATION:
+			ACTIVE_FRAGMENT_TAG=FragmentNotification.TAG;
 			fragment=fragmentManager.findFragmentByTag(FragmentNotification.TAG);
 			if(fragment==null)
 				fragment=new FragmentNotification();
-			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNotification.TAG)
-			.commit();
 			break;
 		case Constants.DrawerIDs.INTERACTION:
+			ACTIVE_FRAGMENT_TAG=FragmentContacts.TAG;
 			fragment=fragmentManager.findFragmentByTag(FragmentContacts.TAG);
 			if(fragment==null)
 				fragment=new FragmentContacts();
-			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentContacts.TAG)
-			.commit();
 			break;
 		case Constants.DrawerIDs.ADD_USER:
-			fragment=getFragmentManager().findFragmentByTag(TAG+"FragmentUsers");
+			ACTIVE_FRAGMENT_TAG=FragmentUsers.TAG;
+			fragment=getFragmentManager().findFragmentByTag(FragmentUsers.TAG);
 			if(fragment==null)
-				fragment=new FragmentUsers();
-			fragmentTransaction.replace(R.id.mainFrame, fragment, FragmentUsers.TAG)
-			.commit();	
+				fragment=new FragmentUsers();	
 			break;
 		case Constants.DrawerIDs.SETTING:
+			ACTIVE_FRAGMENT_TAG=FragmentSettings.TAG;
 			fragment=fragmentManager.findFragmentByTag(FragmentSettings.TAG);
 			if(fragment==null)
 				fragment=new FragmentSettings();
-			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentSettings.TAG)
-			.commit();
 			break;
 		case Constants.DrawerIDs.CREATE_NOTICE: //only for faculty
+			ACTIVE_FRAGMENT_TAG=FragmentNewNotification.TAG;
 			fragment=fragmentManager.findFragmentByTag(FragmentNewNotification.TAG);
 			if(fragment==null)
 				fragment=new FragmentNewNotification();
-			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentNewNotification.TAG)
-			.commit();
+
 			break;
 		case Constants.DrawerIDs.TRIGGER:
+			ACTIVE_FRAGMENT_TAG=FragmentBackground.TAG;
 			fragment=fragmentManager.findFragmentByTag(FragmentBackground.TAG);
 			if(fragment==null)
 				fragment=new FragmentBackground();
-			fragmentTransaction.replace(R.id.mainFrame,fragment,FragmentBackground.TAG)
-			.commit();
 			break;
 		default:
 			Toast.makeText(getApplicationContext(),getString(R.string.wrong_choice), Toast.LENGTH_SHORT).show();
 			return;
 		}
-
+		fragmentTransaction.replace(R.id.mainFrame,fragment,ACTIVE_FRAGMENT_TAG).commit();
 	}
 	
 	public class DrawerClickListner implements OnItemClickListener {
 
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			drawerListView.setItemChecked(position, true);
+			
 
 			Bundle bundle=new Bundle();
 			if(position==Constants.DrawerIDs.ADD_USER){
@@ -270,9 +256,10 @@ public class MainActivity extends ActionBarActivity {
 				show.setArguments(bundle);
 				show.show(getFragmentManager(), UserFilterDialog.TAG);
 			}
-			else
+			else{
 				switch_fragment(position);
-			
+				drawerListView.setItemChecked(position, true);
+			}
 			drawerlayout.closeDrawer(fullDrawerLayout);
 			
 		}

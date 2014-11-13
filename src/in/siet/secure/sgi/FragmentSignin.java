@@ -19,6 +19,13 @@ public class FragmentSignin extends Fragment {
 					false);
 			return rootView;
 		}
+		 @Override
+		    public void onCreate(Bundle savedInstanceState) {
+		        super.onCreate(savedInstanceState);
+		        // retain this fragment
+		        setRetainInstance(true);
+		    }
+
 		@Override
 		public void onResume(){
 			super.onResume();
