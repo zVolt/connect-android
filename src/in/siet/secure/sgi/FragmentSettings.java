@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 
 public class FragmentSettings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
@@ -20,10 +21,11 @@ public class FragmentSettings extends PreferenceFragment implements OnSharedPref
 	
 	@Override
 	public void onResume() {
-	    super.onResume();	
-	    ((ActionBarActivity)getActivity()).getActionBar().setTitle(R.string.action_settings);
-		((ActionBarActivity)getActivity()).getActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_settings_white));
-	    getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+	    super.onResume();
+	    ActionBar toolbar=((ActionBarActivity)getActivity()).getSupportActionBar();
+	    toolbar.setTitle(R.string.action_settings);
+		getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+	    
 	}
 	 
 

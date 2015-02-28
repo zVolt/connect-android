@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 public class FragmentNewNotification extends Fragment{
 	public static final String TAG="in.siet.secure.sgi.FragmentNewNotification";
@@ -18,7 +19,8 @@ public class FragmentNewNotification extends Fragment{
 		ViewHolder holder=new ViewHolder();
 		holder.subject=(EditText)rootView.findViewById(R.id.editTextNewNoticeSubject);
 		holder.body=(EditText)rootView.findViewById(R.id.editTextNewNoticeBody);
-		rootView.setTag(holder);
+		ImageButton send=(ImageButton)rootView.findViewById(R.id.buttonSendNotice);
+		send.setTag(holder);
 		return rootView;
 	}
 	 @Override
@@ -30,8 +32,7 @@ public class FragmentNewNotification extends Fragment{
 
 	@Override
 	public void onResume(){
-		((ActionBarActivity)getActivity()).getActionBar().setTitle(R.string.fragemnt_title_new);
-		((ActionBarActivity)getActivity()).getActionBar().setLogo(R.drawable.ic_action_new_notice_white);
+		((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_new);
 		super.onResume();
 	}
 	public static class ViewHolder{

@@ -18,16 +18,16 @@
             android:layout_height="wrap_content"
              >
         </ListView>
+
         <TextView
             android:id="@+id/test_view_empty_list"
-		    style="@style/CardStyle"
-		    android:layout_width="match_parent"
-		    android:layout_height="@dimen/list_item_content_height"
-		    android:gravity="center"
-		    android:textAppearance="?android:attr/textAppearanceMedium"
-		    android:text="@string/nothing_found"
-	     >
-		</TextView>
+            style="@style/CardStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/list_item_content_height"
+            android:gravity="center"
+            android:text="@string/nothing_found"
+            android:textAppearance="?android:attr/textAppearanceMedium" >
+        </TextView>
 		
     </RelativeLayout>
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:paddingTop="@dimen/large_padding"
+			    android:paddingBottom="@dimen/large_padding"
+			   android:paddingRight="@dimen/default_padding"
+			    android:background="@color/drawer_header"
+			    >
+
+			    <ImageView
+			        android:id="@+id/imageViewUser"
+			        android:layout_width="75dp"
+			        android:layout_height="75dp"
+			        android:layout_alignParentLeft="true"
+			        android:layout_centerVertical="true"
+			        android:gravity="center"
+			        android:scaleType="center"
+			        android:src="@drawable/ic_action_person" />
+
+			    <TextView
+			        android:id="@+id/textViewUserName"
+			        android:layout_width="match_parent"
+			        android:layout_height="wrap_content"
+			        android:layout_alignTop="@+id/imageViewUser"
+			        android:layout_toRightOf="@+id/imageViewUser"
+			        android:gravity="center"
+			        android:text="Medium Text"
+			        android:textAppearance="?android:attr/textAppearanceMedium"
+			        android:textColor="@color/white" />
+
+			    <TextView
+			        android:id="@+id/textViewUserExtra"
+			        android:layout_width="match_parent"
+			        android:layout_height="wrap_content"
+			        android:layout_centerVertical="true"
+			        android:layout_toRightOf="@+id/imageViewUser"
+			        android:gravity="center"
+			        android:text="Medium Text"
+			        android:textAppearance="?android:attr/textAppearanceSmall"
+			        android:textColor="@color/white" />
+			
+</RelativeLayout>

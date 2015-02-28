@@ -69,14 +69,16 @@ public class FragmentUsers extends Fragment {
 
 	@Override
 	public void onStart(){
+		Utility.log(TAG,"start");
 		super.onStart();
 		load();//this will load data for listview
 	}
 	@Override
 	public void onResume(){
+		Utility.log(TAG,"Resume");
 		super.onResume();
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_users);
-		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_add_user_white));
+		
 		//load();
 	}
 	@Override
@@ -87,12 +89,13 @@ public class FragmentUsers extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
 		if (item.getItemId()==R.id.action_filter){
-			MainActivity.show.show(getFragmentManager(), TAG+"UsersCategoryDialog");
+			MainActivity.show.show(getFragmentManager(), UserFilterDialog.TAG);
 			return true;
 		}
 		return false;
 	}
 	public void load(){ 
+		Utility.log(TAG,"load");
 		listview.setVisibility(View.GONE);
 		Utility.showProgressDialog(getActivity());
 		fetch_all();
@@ -152,12 +155,12 @@ public class FragmentUsers extends Fragment {
 			}
 			@Override
 			public void onFailure(int statusCode, Header[] headers,Throwable throwable, JSONArray errorResponse) {
-				Utility.log(TAG,"failure");
+				Utility.log(TAG,"failure"+errorResponse);
 				Utility.hideProgressDialog();
 			}
 			@Override
 			public void onFailure(int statusCode, Header[] headers,Throwable throwable, JSONObject errorResponse){
-				Utility.log(TAG,"failure");
+				Utility.log(TAG,"failure"+errorResponse);
 				Utility.hideProgressDialog();
 			}
 		});
@@ -184,7 +187,6 @@ public class FragmentUsers extends Fragment {
 			}
 			return tmpdata;
 		}
-		
 		@Override
 		 protected void onPostExecute(ArrayList<User> data) {
 			setData(data);

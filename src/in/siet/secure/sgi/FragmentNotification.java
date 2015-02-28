@@ -52,7 +52,6 @@ public class FragmentNotification extends Fragment{
 	public void onResume(){
 		super.onResume();
 		((MainActivity)getActivity()).getSupportActionBar().setTitle(R.string.fragemnt_title_notification);
-		((MainActivity)getActivity()).getSupportActionBar().setLogo(getResources().getDrawable(R.drawable.ic_action_notification_white));
 		refresh();
 		//Utility.RaiseToast(getActivity(), "FragmentNotification onResume()", false);
 	}

@@ -20,9 +20,9 @@ public class Notification {
 	public String text;
 	public String subject;
 	public String time;
-	public Date dtime;
+	public long dtime;
 	public int id;
-	public String sid;
+	public String sid; //sender ki id like EMP-100
 	public int state;
 	//fetched
 	public Notification(int pid,String uimg,String title,String txt,String t){
@@ -33,7 +33,7 @@ public class Notification {
 		text=txt;
 	}
 	//new
-	public Notification(String title,String txt,Date t,String pid){
+	public Notification(String title,String txt,long t,String pid){
 		dtime=t;
 		subject=title;
 		sid=pid;

@@ -170,6 +170,7 @@ public class UserFilterDialog extends DialogFragment{
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+				Utility.log(TAG,"click ok");
 				FilterOptions.STUDENT=((RadioButton)holder.radio_group.findViewById(R.id.dialogFilterRadioStudent)).isChecked();
 				if(FilterOptions.STUDENT){
 					FilterOptions.YEAR=holder.years.getSelectedItemPosition();
@@ -197,6 +198,7 @@ public class UserFilterDialog extends DialogFragment{
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+				Utility.log(TAG,"click cancel");
 				UserFilterDialog.this.getDialog().cancel();
 				Utility.log(TAG,"dismiss");
 			}
