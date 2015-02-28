@@ -4,7 +4,6 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
-import in.siet.secure.sgi.FragmentNewNotification.ViewHolder;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -97,9 +96,7 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerListView = (ListView) findViewById(R.id.drawer_listview);
 		fullDrawerLayout = (LinearLayout) findViewById(R.id.drawer);
-		user_name = (TextView) findViewById(R.id.textViewUserName);
-		user_id = (TextView) findViewById(R.id.textViewUserExtra);
-		user_pic = (ImageView) findViewById(R.id.imageViewUser);
+		
 		drawerListView.setAdapter(new DrawerListAdapter(this, panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
@@ -115,21 +112,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
-
-		DisplayImageOptions round_options = new DisplayImageOptions.Builder()
-				.cacheInMemory(true)
-				.cacheOnDisk(true)
-				.displayer(
-						new RoundedBitmapDisplayer(getResources()
-								.getDimensionPixelSize(
-										R.dimen.drawer_user_image_radius)))
-				.build();
-		ImageLoader.getInstance().displayImage(
-				spf.getString(Constants.PreferenceKeys.pic_url, null),
-				user_pic, round_options);
-		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null)
-				+ " " + spf.getString(Constants.PreferenceKeys.l_name, null));
-		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
 	}
 
 	@Override

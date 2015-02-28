@@ -32,60 +32,20 @@
 
     <LinearLayout
         android:id="@+id/drawer"
-        android:layout_width="300dp"
+        style="@style/NavDrawer"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/gray15"
         android:orientation="vertical" >
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:paddingBottom="@dimen/large_padding"
-            android:paddingLeft="@dimen/default_padding"
-            android:paddingRight="@dimen/default_padding"
-            android:paddingTop="@dimen/large_padding" >
-
-            <ImageView
-                android:id="@+id/imageViewUser"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:gravity="center"
-                android:scaleType="center"
-                android:src="@drawable/ic_action_person" />
-
-            <TextView
-                android:id="@+id/textViewUserName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/imageViewUser"
-                android:layout_toRightOf="@+id/imageViewUser"
-                android:gravity="center"
-                android:text="Medium Text"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/white" />
-
-            <TextView
-                android:id="@+id/textViewUserExtra"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@+id/imageViewUser"
-                android:gravity="center"
-                android:text="Medium Text"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/white" />
-        </RelativeLayout>
 
         <ListView
             android:id="@+id/drawer_listview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:choiceMode="singleChoice"
-            android:paddingStart="10dp" />
+            android:divider="@null"
+            android:dividerHeight="0dp"
+            android:scrollbars="@null" />
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>
