@@ -58,11 +58,11 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
 		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
 		db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.BRANCHES.COMMAND_CREATE);
-		db.execSQL(DbStructure.COURSES.COMMAND_CREATE);
-		db.execSQL(DbStructure.SECTIONS.COMMAND_CREATE);
-		db.execSQL(DbStructure.YEAR.COMMAND_CREATE);
-
+		db.execSQL(DbStructure.Branches.COMMAND_CREATE);
+		db.execSQL(DbStructure.Courses.COMMAND_CREATE);
+		db.execSQL(DbStructure.Sections.COMMAND_CREATE);
+		db.execSQL(DbStructure.Year.COMMAND_CREATE);
+		db.execSQL(DbStructure.UserMapper.COMMAND_CREATE);
 	}
 
 	@Override
@@ -76,10 +76,11 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
 		db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
-		db.execSQL(DbStructure.BRANCHES.COMMAND_DROP);
-		db.execSQL(DbStructure.COURSES.COMMAND_DROP);
-		db.execSQL(DbStructure.SECTIONS.COMMAND_DROP);
-		db.execSQL(DbStructure.YEAR.COMMAND_DROP);
+		db.execSQL(DbStructure.Branches.COMMAND_DROP);
+		db.execSQL(DbStructure.Courses.COMMAND_DROP);
+		db.execSQL(DbStructure.Sections.COMMAND_DROP);
+		db.execSQL(DbStructure.Year.COMMAND_DROP);
+		db.execSQL(DbStructure.UserMapper.COMMAND_DROP);
 		onCreate(db);
 		DATABASE_VERSION = newVersion;
 	}
@@ -444,8 +445,30 @@ public class DbHelper extends SQLiteOpenHelper {
 	public void addInitialData(InitialData idata, String userid) {
 		if (db == null)
 			setDb();
-		new insertInitialData().execute(idata);// add initial data and logged in
-												// user
+		new insertInitialData().execute(idata);// add initial data
+		
+		// fill a mapper table with possible combination of courses, branches, years and
+		// sections that will be used to send notifications and batch messages
+		db.execSQL(DbStructure.Year.COMMAND_DROP);
+		db.execSQL(DbStructure.Year.COMMAND_CREATE);
+		String qry = "select c.name,b.name,y.year,s.name from courses as c join branches as b on b.course_id=c._id join year as y on y.branch_id=b._id join sections as s on s.year_id=y._id";
+		Cursor c = db.rawQuery(qry, null);
+		ContentValues values;
+		c.moveToFirst();
+		while (!c.isAfterLast()) {
+			values = new ContentValues();
+			values.put(DbStructure.UserMapper.COLUMN_BRANCH, c.getString(c
+					.getColumnIndexOrThrow(DbStructure.Branches.COLUMN_NAME)));
+			values.put(DbStructure.UserMapper.COLUMN_COURSE, c.getString(c
+					.getColumnIndexOrThrow(DbStructure.Courses.COLUMN_NAME)));
+			values.put(DbStructure.UserMapper.COLUMN_SECTION, c.getString(c
+					.getColumnIndexOrThrow(DbStructure.Sections.COLUMN_NAME)));
+			values.put(DbStructure.UserMapper.COLUMN_YEAR, c.getInt(c
+					.getColumnIndexOrThrow(DbStructure.Year.COLUMN_YEAR)));
+			db.insert(DbStructure.UserMapper.TABLE_NAME, null, values);
+			c.moveToNext();
+		}
+
 	}
 
 	private void setDb() {
@@ -490,62 +513,48 @@ public class DbHelper extends SQLiteOpenHelper {
 		protected Boolean doInBackground(InitialData... params) {
 			InitialData idata = params[0];
 			// drop tables not safe yet
-			db.execSQL(DbStructure.BRANCHES.COMMAND_DROP);
-			db.execSQL(DbStructure.COURSES.COMMAND_DROP);
-			db.execSQL(DbStructure.SECTIONS.COMMAND_DROP);
-			db.execSQL(DbStructure.YEAR.COMMAND_DROP);
+			db.execSQL(DbStructure.Branches.COMMAND_DROP);
+			db.execSQL(DbStructure.Courses.COMMAND_DROP);
+			db.execSQL(DbStructure.Sections.COMMAND_DROP);
+			db.execSQL(DbStructure.Year.COMMAND_DROP);
 
-			db.execSQL(DbStructure.BRANCHES.COMMAND_CREATE);
-			db.execSQL(DbStructure.COURSES.COMMAND_CREATE);
-			db.execSQL(DbStructure.SECTIONS.COMMAND_CREATE);
-			db.execSQL(DbStructure.YEAR.COMMAND_CREATE);
+			db.execSQL(DbStructure.Branches.COMMAND_CREATE);
+			db.execSQL(DbStructure.Courses.COMMAND_CREATE);
+			db.execSQL(DbStructure.Sections.COMMAND_CREATE);
+			db.execSQL(DbStructure.Year.COMMAND_CREATE);
 			// adding branches and
 			ContentValues values;
 			for (InitialData.Courses c : idata.courses) {
 				values = new ContentValues();
-				values.put(DbStructure.COURSES._ID, c.id);
-				values.put(DbStructure.COURSES.COLUMN_NAME, c.name);
-				values.put(DbStructure.COURSES.COLUMN_DURATION, c.duration);
-				db.insert(DbStructure.COURSES.TABLE_NAME, null, values);
+				values.put(DbStructure.Courses._ID, c.id);
+				values.put(DbStructure.Courses.COLUMN_NAME, c.name);
+				values.put(DbStructure.Courses.COLUMN_DURATION, c.duration);
+				db.insert(DbStructure.Courses.TABLE_NAME, null, values);
 			}
 
 			for (InitialData.Branches b : idata.branches) {
 				values = new ContentValues();
-				values.put(DbStructure.BRANCHES._ID, b.id);
-				values.put(DbStructure.BRANCHES.COLUMN_NAME, b.name);
-				values.put(DbStructure.BRANCHES.COLUMN_COURSE_ID, b.course_id);
-				db.insert(DbStructure.BRANCHES.TABLE_NAME, null, values);
+				values.put(DbStructure.Branches._ID, b.id);
+				values.put(DbStructure.Branches.COLUMN_NAME, b.name);
+				values.put(DbStructure.Branches.COLUMN_COURSE_ID, b.course_id);
+				db.insert(DbStructure.Branches.TABLE_NAME, null, values);
 			}
 
 			for (InitialData.Sections s : idata.sections) {
 				values = new ContentValues();
-				values.put(DbStructure.SECTIONS._ID, s.id);
-				values.put(DbStructure.SECTIONS.COLUMN_NAME, s.name);
-				values.put(DbStructure.SECTIONS.COLUMN_YEAR_ID, s.year_id);
-				db.insert(DbStructure.SECTIONS.TABLE_NAME, null, values);
+				values.put(DbStructure.Sections._ID, s.id);
+				values.put(DbStructure.Sections.COLUMN_NAME, s.name);
+				values.put(DbStructure.Sections.COLUMN_YEAR_ID, s.year_id);
+				db.insert(DbStructure.Sections.TABLE_NAME, null, values);
 			}
 
 			for (InitialData.Year y : idata.years) {
 				values = new ContentValues();
-				values.put(DbStructure.YEAR._ID, y.id);
-				values.put(DbStructure.YEAR.COLUMN_BRANCH_ID, y.branch_id);
-				values.put(DbStructure.YEAR.COLUMN_YEAR, y.year);
-				db.insert(DbStructure.YEAR.TABLE_NAME, null, values);
+				values.put(DbStructure.Year._ID, y.id);
+				values.put(DbStructure.Year.COLUMN_BRANCH_ID, y.branch_id);
+				values.put(DbStructure.Year.COLUMN_YEAR, y.year);
+				db.insert(DbStructure.Year.TABLE_NAME, null, values);
 			}
-			// adding user
-			// SharedPreferences
-			// spf=context.getSharedPreferences(context.getString(R.string.preference_file_name),
-			// Context.MODE_PRIVATE);
-			String query = "insert into user(login_id,f_name,l_name,pic_url) values('"
-					+ spf.getString(DbStructure.UserTable.COLUMN_LOGIN_ID, null)
-					+ "','"
-					+ spf.getString(DbStructure.UserTable.COLUMN_FNAME, null)
-					+ "','"
-					+ spf.getString(DbStructure.UserTable.COLUMN_LNAME, null)
-					+ "','"
-					+ spf.getString(DbStructure.UserTable.COLUMN_PROFILE_PIC,
-							null);
-			query = "";
 			return null;
 		}
 

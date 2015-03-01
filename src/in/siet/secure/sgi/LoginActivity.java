@@ -232,10 +232,13 @@ public class LoginActivity extends ActionBarActivity {
 		createdb();
 	}
 
-	public void queryServer(RequestParams params, boolean login) {
+	/*
+	 * params: dologin: either you want to login or you want to get initial data
+	 */
+	public void queryServer(RequestParams params, boolean dologin) {
 		Log.d(TAG + " queryServer", " at start");
 		AsyncHttpClient client = new AsyncHttpClient();
-		if (login) {
+		if (dologin) {
 			client.get("http://" + Constants.SERVER + Constants.COLON
 					+ Constants.PORT + "/SGI_webservice/login/dologin", params,
 					new JsonHttpResponseHandler() {
@@ -318,9 +321,9 @@ public class LoginActivity extends ActionBarActivity {
 									c.id = obj
 											.getInt(DbStructure.COLUMN_INCOMMING_ID);
 									c.duration = obj
-											.getInt(DbStructure.COURSES.COLUMN_DURATION);
+											.getInt(DbStructure.Courses.COLUMN_DURATION);
 									c.name = obj
-											.getString(DbStructure.COURSES.COLUMN_NAME);
+											.getString(DbStructure.Courses.COLUMN_NAME);
 									idata.courses.add(c);
 								}
 								tmparry = response.getJSONArray(1);
@@ -330,11 +333,11 @@ public class LoginActivity extends ActionBarActivity {
 									b = new InitialData.Branches();
 									JSONObject obj = tmparry.getJSONObject(i);
 									b.course_id = obj
-											.getInt(DbStructure.BRANCHES.COLUMN_COURSE_ID);
+											.getInt(DbStructure.Branches.COLUMN_COURSE_ID);
 									b.id = obj
 											.getInt(DbStructure.COLUMN_INCOMMING_ID);
 									b.name = obj
-											.getString(DbStructure.BRANCHES.COLUMN_NAME);
+											.getString(DbStructure.Branches.COLUMN_NAME);
 									idata.branches.add(b);
 								}
 								tmparry = response.getJSONArray(2);
@@ -344,11 +347,11 @@ public class LoginActivity extends ActionBarActivity {
 									s = new InitialData.Sections();
 									JSONObject obj = tmparry.getJSONObject(i);
 									s.year_id = obj
-											.getInt(DbStructure.SECTIONS.COLUMN_YEAR_ID);
+											.getInt(DbStructure.Sections.COLUMN_YEAR_ID);
 									s.id = obj
 											.getInt(DbStructure.COLUMN_INCOMMING_ID);
 									s.name = obj
-											.getString(DbStructure.SECTIONS.COLUMN_NAME);
+											.getString(DbStructure.Sections.COLUMN_NAME);
 									idata.sections.add(s);
 								}
 								tmparry = response.getJSONArray(3);
@@ -358,11 +361,11 @@ public class LoginActivity extends ActionBarActivity {
 									y = new InitialData.Year();
 									JSONObject obj = tmparry.getJSONObject(i);
 									y.branch_id = obj
-											.getInt(DbStructure.YEAR.COLUMN_BRANCH_ID);
+											.getInt(DbStructure.Year.COLUMN_BRANCH_ID);
 									y.id = obj
 											.getInt(DbStructure.COLUMN_INCOMMING_ID);
 									y.year = obj
-											.getInt(DbStructure.YEAR.COLUMN_YEAR);
+											.getInt(DbStructure.Year.COLUMN_YEAR);
 									idata.years.add(y);
 								}
 								Utility.log(TAG, "data building sucessfull");
@@ -376,7 +379,6 @@ public class LoginActivity extends ActionBarActivity {
 										false);
 							} finally {
 								Utility.hideProgressDialog();
-
 							}
 						}
 
