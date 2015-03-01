@@ -28,7 +28,7 @@
         </activity>
         <activity
             android:name="in.siet.secure.sgi.MainActivity"
-            android:label="@string/user_list"
+            android:label="@string/app_name"
             android:launchMode="singleTop" >
         </activity>
 
@@ -39,7 +39,14 @@
 
         <activity
             android:name="in.siet.secure.sgi.ChatActivity"
-            android:label="@string/user_list" >
+            android:label="@string/interaction" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.siet.secure.sgi.MainActivity" />
+        </activity>
+        <activity
+            android:name="in.siet.secure.sgi.SettingActivity"
+            android:label="@string/action_settings" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.siet.secure.sgi.MainActivity" />

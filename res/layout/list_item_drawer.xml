@@ -7,7 +7,7 @@
         android:id="@+id/drawer_list_item_image"
         android:layout_width="@dimen/drawer_item_image_width"
         android:layout_height="@dimen/drawer_item_image_height"
-        android:src="@drawable/ic_action_notification" />
+		android:src="@drawable/ic_action_notification" />
 
     <TextView
         android:id="@+id/drawer_list_item_text"
@@ -17,6 +17,7 @@
         android:gravity="center_vertical"
         android:text="TextView"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@drawable/drawer_item"
         android:textSize="14sp" />
 
 </LinearLayout>

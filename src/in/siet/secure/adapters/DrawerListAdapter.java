@@ -68,6 +68,7 @@ public class DrawerListAdapter extends ArrayAdapter<String> {
 			// setting bounds
 
 			convertView.setPadding(hpad, tpad, hpad, vpad);
+			convertView.setClickable(false);
 			return convertView;
 		} else {
 			LayoutInflater inflater = (LayoutInflater) context
@@ -81,27 +82,27 @@ public class DrawerListAdapter extends ArrayAdapter<String> {
 					.findViewById(R.id.drawer_list_item_image);
 			convertView.setTag(holder);
 			convertView.setPadding(hpad, 0, hpad, 0);
-			holder.option.setText(values[position]);
+			holder.option.setText(values[position]); //we are starting from 1
 			switch (position) {
-			case 1:
+			case Constants.DrawerIDs.NOTIFICATION:
 				holder.image.setImageDrawable(context.getResources()
-						.getDrawable(R.drawable.ic_action_notification));
+						.getDrawable(Constants.DrawerIcons.NOTIFICATION));
 				break;
-			case 2:
+			case Constants.DrawerIDs.INTERACTION:
 				holder.image.setImageDrawable(context.getResources()
-						.getDrawable(R.drawable.ic_action_chats));
+						.getDrawable(Constants.DrawerIcons.INTERACTION));
 				break;
-			case 3:
+			case Constants.DrawerIDs.ADD_USER:
 				holder.image.setImageDrawable(context.getResources()
-						.getDrawable(R.drawable.ic_action_add_user));
+						.getDrawable(Constants.DrawerIcons.ADD_USER));
 				break;
-			case 4:
+			case Constants.DrawerIDs.CREATE_NOTICE:
 				holder.image.setImageDrawable(context.getResources()
-						.getDrawable(R.drawable.ic_action_setting));
+						.getDrawable(Constants.DrawerIcons.CREATE_NOTICE));
 				break;
-			case 5:
+			case Constants.DrawerIDs.TRIGGER:
 				holder.image.setImageDrawable(context.getResources()
-						.getDrawable(R.drawable.ic_action_new_notice));
+						.getDrawable(Constants.DrawerIcons.TRIGGER));
 				break;
 			}
 			return convertView;

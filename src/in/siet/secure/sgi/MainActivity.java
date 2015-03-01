@@ -22,16 +22,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 public class MainActivity extends ActionBarActivity {
 	public static final String TAG = "in.siet.secure.sgi.MainActivity";
@@ -40,8 +37,6 @@ public class MainActivity extends ActionBarActivity {
 	private ListView drawerListView;
 	private LinearLayout fullDrawerLayout;
 	private boolean back_pressed = false;
-	private static ImageView user_pic;
-	private static TextView user_name, user_id;
 	private static ActionBarDrawerToggle drawerToggle;
 	static final UserFilterDialog show = new UserFilterDialog();
 	private static SharedPreferences spf;
@@ -96,7 +91,7 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawerListView = (ListView) findViewById(R.id.drawer_listview);
 		fullDrawerLayout = (LinearLayout) findViewById(R.id.drawer);
-		
+
 		drawerListView.setAdapter(new DrawerListAdapter(this, panelOption));
 		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
@@ -154,11 +149,11 @@ public class MainActivity extends ActionBarActivity {
 
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			// startActivity(SettingsActivity.class);
-			getFragmentManager()
-					.beginTransaction()
-					.replace(R.id.mainFrame, new FragmentSettings(),
-							FragmentSettings.TAG).commit();
+			startActivity(SettingActivity.class);
+			/*
+			 * getFragmentManager() .beginTransaction() .replace(R.id.mainFrame,
+			 * new FragmentSettings(), FragmentSettings.TAG).commit();
+			 */
 			return true;
 		} else if (id == R.id.action_logout) {
 			spf.edit().clear().commit();
@@ -196,7 +191,7 @@ public class MainActivity extends ActionBarActivity {
 		FragmentManager fragmentManager = getFragmentManager();
 		FragmentTransaction fragmentTransaction = fragmentManager
 				.beginTransaction().setTransitionStyle(R.anim.abc_fade_out);
-		Fragment fragment;// =fragmentManager.findFragmentByTag(TAG+panelOption[position]);
+		Fragment fragment = null;// =fragmentManager.findFragmentByTag(TAG+panelOption[position]);
 		switch (position) {
 		case Constants.DrawerIDs.NOTIFICATION:
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
@@ -221,12 +216,6 @@ public class MainActivity extends ActionBarActivity {
 				fragment = new FragmentUsers();
 			}
 			break;
-		case Constants.DrawerIDs.SETTING:
-			ACTIVE_FRAGMENT_TAG = FragmentSettings.TAG;
-			fragment = fragmentManager.findFragmentByTag(FragmentSettings.TAG);
-			if (fragment == null)
-				fragment = new FragmentSettings();
-			break;
 		case Constants.DrawerIDs.CREATE_NOTICE: // only for faculty
 			ACTIVE_FRAGMENT_TAG = FragmentNewNotification.TAG;
 			fragment = fragmentManager
@@ -247,9 +236,11 @@ public class MainActivity extends ActionBarActivity {
 					.show();
 			return;
 		}
+
 		Utility.log(TAG, "" + ACTIVE_FRAGMENT_TAG);
 		fragmentTransaction.replace(R.id.mainFrame, fragment,
 				ACTIVE_FRAGMENT_TAG).commit();
+
 	}
 
 	public class DrawerClickListner implements OnItemClickListener {
@@ -257,25 +248,29 @@ public class MainActivity extends ActionBarActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-
-			Bundle bundle = new Bundle();
-			if (position == Constants.DrawerIDs.ADD_USER) {
-				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-						Constants.DrawerIDs.ADD_USER);
-				show.setArguments(bundle);
-				show.show(getFragmentManager(), UserFilterDialog.TAG);
-			} else if (position == Constants.DrawerIDs.CREATE_NOTICE) {
-				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-						Constants.DrawerIDs.CREATE_NOTICE);
-				show.setArguments(bundle);
-				show.show(getFragmentManager(), UserFilterDialog.TAG);
-			} else {
-				switch_fragment(position);
-				drawerListView.setItemChecked(position, true);
+			if (position != 0) { //skipping head click
+				Bundle bundle = new Bundle();
+				if (position == Constants.DrawerIDs.ADD_USER) {
+					bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
+							Constants.DrawerIDs.ADD_USER);
+					show.setArguments(bundle);
+					show.show(getFragmentManager(), UserFilterDialog.TAG);
+				} else if (position == Constants.DrawerIDs.CREATE_NOTICE) {
+					bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
+							Constants.DrawerIDs.CREATE_NOTICE);
+					show.setArguments(bundle);
+					show.show(getFragmentManager(), UserFilterDialog.TAG);
+				} else {
+					switch_fragment(position);
+				}
 			}
 			drawerlayout.closeDrawer(fullDrawerLayout);
 
 		}
+	}
+
+	public void setDrawerSelect(int position) {
+		drawerListView.setItemChecked(position, true);
 	}
 
 	public void sendNewNotification(View view) {
