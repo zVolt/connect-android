@@ -88,8 +88,6 @@ public class FragmentUsers extends Fragment {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_users);
-		((MainActivity) getActivity())
-				.setDrawerSelect(Constants.DrawerIDs.ADD_USER);
 		// load();
 	}
 

@@ -12,7 +12,7 @@
     <string name="profile_url">pic_url</string>
     <string name="branch_fac">branch_faculty</string>
     <string name="section_stu">section_student</string>
-    <string name="logged_in">logged_in</string>
+    <string name="logged_in">logged_in</string>
     -->
     <string name="pref_cat_server">Server</string>
     <string name="user_login">College Login Id</string>
@@ -42,7 +42,7 @@
 	<string name="web_prm_query_id">query_id</string>
 	<string name="web_prm_login_id">login_id</string>
 	
-	<string name="preference_file_name">in.siet.secure.preference_file</string>
+	<string name="preference_file_name">in.siet.secure.preference_file</string>
     -->
 
     <string name="password">Password</string>
@@ -81,13 +81,11 @@
     <string name="type_subject">Subject here</string>
 
     <string-array name="array_panel_options">
-        <item>Head</item>
         <item>Notifications</item>
         <item>Interactions</item>
         <item>Add Users</item>
     </string-array>
     <string-array name="array_panel_options_fact">
-        <item>Head</item>
         <item>Notifications</item>
         <item>Interactions</item>
         <item>Add Users</item>

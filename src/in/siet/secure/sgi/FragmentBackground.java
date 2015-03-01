@@ -35,8 +35,6 @@ public class FragmentBackground extends Fragment {
 
 	@Override
 	public void onResume() {
-		((MainActivity) getActivity())
-				.setDrawerSelect(Constants.DrawerIDs.TRIGGER);
 		super.onResume();
 	}
 

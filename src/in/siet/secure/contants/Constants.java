@@ -18,19 +18,27 @@ public class Constants {
 			+ "/in.secure.siet.sgi/download/";
 
 	public interface DrawerIDs {
-		public static int NOTIFICATION = 1;
-		public static int INTERACTION = 2;
-		public static int ADD_USER = 3;
-		public static int CREATE_NOTICE = 4;
-		public static int TRIGGER = 5;
+		public static int NOTIFICATION = 0;
+		public static int INTERACTION = 1;
+		public static int ADD_USER = 2;
+		public static int CREATE_NOTICE = 3;
+		public static int TRIGGER = 4;
 	}
 
-	public interface DrawerIcons {
-		public static int NOTIFICATION = R.drawable.ic_action_notification;
-		public static int INTERACTION = R.drawable.ic_action_chats;
-		public static int ADD_USER = R.drawable.ic_action_add_user;
-		public static int CREATE_NOTICE = R.drawable.ic_action_new_notice;
-		public static int TRIGGER = R.drawable.ic_action_notification;
+	public interface DrawerIconsInactive {
+		public static int NOTIFICATION = R.drawable.ic_notifications_inactive;
+		public static int INTERACTION = R.drawable.ic_chat_inactive;
+		public static int ADD_USER = R.drawable.ic_adduser_inactive;
+		public static int CREATE_NOTICE = R.drawable.ic_newnotice_inactive;
+		public static int TRIGGER = R.drawable.ic_notifications_inactive;
+	}
+
+	public interface DrawerIconsActive {
+		public static int NOTIFICATION = R.drawable.ic_notifications_active;
+		public static int INTERACTION = R.drawable.ic_chat_active;
+		public static int ADD_USER = R.drawable.ic_adduser_active;
+		public static int CREATE_NOTICE = R.drawable.ic_newnotice_active;
+		public static int TRIGGER = R.drawable.ic_notifications_active;
 	}
 
 	public static final String pref_file_name = "in.siet.secure.preference_file";

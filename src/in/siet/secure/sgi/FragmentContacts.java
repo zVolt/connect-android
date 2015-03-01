@@ -71,8 +71,6 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 		// student=true;
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_contacts);
-		((MainActivity) getActivity())
-				.setDrawerSelect(Constants.DrawerIDs.INTERACTION);
 	}
 
 	@Override

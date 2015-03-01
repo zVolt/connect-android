@@ -62,8 +62,7 @@ public class FragmentNotification extends Fragment {
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_notification);
 		refresh();
-		((MainActivity) getActivity())
-				.setDrawerSelect(Constants.DrawerIDs.NOTIFICATION);
+
 		// Utility.RaiseToast(getActivity(), "FragmentNotification onResume()",
 		// false);
 	}

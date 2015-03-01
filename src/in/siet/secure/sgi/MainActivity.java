@@ -1,7 +1,6 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
-import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 import android.app.Fragment;
@@ -17,25 +16,27 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 public class MainActivity extends ActionBarActivity {
 	public static final String TAG = "in.siet.secure.sgi.MainActivity";
-	private String[] panelOption;
+
 	private DrawerLayout drawerlayout;
-	private ListView drawerListView;
-	private LinearLayout fullDrawerLayout;
+	private ScrollView fullDrawerLayout;
 	private boolean back_pressed = false;
 	private static ActionBarDrawerToggle drawerToggle;
 	static final UserFilterDialog show = new UserFilterDialog();
@@ -43,6 +44,8 @@ public class MainActivity extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE = "message";
 	public static String ACTIVE_FRAGMENT_TAG;
 	Toolbar toolbar;
+	private View[] drawerItemHolder;
+	private int[] drawerInactiveIconIds, drawerActiveIconIds;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,20 +83,9 @@ public class MainActivity extends ActionBarActivity {
 		spf = getSharedPreferences(Constants.pref_file_name,
 				Context.MODE_PRIVATE);
 
-		if (spf.getBoolean(Constants.PreferenceKeys.is_faculty, false)) {
-			panelOption = getResources().getStringArray(
-					R.array.array_panel_options_fact);
-		} else {
-			panelOption = getResources().getStringArray(
-					R.array.array_panel_options);
-		}
-
+		initDrawerItems();
 		drawerlayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		drawerListView = (ListView) findViewById(R.id.drawer_listview);
-		fullDrawerLayout = (LinearLayout) findViewById(R.id.drawer);
 
-		drawerListView.setAdapter(new DrawerListAdapter(this, panelOption));
-		drawerListView.setOnItemClickListener(new DrawerClickListner());
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
 				R.drawable.ic_drawer, R.string.drawer_open);
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -102,6 +94,84 @@ public class MainActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
+	}
+
+	private void initDrawerItems() {
+		// drawerListView = (ListView) findViewById(R.id.drawer_listview);
+		// drawerListView.setAdapter(new DrawerListAdapter(this, panelOption));
+		// drawerListView.setOnItemClickListener(new DrawerClickListner());
+		// setting user name and pic
+		TextView user_name = (TextView) findViewById(R.id.textViewUserName);
+		TextView user_id = (TextView) findViewById(R.id.textViewUserExtra);
+		ImageView user_pic = (ImageView) findViewById(R.id.imageViewUser);
+		SharedPreferences spf = getSharedPreferences(Constants.pref_file_name,
+				Context.MODE_PRIVATE);
+		DisplayImageOptions round_options = new DisplayImageOptions.Builder()
+				.cacheInMemory(true)
+				.cacheOnDisk(true)
+				.displayer(
+						new RoundedBitmapDisplayer(getResources()
+								.getDimensionPixelSize(
+										R.dimen.drawer_user_image_radius)))
+				.build();
+		ImageLoader.getInstance().displayImage(
+				spf.getString(Constants.PreferenceKeys.pic_url, null),
+				user_pic, round_options);
+		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null)
+				+ " " + spf.getString(Constants.PreferenceKeys.l_name, null));
+		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
+		// end setting user details drawer header
+
+		fullDrawerLayout = (ScrollView) findViewById(R.id.drawer);
+		LinearLayout parent = (LinearLayout) findViewById(R.id.drawer_item_parent);
+		// options defined by users
+		String[] panelOption;
+		if (spf.getBoolean(Constants.PreferenceKeys.is_faculty, false)) {
+			panelOption = getResources().getStringArray(
+					R.array.array_panel_options_fact);
+		} else {
+			panelOption = getResources().getStringArray(
+					R.array.array_panel_options);
+		}
+		drawerInactiveIconIds = new int[] {
+				Constants.DrawerIconsInactive.NOTIFICATION,
+				Constants.DrawerIconsInactive.INTERACTION,
+				Constants.DrawerIconsInactive.ADD_USER,
+				Constants.DrawerIconsInactive.CREATE_NOTICE,
+				Constants.DrawerIconsInactive.TRIGGER };
+		drawerActiveIconIds = new int[] {
+				Constants.DrawerIconsActive.NOTIFICATION,
+				Constants.DrawerIconsActive.INTERACTION,
+				Constants.DrawerIconsActive.ADD_USER,
+				Constants.DrawerIconsActive.CREATE_NOTICE,
+				Constants.DrawerIconsActive.TRIGGER };
+		drawerItemHolder = new View[panelOption.length];
+		int pos = 0;
+		View v;
+		DrawerClickListner listner = new DrawerClickListner();
+		DrawerItemViewHolder holder;
+		LayoutInflater li = LayoutInflater.from(getApplicationContext());
+		for (String str : panelOption) {
+			v = li.inflate(R.layout.list_item_drawer, parent, false);
+			v.setOnClickListener(listner);
+			holder = new DrawerItemViewHolder();
+			holder.img = (ImageView) v.findViewById(R.id.drawer_item_image);
+			holder.txt = (TextView) v.findViewById(R.id.drawer_item_text);
+			holder.txt.setText(str);
+			holder.img.setImageResource(drawerInactiveIconIds[pos]);
+			holder.position = pos;
+			v.setTag(holder);
+			parent.addView(v);
+			drawerItemHolder[pos] = v;
+			pos++;
+		}
+
+	}
+
+	private static class DrawerItemViewHolder {
+		ImageView img;
+		TextView txt;
+		int position;
 	}
 
 	@Override
@@ -140,7 +210,6 @@ public class MainActivity extends ActionBarActivity {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-
 		// handle drawer open/close clicks
 		back_pressed = false;
 		if (drawerToggle.onOptionsItemSelected(item)) {
@@ -187,11 +256,28 @@ public class MainActivity extends ActionBarActivity {
 		startActivity(intent);
 	}
 
+	private void setSelectedItem(int pos) {
+		int i = 0;
+		for (View v : drawerItemHolder) {
+			if (i == pos) {
+				v.setSelected(true);
+				((DrawerItemViewHolder) v.getTag()).img
+						.setImageResource(drawerActiveIconIds[i]);
+			} else {
+				v.setSelected(false);
+				((DrawerItemViewHolder) v.getTag()).img
+						.setImageResource(drawerInactiveIconIds[i]);
+			}
+			i++;
+		}
+	}
+
 	public void switch_fragment(int position) {
 		FragmentManager fragmentManager = getFragmentManager();
 		FragmentTransaction fragmentTransaction = fragmentManager
 				.beginTransaction().setTransitionStyle(R.anim.abc_fade_out);
 		Fragment fragment = null;// =fragmentManager.findFragmentByTag(TAG+panelOption[position]);
+
 		switch (position) {
 		case Constants.DrawerIDs.NOTIFICATION:
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
@@ -240,37 +326,35 @@ public class MainActivity extends ActionBarActivity {
 		Utility.log(TAG, "" + ACTIVE_FRAGMENT_TAG);
 		fragmentTransaction.replace(R.id.mainFrame, fragment,
 				ACTIVE_FRAGMENT_TAG).commit();
-
+		setSelectedItem(position);
 	}
 
-	public class DrawerClickListner implements OnItemClickListener {
+	public class DrawerClickListner implements OnClickListener {
 
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position,
-				long id) {
-			if (position != 0) { //skipping head click
-				Bundle bundle = new Bundle();
-				if (position == Constants.DrawerIDs.ADD_USER) {
-					bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-							Constants.DrawerIDs.ADD_USER);
-					show.setArguments(bundle);
-					show.show(getFragmentManager(), UserFilterDialog.TAG);
-				} else if (position == Constants.DrawerIDs.CREATE_NOTICE) {
-					bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-							Constants.DrawerIDs.CREATE_NOTICE);
-					show.setArguments(bundle);
-					show.show(getFragmentManager(), UserFilterDialog.TAG);
-				} else {
-					switch_fragment(position);
-				}
+		public void onClick(View view) {
+			Utility.log(TAG, "m clicked :D");
+			// remove previous selection and add new selection
+
+			DrawerItemViewHolder holder = (DrawerItemViewHolder) view.getTag();
+			Bundle bundle = new Bundle();
+			if (holder.position == Constants.DrawerIDs.ADD_USER) {
+				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
+						Constants.DrawerIDs.ADD_USER);
+				show.setArguments(bundle);
+				show.show(getFragmentManager(), UserFilterDialog.TAG);
+			} else if (holder.position == Constants.DrawerIDs.CREATE_NOTICE) {
+				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
+						Constants.DrawerIDs.CREATE_NOTICE);
+				show.setArguments(bundle);
+				show.show(getFragmentManager(), UserFilterDialog.TAG);
+			} else {
+				switch_fragment(holder.position);
 			}
 			drawerlayout.closeDrawer(fullDrawerLayout);
 
 		}
-	}
 
-	public void setDrawerSelect(int position) {
-		drawerListView.setItemChecked(position, true);
 	}
 
 	public void sendNewNotification(View view) {

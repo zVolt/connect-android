@@ -44,8 +44,7 @@ public class FragmentNewNotification extends Fragment {
 	public void onResume() {
 		((ActionBarActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_new);
-		((MainActivity) getActivity())
-				.setDrawerSelect(Constants.DrawerIDs.CREATE_NOTICE);
+		
 		super.onResume();
 	}
 

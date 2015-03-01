@@ -1,19 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer"
     style="@style/NavDrawer"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:background="@color/gray15"
-    android:orientation="vertical" >
+    android:background="@color/gray15" >
 
-    <ListView
-        android:id="@+id/drawer_listview"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:choiceMode="singleChoice"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        android:scrollbars="@null" />
+        android:orientation="vertical" >
 
-</LinearLayout>
+        <include layout="@layout/drawer_header" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+
+        <include
+            layout="@layout/list_item_drawer"
+            android:clickable="true"
+            android:onClick="drawerItemClick" />
+    </LinearLayout>
+
+</ScrollView>

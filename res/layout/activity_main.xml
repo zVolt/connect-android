@@ -30,22 +30,22 @@
         </FrameLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <ScrollView
         android:id="@+id/drawer"
         style="@style/NavDrawer"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/gray15"
-        android:orientation="vertical" >
+        android:background="@color/gray15" >
 
-        <ListView
-            android:id="@+id/drawer_listview"
+        <LinearLayout
+            android:id="@+id/drawer_item_parent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:choiceMode="singleChoice"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:scrollbars="@null" />
-    </LinearLayout>
+            android:orientation="vertical" >
+
+            <include layout="@layout/drawer_header" />
+        </LinearLayout>
+    </ScrollView>
 
 </android.support.v4.widget.DrawerLayout>
