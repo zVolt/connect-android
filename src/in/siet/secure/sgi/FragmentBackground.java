@@ -1,19 +1,18 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
-import in.siet.secure.contants.Constants;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-//import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+//import android.support.v4.app.Fragment;
 
 public class FragmentBackground extends Fragment {
 	// BackgroundResultReceiver resultreceiver;

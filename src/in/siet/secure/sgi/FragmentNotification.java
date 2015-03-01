@@ -2,7 +2,6 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Notification;
 import in.siet.secure.adapters.NotificationAdapter;
-import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
@@ -110,7 +109,7 @@ public class FragmentNotification extends Fragment {
 				bundle.putString(Notification.TEXT, notify.text);
 				bundle.putString(Notification.TIME, notify.time);
 				bundle.putString(Notification.SENDER_IMAGE, notify.image);
-				bundle.putInt(Notification.ID, notify.id);
+				bundle.putInt(Notification.ID, notify.sender_id);
 				fragment.setArguments(bundle);
 			}
 			getFragmentManager()

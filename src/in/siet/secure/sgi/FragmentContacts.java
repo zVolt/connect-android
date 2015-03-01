@@ -3,7 +3,6 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.ContactsAdapter;
 import in.siet.secure.adapters.ContactsAdapter.ViewHolder;
-import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 import android.app.Fragment;
 import android.content.Intent;

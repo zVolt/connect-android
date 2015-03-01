@@ -1,6 +1,5 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.contants.Constants;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;

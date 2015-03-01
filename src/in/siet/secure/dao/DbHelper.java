@@ -1,17 +1,15 @@
 package in.siet.secure.dao;
 
 import in.siet.secure.Util.Attachment;
+import in.siet.secure.Util.FilterOptions;
 import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.FragmentDetailNotification;
-import in.siet.secure.sgi.FragmentNewNotification;
 import in.siet.secure.sgi.FragmentNotification;
-import in.siet.secure.sgi.R;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -446,28 +444,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		if (db == null)
 			setDb();
 		new insertInitialData().execute(idata);// add initial data
-		
-		// fill a mapper table with possible combination of courses, branches, years and
-		// sections that will be used to send notifications and batch messages
-		db.execSQL(DbStructure.Year.COMMAND_DROP);
-		db.execSQL(DbStructure.Year.COMMAND_CREATE);
-		String qry = "select c.name,b.name,y.year,s.name from courses as c join branches as b on b.course_id=c._id join year as y on y.branch_id=b._id join sections as s on s.year_id=y._id";
-		Cursor c = db.rawQuery(qry, null);
-		ContentValues values;
-		c.moveToFirst();
-		while (!c.isAfterLast()) {
-			values = new ContentValues();
-			values.put(DbStructure.UserMapper.COLUMN_BRANCH, c.getString(c
-					.getColumnIndexOrThrow(DbStructure.Branches.COLUMN_NAME)));
-			values.put(DbStructure.UserMapper.COLUMN_COURSE, c.getString(c
-					.getColumnIndexOrThrow(DbStructure.Courses.COLUMN_NAME)));
-			values.put(DbStructure.UserMapper.COLUMN_SECTION, c.getString(c
-					.getColumnIndexOrThrow(DbStructure.Sections.COLUMN_NAME)));
-			values.put(DbStructure.UserMapper.COLUMN_YEAR, c.getInt(c
-					.getColumnIndexOrThrow(DbStructure.Year.COLUMN_YEAR)));
-			db.insert(DbStructure.UserMapper.TABLE_NAME, null, values);
-			c.moveToNext();
-		}
 
 	}
 
@@ -475,13 +451,31 @@ public class DbHelper extends SQLiteOpenHelper {
 		db = this.getWritableDatabase();
 	}
 
+	/**
+	 * Insert new notification to database fetches the target from
+	 * FilterOptionsStatic class members
+	 * 
+	 * @param sub
+	 *            Subject of the notification
+	 * @param body
+	 *            Content of the notification
+	 */
 	public void addNewNotification(String sub, String body) {
 		// get faculty login_id first
+		String course, branch, section;
+		int year;
+		// data copied in case use change it suddenly
+		course = FilterOptions.COURSE;
+		branch = FilterOptions.BRANCH;
+		section = FilterOptions.SECTION;
+		year = FilterOptions.YEAR;
+
 		String fid = context.getSharedPreferences(Constants.pref_file_name,
 				Context.MODE_PRIVATE).getString(
 				Constants.PreferenceKeys.user_id, null);
 		Long time = Calendar.getInstance().getTimeInMillis();
-		Notification new_noti = new Notification(sub, body, time, fid);
+		Notification new_noti = new Notification(sub, body, time, fid, course,
+				branch, section, year);
 		if (db == null)
 			setDb();
 		new InsertNotification().execute(new_noti);
@@ -494,18 +488,36 @@ public class DbHelper extends SQLiteOpenHelper {
 		@Override
 		protected Boolean doInBackground(Notification... params) {
 			Notification n = params[0];
+			long target_id;
+			// insert target
 			ContentValues values = new ContentValues();
+			values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
+			values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
+			values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
+			values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
+			target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
+					values);
+			// insert new notification
+			values = new ContentValues();
 			values.put(DbStructure.NotificationTable.COLUMN_SUBJECT, n.subject);
 			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
 			values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
 			values.put(DbStructure.NotificationTable.COLUMN_STATE,
 					Notification.STATE.CREATED);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
+			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
 			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
 			return true;
 		}
 	}
 
+	/**
+	 * Inserts courses, branches, year and section data passed, and fill
+	 * user_mapper table accordingly
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
 	private static class insertInitialData extends
 			AsyncTask<InitialData, Void, Boolean> {
 
@@ -557,6 +569,5 @@ public class DbHelper extends SQLiteOpenHelper {
 			}
 			return null;
 		}
-
 	}
 }
