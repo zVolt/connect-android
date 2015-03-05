@@ -472,7 +472,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
 		String fid = context.getSharedPreferences(Constants.pref_file_name,
 				Context.MODE_PRIVATE).getString(
-				Constants.PreferenceKeys.user_id, null);
+				Constants.PreferenceKeys.user_id, null); // users string is
+															// emp-100 type
 		Long time = Calendar.getInstance().getTimeInMillis();
 		Notification new_noti = new Notification(sub, body, time, fid, course,
 				branch, section, year);
@@ -497,7 +498,7 @@ public class DbHelper extends SQLiteOpenHelper {
 			values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
 			target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
 					values);
-			// insert new notification
+			// insert new notification and get its pk id
 			values = new ContentValues();
 			values.put(DbStructure.NotificationTable.COLUMN_SUBJECT, n.subject);
 			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
@@ -507,6 +508,7 @@ public class DbHelper extends SQLiteOpenHelper {
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
 			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
+
 			return true;
 		}
 	}
