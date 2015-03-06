@@ -1,65 +1,80 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
-import android.app.IntentService;
+import in.siet.secure.contants.Constants;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.ResultReceiver;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
-public class BackgroundActivity extends IntentService {
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
 
+public class BackgroundActivity extends Service {
 
-	//Intent localintent = new Intent(ConstantsBackground.BROADCAST_ACTION).putExtra(ConstantsBackground.EXTENDED_DATA_STATUS,true);
-	
-	
-	public BackgroundActivity() {
-		super(BackgroundActivity.class.getName());
-		// TODO Auto-generated constructor stub
+	SharedPreferences spref;
+	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
+
+	/** 
+	 * if start getting ANR then start a new thread in the service
+	 */
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {		
+		Utility.log(TAG, "onStartCommand");
+		handleIntent(intent);
+		return START_STICKY;
 	}
 
 	@Override
-	protected void onHandleIntent(Intent intent) {
-		// TODO Auto-generated method stub
-		Utility.log("BAckgroundAvtivity", "onHandleIntent");		
-		final ResultReceiver receiver=intent.getParcelableExtra("receiver");
-		int count=Integer.parseInt(intent.getStringExtra("count"));
-		
-		Bundle bundle=new Bundle();
-		
-		receiver.send(count,Bundle.EMPTY);
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		count++;
-		for(int i = 0 ; i<10 ; i++ ) {
-			Utility.RaiseToast(getApplicationContext(), "activity started"+count, false);
-			bundle.putString("inBackground", "inBackgroundActivity");
-			receiver.send(count, bundle);
-			count++;
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(i == 5)
-				{
-				Utility.AddLines("hiii");				
-				Utility.AddLines("hello");
-				Utility.buildNotification(this,MainActivity.class,Utility.notification_msg_id,null,null);
-				
-				}
-		}	
-		this.stopSelf();
+	@Deprecated
+	public void onStart(Intent intent, int startId) {
+		handleIntent(intent);
+		super.onStart(intent, startId);
 	}
-	
 
-	
-	
-	
-	
-	
+	WakeLock wake;
+
+	private void handleIntent(Intent intent) {
+		/**
+		 * Hold a partial wake lock so that you don't get killed :D
+		 */
+		PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+		if (wake == null)
+			wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		if (!wake.isHeld())
+			wake.acquire();
+		spref = getSharedPreferences(Constants.pref_file_name,
+				Context.MODE_PRIVATE);
+		RequestParams params = new RequestParams();
+		params.put(Constants.QueryParameters.USERNAME,
+				spref.getString(Constants.PreferenceKeys.user_id, null));
+		params.put(Constants.QueryParameters.TOKEN,
+				spref.getString(Constants.PreferenceKeys.token, null));		
+		new doPopo().execute();		
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		wake.release();
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static class doPopo extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
+			//
+			return null;
+		}
+
+	}
 }

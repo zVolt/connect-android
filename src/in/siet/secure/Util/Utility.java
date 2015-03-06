@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -93,7 +94,7 @@ public class Utility {
 		return (activeNetwork != null && activeNetwork.isConnectedOrConnecting());
 	}
 	
-	 /*
+	 /**
 	  * FUNCTION TO BUILD AND RAISE NOTIFICATION IN THE NOTIFICAION DRAWER
 	  */
 	public static void buildNotification(Context context,Class<?> resultantclass,int id,String title,String text) {
@@ -120,7 +121,7 @@ public class Utility {
 		mNotifyMgr.notify(id, mBuilder.build());	
 		notification_msg_active=true;	 
 	}
-	/*
+	/**
 	 * FUNCTION TO CREATE NOTIFICATION USING NotificationCompat.Builder 
 	 * AND RETURN IT TO buildNotification FUNCTION
 	 */
@@ -133,7 +134,7 @@ public class Utility {
 		return mBuilder;	
 	}
 	
-	/*
+	/**
 	 * FUNCTION TO ADD TEXT IN THE notification_msg_text FOR 
 	 * EXPANDABLE NOTIFICATION TO BE DISPLAYED IN THE NOTOFICATION DRAWER
 	 * set the text in the notification according to length of the array
@@ -147,7 +148,7 @@ public class Utility {
 		notification_msg_text[i]=txt;		
 	}
 	
-	/*
+	/**
 	 * FUCTION TO CANCEL THE MESSAGE PRESENT IN THE NOTIFICATION
 	 *  DRAWER AND TO CLEAR THE TEXT OF notification_msg_text
 	 */
@@ -158,7 +159,13 @@ public class Utility {
 		NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotifyMgr.cancel(notification_msg_id);
 	}
-	
+	/**
+	 * SET CURRENT ACTIVITY IN THE SHARED PREFERENCE
+	 
+	public void setCurrentActivity(){
+		
+	}*/
+		
 	public static class DownloadFile extends AsyncTask<String, Integer, Boolean>{
 		int id;
 		@Override

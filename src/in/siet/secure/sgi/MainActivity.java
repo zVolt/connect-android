@@ -4,14 +4,17 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.DrawerListAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -31,7 +34,6 @@ import android.widget.Toast;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 public class MainActivity extends ActionBarActivity {
 	public static final String TAG = "in.siet.secure.sgi.MainActivity";
@@ -48,6 +50,8 @@ public class MainActivity extends ActionBarActivity {
 	public static final String EXTRA_MESSAGE = "message";
 	public static String ACTIVE_FRAGMENT_TAG;
 	Toolbar toolbar;
+	private PendingIntent pendingIntent;
+	private AlarmManager alarmmanager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +80,7 @@ public class MainActivity extends ActionBarActivity {
 				.replace(R.id.mainFrame, notification, ACTIVE_FRAGMENT_TAG)
 				.commit();
 
-		/*
+		/**
 		 * CANCEL THE NOTIFICATION PRESENT IN THE NOTIFICATION DRAWER ONCE THE
 		 * USER HAS VIEWED IT
 		 */
@@ -115,8 +119,17 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
+	public void onPause(){
+		super.onPause();
+		Intent intent=new Intent(this, BackgroundActivity.class);				
+		stopService(intent);
+	}
+	
+	@Override
 	public void onResume() {
 		super.onResume();
+		// Retrieve a PendingIntent that will perform a broadcast	
+	    startAlarm();
 		back_pressed = false;
 	}
 
@@ -140,13 +153,16 @@ public class MainActivity extends ActionBarActivity {
 		return true;
 	}
 
+	
+	/**
+	 * HANDLE ACTION BAR ITEM CLICKS HERE. THE ACTION BAR WILL
+	 * AUTOMATICALLY  HANDLE CLICKS ON THE HO/UP BUTTON, AS LONG
+	 * AS YOU SPECIFY A PARENT ACTIVITY IN androidmanifest.xml.
+	 * 
+	 * HANDLE DRAWER OPEN/CLOSE CLICKS
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-
-		// handle drawer open/close clicks
 		back_pressed = false;
 		if (drawerToggle.onOptionsItemSelected(item)) {
 			return true;
@@ -277,7 +293,12 @@ public class MainActivity extends ActionBarActivity {
 
 		}
 	}
-
+	/**
+	 * Sends new notification created by user
+	 * @param view
+	 * 			the view on which action is performed
+	 * 
+	 */
 	public void sendNewNotification(View view) {
 		FragmentNewNotification.ViewHolder holder = (FragmentNewNotification.ViewHolder) (view
 				.getTag());
@@ -293,6 +314,16 @@ public class MainActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(), "cannot send message",
 					false);
 		}
+	}
+	
+	public void startAlarm() {
+	    alarmmanager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+	    int interval = 10000;
+	    Intent intent=new Intent(this,BackgroundActivity.class);
+	    PendingIntent pi=PendingIntent.getService(this, 0, intent, 0);
+	    alarmmanager.cancel(pi);
+	    alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,SystemClock.elapsedRealtime()+interval, interval, pi);
+	    Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
 	}
 
 }

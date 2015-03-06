@@ -35,6 +35,7 @@ public class Constants {
 		public static String section="Section";
 		public static String year="Year";
 		public static String db_id="DbId";
+		public static String id_activity_running="ActivityId";
 	}
 	
 	public interface QueryParameters{
@@ -97,6 +98,11 @@ public class Constants {
 			public static String LOGIN="Login";
 		}
 	}
+	public static interface idActivity {
+		public static int idLoginActivity=1;
+		public static int idMainActivity=2;
+		public static int idChatActivity=3;
+	} 
 }
 
 
