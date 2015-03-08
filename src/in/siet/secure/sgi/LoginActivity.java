@@ -62,7 +62,10 @@ public class LoginActivity extends ActionBarActivity {
 
 		spref = getApplicationContext().getSharedPreferences(
 				Constants.pref_file_name, Context.MODE_PRIVATE);
-
+		/*
+		 * UPDATE THE SHARED PREF ABOUT THE CURRENT ACTIVITY
+		
+		Utility.setCurrentActivity(); */
 		if (spref.getBoolean(Constants.PreferenceKeys.logged_in, false)) {
 			startMainActivity();
 		}

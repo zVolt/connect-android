@@ -84,6 +84,7 @@ public class Constants {
 
 	}
 
+
 	public static interface MsgState {
 		int RECEIVED = 0;
 		int SENT_SUCESSFULLY = 1;

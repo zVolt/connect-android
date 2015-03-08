@@ -11,14 +11,17 @@ import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -57,6 +60,8 @@ public class MainActivity extends ActionBarActivity {
 	Toolbar toolbar;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
+	private PendingIntent pendingIntent;
+	private AlarmManager alarmmanager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -191,8 +196,17 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
+	public void onPause() {
+		super.onPause();
+		Intent intent = new Intent(this, BackgroundActivity.class);
+		stopService(intent);
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
+		// Retrieve a PendingIntent that will perform a broadcast
+		startAlarm();
 		back_pressed = false;
 	}
 
@@ -473,6 +487,17 @@ public class MainActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(),
 					"cannot create notification", false);
 		}
+	}
+
+	public void startAlarm() {
+		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		int interval = 10000;
+		Intent intent = new Intent(this, BackgroundActivity.class);
+		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
+		alarmmanager.cancel(pi);
+		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime() + interval, interval, pi);
+		Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
 	}
 
 	private boolean verifyNewNotificationData(

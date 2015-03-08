@@ -17,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -118,7 +119,7 @@ public class ChatActivity extends ActionBarActivity {
 
 	@Override
 	public void onResume() {
-		super.onResume();
+		super.onResume();	
 		if (title != null)
 			getSupportActionBar().setTitle(title);
 		Utility.RaiseToast(getApplicationContext(), "resume " + receiver_id

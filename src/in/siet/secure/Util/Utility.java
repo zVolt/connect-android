@@ -13,8 +13,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 
-import com.loopj.android.http.RequestParams;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -30,6 +28,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.loopj.android.http.RequestParams;
 
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
@@ -120,6 +120,7 @@ public class Utility {
 				.isConnectedOrConnecting());
 	}
 
+
 	/**
 	 * FUNCTION TO BUILD AND RAISE NOTIFICATION IN THE NOTIFICAION DRAWER
 	 * 
@@ -135,6 +136,7 @@ public class Utility {
 			title = "New notification";
 		if (text == null)
 			text = "You have a new notification";
+
 		NotificationCompat.Builder mBuilder = NotificationBuilder(context,
 				R.drawable.ic_action_chats_white, title, text);
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
@@ -155,6 +157,7 @@ public class Utility {
 		notification_msg_active = true;
 	}
 
+
 	/**
 	 * FUNCTION TO CREATE NOTIFICATION USING NotificationCompat.Builder AND
 	 * RETURN IT TO buildNotification FUNCTION
@@ -173,6 +176,7 @@ public class Utility {
 		return mBuilder;
 	}
 
+
 	/**
 	 * 
 	 * FUNCTION TO ADD TEXT IN THE notification_msg_text FOR EXPANDABLE
@@ -188,6 +192,7 @@ public class Utility {
 		}
 		notification_msg_text[i] = txt;
 	}
+
 
 	/**
 	 * FUCTION TO CANCEL THE MESSAGE PRESENT IN THE NOTIFICATION DRAWER AND TO
