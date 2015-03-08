@@ -3,7 +3,6 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
-import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;

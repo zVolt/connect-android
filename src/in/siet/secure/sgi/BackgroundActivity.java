@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
-import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.RequestParams;
 
 public class BackgroundActivity extends Service {
@@ -19,18 +18,18 @@ public class BackgroundActivity extends Service {
 	SharedPreferences spref;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 
-	/** 
+	/**
 	 * if start getting ANR then start a new thread in the service
 	 */
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {		
-		Utility.log(TAG, "onStartCommand");
+	public int onStartCommand(Intent intent, int flags, int startId) {
+
 		handleIntent(intent);
 		return START_STICKY;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	@Deprecated
 	public void onStart(Intent intent, int startId) {
 		handleIntent(intent);
 		super.onStart(intent, startId);
@@ -53,8 +52,8 @@ public class BackgroundActivity extends Service {
 		params.put(Constants.QueryParameters.USERNAME,
 				spref.getString(Constants.PreferenceKeys.user_id, null));
 		params.put(Constants.QueryParameters.TOKEN,
-				spref.getString(Constants.PreferenceKeys.token, null));		
-		new doPopo().execute();		
+				spref.getString(Constants.PreferenceKeys.token, null));
+		new doPopo().execute();
 	}
 
 	@Override
@@ -72,7 +71,7 @@ public class BackgroundActivity extends Service {
 	private static class doPopo extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void... params) {
-			//
+			Utility.log(TAG, "executing I am a service");
 			return null;
 		}
 

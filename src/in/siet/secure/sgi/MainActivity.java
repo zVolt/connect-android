@@ -1,16 +1,17 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Utility;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
+
 import java.util.Calendar;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import in.siet.secure.Util.FilterOptions;
-import in.siet.secure.Util.Notification;
-import in.siet.secure.Util.Utility;
-import in.siet.secure.contants.Constants;
-import in.siet.secure.dao.DbHelper;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -60,7 +61,6 @@ public class MainActivity extends ActionBarActivity {
 	Toolbar toolbar;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
-	private PendingIntent pendingIntent;
 	private AlarmManager alarmmanager;
 
 	@Override

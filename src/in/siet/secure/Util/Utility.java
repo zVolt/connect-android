@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -81,8 +82,8 @@ public class Utility {
 		}
 	}
 
+	@SuppressLint("DefaultLocale")
 	public static String getUserImage(String id) {
-		// return
 		return BASE_IMG_URL + id.toLowerCase().trim() + ".jpg";
 	}
 
@@ -120,7 +121,6 @@ public class Utility {
 				.isConnectedOrConnecting());
 	}
 
-
 	/**
 	 * FUNCTION TO BUILD AND RAISE NOTIFICATION IN THE NOTIFICAION DRAWER
 	 * 
@@ -157,7 +157,6 @@ public class Utility {
 		notification_msg_active = true;
 	}
 
-
 	/**
 	 * FUNCTION TO CREATE NOTIFICATION USING NotificationCompat.Builder AND
 	 * RETURN IT TO buildNotification FUNCTION
@@ -176,7 +175,6 @@ public class Utility {
 		return mBuilder;
 	}
 
-
 	/**
 	 * 
 	 * FUNCTION TO ADD TEXT IN THE notification_msg_text FOR EXPANDABLE
@@ -192,7 +190,6 @@ public class Utility {
 		}
 		notification_msg_text[i] = txt;
 	}
-
 
 	/**
 	 * FUCTION TO CANCEL THE MESSAGE PRESENT IN THE NOTIFICATION DRAWER AND TO
