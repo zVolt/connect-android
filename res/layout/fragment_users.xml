@@ -1,56 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-     >
+    android:layout_height="fill_parent" >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-         >
-
-        <ListView
-            android:id="@+id/listViewUsers"
-            style="@style/CardStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-             >
-        </ListView>
-
-        <TextView
-            android:id="@+id/test_view_empty_list"
-            style="@style/CardStyle"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/list_item_content_height"
-            android:gravity="center"
-            android:text="@string/nothing_found"
-            android:textAppearance="?android:attr/textAppearanceMedium" >
-        </TextView>
-		
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayoutUsersButton"
+    <ListView
+        android:id="@+id/listViewUsers"
+        style="@style/CardStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
+    </ListView>
 
-        <ImageButton
-            android:id="@+id/buttonShowPrev"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/default_button_height"
-            android:layout_weight="0.5"
-            android:background="@drawable/button_dark_gray"
-            android:src="@drawable/ic_action_back_white" />
+    <TextView
+        android:id="@+id/test_view_empty_list"
+        style="@style/CardStyle"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_item_content_height"
+        android:gravity="center"
+        android:text="@string/nothing_found"
+        android:textAppearance="?android:attr/textAppearanceMedium" >
+    </TextView>
 
-        <ImageButton
-            android:id="@+id/buttonShowNext"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/default_button_height"
-            android:layout_weight="0.5"
-            android:background="@drawable/button_dark_gray"
-            android:src="@drawable/ic_action_forward_white" />
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

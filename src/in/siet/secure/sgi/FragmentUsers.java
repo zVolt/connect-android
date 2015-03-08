@@ -1,6 +1,8 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.Student;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.UsersAdapter;
@@ -19,7 +21,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -79,7 +80,7 @@ public class FragmentUsers extends Fragment {
 	public void onStart() {
 		Utility.log(TAG, "start");
 		super.onStart();
-		load();// this will load data for listview
+		// load();// this will load data for listview
 	}
 
 	@Override
@@ -88,7 +89,7 @@ public class FragmentUsers extends Fragment {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_users);
-		// load();
+		load();
 	}
 
 	@Override
@@ -154,22 +155,15 @@ public class FragmentUsers extends Fragment {
 	public void fetch_all() {
 
 		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, Base64.encodeToString(
-				sharedPreferences.getString(Constants.PreferenceKeys.user_id,
-						null).getBytes(), Base64.DEFAULT));
-		params.put(Constants.QueryParameters.TOKEN, Base64.encodeToString(
-				sharedPreferences
-						.getString(Constants.PreferenceKeys.token, null).trim()
-						.getBytes(), Base64.DEFAULT));
+		Utility.putCredentials(params, sharedPreferences);
 		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.STUDENT);
 		params.put(Constants.QueryParameters.COURSE, FilterOptions.COURSE);
 		params.put(Constants.QueryParameters.BRANCH, FilterOptions.BRANCH);
 		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);
 		params.put(Constants.QueryParameters.SECTION, FilterOptions.SECTION);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://" + Constants.SERVER + Constants.COLON
-				+ Constants.PORT + "/SGI_webservice/query/type_resolver",
-				params, new JsonHttpResponseHandler() {
+		client.get(Utility.BASE_URL + "query/type_resolver", params,
+				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONArray response) {
@@ -212,30 +206,30 @@ public class FragmentUsers extends Fragment {
 				for (int i = 0; i < size; i++) {
 					JSONObject tmpobj = values.getJSONObject(i);
 					User tmpusr;
-					if (tmpobj.has(Constants.JSONKeys.YEAR)) // no optimize it
-																// we may have
-																// mixed users
-						tmpusr = new User(tmpobj
+					/**
+					 * whether the user id student or faculty by checking the
+					 * content of received data if it contains the data
+					 * corresponding to year he must be a student else a faculty
+					 */
+					if (tmpobj.has(Constants.JSONKeys.YEAR))
+						tmpusr = new Student(tmpobj
 								.getString(Constants.JSONKeys.FIRST_NAME),
 								tmpobj.getString(Constants.JSONKeys.LAST_NAME),
-								tmpobj.getInt(Constants.JSONKeys.L_ID),
+								tmpobj.getString(Constants.JSONKeys.USER_ID),
 								tmpobj.getString(
 										Constants.JSONKeys.PROFILE_IMAGE)
 										.replace("\\/", "/"), tmpobj
-										.getString(Constants.JSONKeys.BRANCH),
-								tmpobj.getInt(Constants.JSONKeys.YEAR), tmpobj
-										.getString(Constants.JSONKeys.SECTION),
-								tmpobj.getString(Constants.JSONKeys.COURSE));
+										.getInt(Constants.JSONKeys.YEAR),
+								tmpobj.getString(Constants.JSONKeys.SECTION));
 					else
-						tmpusr = new User(tmpobj
+						tmpusr = new Faculty(tmpobj
 								.getString(Constants.JSONKeys.FIRST_NAME),
 								tmpobj.getString(Constants.JSONKeys.LAST_NAME),
-								tmpobj.getInt(Constants.JSONKeys.L_ID),
 								tmpobj.getString(
 										Constants.JSONKeys.PROFILE_IMAGE)
 										.replace("\\/", "/"), tmpobj
 										.getString(Constants.JSONKeys.BRANCH),
-								tmpobj.getString(Constants.JSONKeys.COURSE));// ,tmpobj.getInt(User.STATE),tmpobj.getString(User.MOBILE));
+								tmpobj.getString(Constants.JSONKeys.USER_ID));
 					tmpdata.add(tmpusr);
 				}
 			} catch (JSONException e) {
@@ -247,7 +241,7 @@ public class FragmentUsers extends Fragment {
 		@Override
 		protected void onPostExecute(ArrayList<User> data) {
 			setData(data);
-			refresh();
+			// refresh();
 			listview.setVisibility(View.VISIBLE);
 			Utility.hideProgressDialog();
 		}

@@ -1,13 +1,18 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
+import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
 import java.util.ArrayList;
 
+import org.apache.http.Header;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.app.Fragment;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +23,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 public class FragmentNotification extends Fragment {
 	static String TAG = "in.siet.secure.sgi.FragmentNotification";
@@ -43,7 +52,8 @@ public class FragmentNotification extends Fragment {
 				.findViewById(R.id.fragment_notification_list);
 		listView.setOnItemClickListener(new itemClickListener());
 		listView.setAdapter(adapter);
-		// listView.setEmptyView(rootView.findViewById(R.id.e));
+		listView.setEmptyView(rootView
+				.findViewById(R.id.notification_list_empty_view));
 		// hideList();
 		return rootView;
 	}
@@ -61,21 +71,8 @@ public class FragmentNotification extends Fragment {
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_notification);
 		refresh();
-
-		// Utility.RaiseToast(getActivity(), "FragmentNotification onResume()",
-		// false);
 	}
 
-	/*
-	 * public void hideList(){ listView.setVisibility(View.GONE);
-	 * //progressBar.setVisibility(View.VISIBLE); } public static void
-	 * showList(){ listView.setVisibility(View.VISIBLE);
-	 * //progressBar.setVisibility(View.GONE); }
-	 *//*
-		 * @Override public void onStart(){ super.onStart();
-		 * Utility.RaiseToast(getActivity(), "stating notifications", 0);
-		 * //adapter.notifyDataSetChanged(); }
-		 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -85,8 +82,10 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_refresh_notifications) {
-
-			new DbHelper(getActivity()).getNotifications();
+			Utility.log(TAG, "refresh notification");
+			PullNotifications();
+			new DbHelper(getActivity().getApplicationContext())
+					.getNotifications();
 			return true;
 		}
 		return false;
@@ -121,23 +120,80 @@ public class FragmentNotification extends Fragment {
 		}
 	}
 
+	/**
+	 * This method tells the adapter to update as underlying data has been
+	 * changed
+	 */
 	public static void refresh() {
 		if (adapter != null)
 			adapter.notifyDataSetChanged();
 	}
 
+	/**
+	 * This method clear any prevoius data from adapter and add items in the
+	 * data passed
+	 * 
+	 * @param data
+	 *            ArrayList of Notification to be added in list
+	 */
 	public static void setData(ArrayList<Notification> data) {
+		Utility.log(TAG, "received " + data.size());
 		adapter.clear();
 		adapter.addAll(data);
 	}
 
-	public static class PullNotifications extends AsyncTask<Void, Void, Void> {
+	/**
+	 * Fetched New notifications from server and insert them in database
+	 */
+	private void PullNotifications() {
+		AsyncHttpClient client = new AsyncHttpClient();
+		RequestParams params = new RequestParams();
+		client.get(Utility.BASE_URL + "pull_notification", params,
+				new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							JSONArray response) {
+						// TODO Auto-generated method stub
+						super.onSuccess(statusCode, headers, response);
+					}
 
-		@Override
-		protected Void doInBackground(Void... params) {
-			// pull notifications
-			return null;
-		}
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							JSONObject response) {
+						// TODO Auto-generated method stub
+						super.onSuccess(statusCode, headers, response);
+					}
 
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							String responseString) {
+						// TODO Auto-generated method stub
+						super.onSuccess(statusCode, headers, responseString);
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							String responseString, Throwable throwable) {
+						// TODO Auto-generated method stub
+						super.onFailure(statusCode, headers, responseString,
+								throwable);
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							Throwable throwable, JSONArray errorResponse) {
+						// TODO Auto-generated method stub
+						super.onFailure(statusCode, headers, throwable,
+								errorResponse);
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							Throwable throwable, JSONObject errorResponse) {
+						// TODO Auto-generated method stub
+						super.onFailure(statusCode, headers, throwable,
+								errorResponse);
+					}
+				});
 	}
 }

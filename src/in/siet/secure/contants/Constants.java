@@ -45,6 +45,7 @@ public class Constants {
 
 	public interface PreferenceKeys {
 		public static String user_id = "UserId";
+		public static String encripted_user_id = "EncriptedUserId";
 		public static String token = "Token";
 		public static String is_faculty = "IsFaculty";
 		public static String logged_in = "LoggedIn";
@@ -60,19 +61,26 @@ public class Constants {
 	}
 
 	public interface QueryParameters {
-		public static String PASSWORD = "password";
-		public static String USERNAME = "username";
-		public static String QUERY_ID = "query_id";
-		public static String TOKEN = "token";
-		public static String USER_TYPE = "user_type";
-		public static String BRANCH = "branch";
-		public static String COURSE = "course";
-		public static String SECTION = "section";
-		public static String YEAR = "year";
-		public static String LOGIN_ID = "login_id";
-		public static String IS_FACULTY = "is_faculty";
-		public static String MSGIDS = "message_ids";
-		public static String MESSAGES = "messages";
+		String PASSWORD = "password";
+		String USERNAME = "username";
+		String QUERY_ID = "query_id";
+		String TOKEN = "token";
+		String USER_TYPE = "user_type";
+		String BRANCH = "branch";
+		String COURSE = "course";
+		String SECTION = "section";
+		String YEAR = "year";
+		String LOGIN_ID = "login_id";
+		String IS_FACULTY = "is_faculty";
+		String MSGIDS = "message_ids";
+		String MESSAGES = "messages";
+		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
+
+		public interface Notification {
+			public static String SUBJECT = "subject";
+			public static String BODY = "body";
+			public static String TIME = "time";
+		}
 
 	}
 
@@ -93,11 +101,11 @@ public class Constants {
 	}
 
 	public static interface JSONKeys {
-		public static String FIRST_NAME = "FirstName";
-		public static String LAST_NAME = "LastName";
-		public static String PROFILE_IMAGE = "ProfileImage";
-		public static String L_ID = "LoginId";
-		public static String USER_ID = "UserId";
+		String FIRST_NAME = "FirstName";
+		String LAST_NAME = "LastName";
+		String PROFILE_IMAGE = "ProfileImage";
+		String L_ID = "LoginId";
+		String USER_ID = "UserId";
 		public static String BRANCH = "Branch";
 		public static String STATE = "State";
 		public static String YEAR = "Year";
@@ -109,7 +117,7 @@ public class Constants {
 		public static String P_MOB = "PMob";
 		public static String H_MOB = "HMob";
 		public static String Error = "Error";
-
+		public static String STREET = "Street";
 		public static String TOKEN = "Token";
 
 		public static String STATUS = "Status";

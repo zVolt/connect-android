@@ -142,9 +142,8 @@ public class ChatActivity extends ActionBarActivity {
 				spref.getString(Constants.PreferenceKeys.token, null));
 
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://" + Constants.SERVER + Constants.COLON
-				+ Constants.PORT + "/SGI_webservice/query/download_messages",
-				params, new JsonHttpResponseHandler() {
+		client.get(Utility.BASE_URL + "query/download_messages", params,
+				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONArray response) {
@@ -186,8 +185,7 @@ public class ChatActivity extends ActionBarActivity {
 		params.put(Constants.QueryParameters.TOKEN,
 				spref.getString(Constants.PreferenceKeys.token, null));
 		params.put(Constants.QueryParameters.MSGIDS, ids);
-		client.get("http://" + Constants.SERVER + Constants.COLON
-				+ Constants.PORT + "/SGI_webservice/query/receive_ack", params,
+		client.get(Utility.BASE_URL + "query/receive_ack", params,
 				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
@@ -231,10 +229,7 @@ public class ChatActivity extends ActionBarActivity {
 			updateCursor();
 			// send to server
 			RequestParams params = new RequestParams();
-			params.put(Constants.QueryParameters.USERNAME, Utility.encode(spref
-					.getString(Constants.PreferenceKeys.user_id, null)));
-			params.put(Constants.QueryParameters.TOKEN, Utility.encode(spref
-					.getString(Constants.PreferenceKeys.token, null)));
+			Utility.putCredentials(params, spref);
 			JSONObject mobj = new JSONObject();
 			try {
 				mobj.put(Constants.JSONMEssageKeys.SENDER, sender_lid);
@@ -248,9 +243,8 @@ public class ChatActivity extends ActionBarActivity {
 			params.put(Constants.QueryParameters.MESSAGES, mobj);
 			msg.setText("");
 			AsyncHttpClient client = new AsyncHttpClient();
-			client.get("http://" + Constants.SERVER + Constants.COLON
-					+ Constants.PORT + "/SGI_webservice/query/upload_message",
-					params, new JsonHttpResponseHandler() {
+			client.get(Utility.BASE_URL + "query/upload_message", params,
+					new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
@@ -285,5 +279,13 @@ public class ChatActivity extends ActionBarActivity {
 
 					});
 		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (c != null)
+			c.close();
+		Utility.log(TAG, "closed cursor");
+		super.onDestroy();
 	}
 }

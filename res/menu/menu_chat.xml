@@ -7,7 +7,7 @@
           android:id="@+id/action_refresh_messages"
         android:orderInCategory="10"
         android:icon="@drawable/ic_action_refresh_white"
-        android:title="@string/action_logout"
+        android:title="Refresh"
         app:showAsAction="always"/>
 
 </menu>

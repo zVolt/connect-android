@@ -1,9 +1,10 @@
 package in.siet.secure.dao;
 
 import in.siet.secure.Util.Attachment;
-import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Student;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
@@ -11,7 +12,6 @@ import in.siet.secure.sgi.FragmentDetailNotification;
 import in.siet.secure.sgi.FragmentNotification;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -24,7 +24,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
-import android.util.Base64;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -106,19 +105,44 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	public void getNotifications() {
-		new FetchNotification().execute(this);
+		new FetchNotification().execute();
 	}
 
 	public void getFilesOfNotification(int noti_id) {
 		new FetchFilesOfNotification().execute(this, noti_id);
 	}
 
+	public int getUserPk(String user_id) {
+		if (db == null)
+			setDb();
+		int pk_id = -1;
+		if (user_id != null) {
+			String[] columns = { DbStructure.UserTable._ID };
+			String[] sel_args = { user_id };
+
+			Cursor c = db.query(DbStructure.UserTable.TABLE_NAME, columns,
+					DbStructure.UserTable.COLUMN_LOGIN_ID + DbConstants.EQUALS
+							+ DbConstants.QUESTION_MARK, sel_args, null, null,
+					null);
+
+			if (c.moveToFirst()) {
+				int col_index;
+				if ((col_index = c.getColumnIndex(DbStructure.UserTable._ID)) > -1)
+					pk_id = c.getInt(col_index);
+			}
+		} else {
+			Utility.log(TAG, "inserting notification error user_id null");
+		}
+		Utility.log(TAG, "returning pk " + pk_id);
+		return pk_id;
+	}
+
 	private class FetchNotification extends
-			AsyncTask<DbHelper, Integer, ArrayList<Notification>> {
+			AsyncTask<Void, Integer, ArrayList<Notification>> {
 
 		@Override
-		protected ArrayList<Notification> doInBackground(DbHelper... params) {
-			DbHelper This = params[0];
+		protected ArrayList<Notification> doInBackground(Void... params) {
+			// DbHelper db = params[0];
 			String[] columns = { DbStructure.NotificationTable._ID,
 					DbStructure.UserTable.COLUMN_PROFILE_PIC,
 					DbStructure.NotificationTable.COLUMN_SUBJECT,
@@ -136,23 +160,24 @@ public class DbHelper extends SQLiteOpenHelper {
 					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
 					+ DbStructure.UserTable._ID + " order by "
 					+ DbStructure.NotificationTable.COLUMN_TIME);
-			Cursor c = This.getReadableDatabase().rawQuery(
-					"select " + DbStructure.NotificationTable.TABLE_NAME
-							+ DbConstants.DOT + columns[0] + DbConstants.COMMA
-							+ columns[1] + DbConstants.COMMA + columns[2]
-							+ DbConstants.COMMA + columns[3]
-							+ DbConstants.COMMA + columns[4] + " from "
-							+ DbStructure.NotificationTable.TABLE_NAME
-							+ " join " + DbStructure.UserTable.TABLE_NAME
-							+ " on "
-							+ DbStructure.NotificationTable.COLUMN_SENDER + "="
-							+ DbStructure.UserTable.TABLE_NAME
-							+ DbConstants.DOT + DbStructure.UserTable._ID
-							+ " order by "
-							+ DbStructure.NotificationTable.COLUMN_TIME, null);
+			if (db == null)
+				setDb();
+			Cursor c = db.rawQuery("select "
+					+ DbStructure.NotificationTable.TABLE_NAME
+					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
+					+ columns[1] + DbConstants.COMMA + columns[2]
+					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
+					+ columns[4] + " from "
+					+ DbStructure.NotificationTable.TABLE_NAME + " join "
+					+ DbStructure.UserTable.TABLE_NAME + " on "
+					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
+					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
+					+ DbStructure.UserTable._ID + " order by "
+					+ DbStructure.NotificationTable.COLUMN_TIME, null);
 			c.moveToFirst();
 			ArrayList<Notification> notifications = new ArrayList<Notification>();
 			while (c.isAfterLast() == false) {
+				Utility.log(TAG, "processsing notification");
 				Notification tmpnot = new Notification(c.getInt(c
 						.getColumnIndexOrThrow(columns[0])), c.getString(c
 						.getColumnIndexOrThrow(columns[1])), c.getString(c
@@ -162,13 +187,6 @@ public class DbHelper extends SQLiteOpenHelper {
 				notifications.add(tmpnot);
 				Utility.log(TAG, tmpnot.subject);
 				c.moveToNext();
-				synchronized (this) {
-					try {
-						this.wait(100);
-					} catch (Exception e) {
-
-					}
-				}
 			}
 			return notifications;
 		}
@@ -281,10 +299,14 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	}
 
+	/**
+	 * get user info from server asynchronously add it to database show toast
+	 * 
+	 * @param user
+	 * @param is_student
+	 */
 	public void addUser(final User user, final boolean is_student) {
-		// get user info from server asynchronously
-		// add it to db
-		// show toast
+
 		if (db == null)
 			setDb();
 
@@ -292,25 +314,22 @@ public class DbHelper extends SQLiteOpenHelper {
 		// SharedPreferences
 		// spf=context.getSharedPreferences(Constants.pref_file_name,
 		// Context.MODE_PRIVATE);
-		params.put(Constants.QueryParameters.USERNAME, Base64.encodeToString(
-				spf.getString(Constants.PreferenceKeys.user_id, null)
-						.getBytes(), Base64.DEFAULT));
-		params.put(
-				Constants.QueryParameters.TOKEN,
-				Base64.encodeToString(
-						spf.getString(Constants.PreferenceKeys.token, null)
-								.trim().getBytes(), Base64.DEFAULT));
-		params.put(Constants.QueryParameters.LOGIN_ID, user.id);
+		params.put(Constants.QueryParameters.USERNAME,
+				spf.getString(Constants.PreferenceKeys.encripted_user_id, null));
+		params.put(Constants.QueryParameters.TOKEN,
+				spf.getString(Constants.PreferenceKeys.token, null).trim());
+		params.put(Constants.QueryParameters.GET_DETAILS_OF_USER_ID,
+				user.user_id);
 		params.put(Constants.QueryParameters.USER_TYPE, is_student);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get("http://" + Constants.SERVER + Constants.COLON
-				+ Constants.PORT + "/SGI_webservice/query/get_user_info",
-				params, new JsonHttpResponseHandler() {
+		client.get(Utility.BASE_URL + "query/get_user_info", params,
+				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONObject response) {
 						try {
-							String query = "insert or ignore into user(f_name,l_name,pic_url,login_id) values(?,?,?,?)";
+							// String query =
+							// "insert or ignore into user(f_name,l_name,pic_url,login_id) values(?,?,?,?)";
 
 							ContentValues values = new ContentValues();
 							values.put(DbStructure.UserTable.COLUMN_FNAME,
@@ -320,25 +339,23 @@ public class DbHelper extends SQLiteOpenHelper {
 							values.put(
 									DbStructure.UserTable.COLUMN_PROFILE_PIC,
 									user.picUrl);
-							Utility.log(TAG, response.toString());
-							values.put(
-									DbStructure.UserTable.COLUMN_LOGIN_ID,
-									response.getString(Constants.JSONKeys.USER_ID));
+							values.put(DbStructure.UserTable.COLUMN_LOGIN_ID,
+									user.user_id);
 
-							long user_id = db.insertWithOnConflict(
+							Utility.log(TAG, response.toString());
+
+							long user_pk = db.insertWithOnConflict(
 									DbStructure.UserTable.TABLE_NAME, null,
 									values, SQLiteDatabase.CONFLICT_IGNORE);
 
-							if (user_id != -1) {
+							if (user_pk != -1) {
 								if (is_student) {
-									String[] args = { user.section,
-											user.year + "", user.dep,
-											user.course
-
-									};
+									Student s_user = (Student) user;
+									String[] args = { s_user.section,
+											String.valueOf(s_user.year) };
 									Cursor c = db
 											.rawQuery(
-													"select sections._id from sections join year on year_id=year._id join branches on branch_id=branches._id join courses on course_id=courses._id where sections.name=? and year.year=? and branches.name=? and courses.name=?",
+													"select sections._id from sections join year on year_id=year._id where sections.name=? and year.year=?",
 													args);
 									c.moveToFirst();
 									int section_id = 0;
@@ -348,7 +365,7 @@ public class DbHelper extends SQLiteOpenHelper {
 									values.clear();
 									values.put(
 											DbStructure.StudentContactsTable.COLUMN_USER_ID,
-											user_id);
+											user_pk);
 									values.put(
 											DbStructure.StudentContactsTable.COLUMN_SECTION_ID,
 											section_id);
@@ -358,11 +375,13 @@ public class DbHelper extends SQLiteOpenHelper {
 											null, values);
 									// db.rawQuery(query,args);
 								} else {
-									query = "insert into faculty(user_id,branch_id) values(?,(select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?))";
-									String[] args = { user.dep, user.course };
+									// query =
+									// "insert into faculty(user_id,branch_id) values(?,(select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?))";
+									Faculty f_user = (Faculty) user;
+									String[] args = { f_user.branch };
 									Cursor c = db
 											.rawQuery(
-													"select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?",
+													"select branches._id from branches  where branches.name=?",
 													args);
 									c.moveToFirst();
 									int branch_id = 0;
@@ -375,7 +394,7 @@ public class DbHelper extends SQLiteOpenHelper {
 											branch_id);
 									values.put(
 											DbStructure.FcultyContactsTable.COLUMN_USER_ID,
-											user_id);
+											user_pk);
 									db.insert(
 											DbStructure.FcultyContactsTable.TABLE_NAME,
 											null, values);
@@ -460,23 +479,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * @param body
 	 *            Content of the notification
 	 */
-	public void addNewNotification(String sub, String body) {
-		// get faculty login_id first
-		String course, branch, section;
-		int year;
-		// data copied in case use change it suddenly
-		course = FilterOptions.COURSE;
-		branch = FilterOptions.BRANCH;
-		section = FilterOptions.SECTION;
-		year = FilterOptions.YEAR;
-
-		String fid = context.getSharedPreferences(Constants.pref_file_name,
-				Context.MODE_PRIVATE).getString(
-				Constants.PreferenceKeys.user_id, null); // users string is
-															// emp-100 type
-		Long time = Calendar.getInstance().getTimeInMillis();
-		Notification new_noti = new Notification(sub, body, time, fid, course,
-				branch, section, year);
+	public void addNewNotification(Notification new_noti) {
 		if (db == null)
 			setDb();
 		new InsertNotification().execute(new_noti);

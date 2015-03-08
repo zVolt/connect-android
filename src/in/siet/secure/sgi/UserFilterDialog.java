@@ -190,6 +190,7 @@ public class UserFilterDialog extends DialogFragment{
 					break;
 				case -1:
 					Utility.RaiseToast(getActivity(),"dont know from where you reached on this dialog",true);
+					break;
 				}
 				Utility.RaiseToast(getActivity(), FilterOptions.COURSE+" "+(FilterOptions.STUDENT?"Students of "+FilterOptions.SECTION+" section "+(FilterOptions.YEAR==0?"All":FilterOptions.YEAR)+" year":"Faculties")+" from "+FilterOptions.BRANCH+" department"+(FilterOptions.BRANCH.equalsIgnoreCase("All")?"s":""),true);
 			}
