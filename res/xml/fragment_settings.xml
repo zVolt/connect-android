@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fragment="in.siet.secure.sgi.FragmentSettings"
+    android:title="@string/action_settings" >
+
+    <PreferenceCategory
+       android:key="pref_key_storage_settings"
+        android:title="@string/pref_cat_server" >
+        <EditTextPreference
+            android:defaultValue="192.168.0.100"
+            android:key="server_ip"
+            android:summary="default value"
+            android:title="Server" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
