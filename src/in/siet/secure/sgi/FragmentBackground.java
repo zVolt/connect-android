@@ -48,7 +48,7 @@ public class FragmentBackground extends Fragment {
 			@Override
 			public void onClick(View v) {
 				Intent intent = new Intent(getActivity()
-						.getApplicationContext(), BackgroundActivity.class);
+						.getApplicationContext(), BackgroundService.class);
 				Utility.log("onClick", "onClickButtonStart");
 				// intent.setData(Uri.parse("Background activity"));
 				intent.putExtra("count", "0");

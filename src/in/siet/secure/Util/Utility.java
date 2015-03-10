@@ -1,5 +1,6 @@
 package in.siet.secure.Util;
 
+import in.siet.secure.adapters.ContactsAdapter.ViewHolder;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 import in.siet.secure.sgi.R;
@@ -131,7 +132,8 @@ public class Utility {
 	 * @param text
 	 */
 	public static void buildNotification(Context context,
-			Class<?> resultantclass, int id, String title, String text) {
+			Class<?> resultantclass, int id, String title, String text,
+			String receiver,String rec_name) {
 		if (title == null)
 			title = "New notification";
 		if (text == null)
@@ -148,6 +150,8 @@ public class Utility {
 		}
 		mBuilder.setStyle(inboxStyle);
 		Intent resultIntent = new Intent(context, resultantclass);
+		resultIntent.putExtra("name",rec_name );
+		resultIntent.putExtra("user_id", receiver);		
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
 				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setContentIntent(resultPendingIntent);
@@ -196,7 +200,7 @@ public class Utility {
 	 * CLEAR THE TEXT OF notification_msg_text
 	 * 
 	 * @param context
-	 */
+	 
 	public static void CancelMessageNotification(Context context) {
 		for (int i = 0; i < 100; i++)
 			notification_msg_text[i] = null;
@@ -205,7 +209,7 @@ public class Utility {
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotifyMgr.cancel(notification_msg_id);
 	}
-
+*/
 	public static RequestParams putCredentials(RequestParams params,
 			SharedPreferences sharedPreferences) {
 

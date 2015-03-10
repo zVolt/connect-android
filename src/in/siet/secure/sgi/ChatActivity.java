@@ -137,9 +137,7 @@ public class ChatActivity extends ActionBarActivity {
 
 	public void fetchMessages() {
 		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, sender_lid);
-		params.put(Constants.QueryParameters.TOKEN,
-				spref.getString(Constants.PreferenceKeys.token, null));
+		Utility.putCredentials(params, spref);
 
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get(Utility.BASE_URL + "query/download_messages", params,

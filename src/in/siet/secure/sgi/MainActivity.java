@@ -95,7 +95,9 @@ public class MainActivity extends ActionBarActivity {
 		 * USER HAS VIEWED IT
 		 */
 		if (Utility.notification_msg_active == true)
-			Utility.CancelMessageNotification(this);
+		{
+			//Utility.CancelMessageNotification(this);		
+		}
 		spf = getSharedPreferences(Constants.pref_file_name,
 				Context.MODE_PRIVATE);
 
@@ -198,8 +200,8 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		Intent intent = new Intent(this, BackgroundActivity.class);
-		stopService(intent);
+		//Intent intent = new Intent(this, BackgroundService.class);
+	//	stopService(intent);
 	}
 
 	@Override
@@ -210,6 +212,18 @@ public class MainActivity extends ActionBarActivity {
 		back_pressed = false;
 	}
 
+	@Override
+	public void onDestroy(){
+		Utility.log(TAG,"on destroy");
+		super.onDestroy();
+		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		int interval = 10000;
+		Intent intent = new Intent(this, BackgroundService.class);
+		//.putExtra(Constants., value)
+		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
+		alarmmanager.cancel(pi);		
+	}
+	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
@@ -492,7 +506,8 @@ public class MainActivity extends ActionBarActivity {
 	public void startAlarm() {
 		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		int interval = 10000;
-		Intent intent = new Intent(this, BackgroundActivity.class);
+		Intent intent = new Intent(this, BackgroundService.class);
+		//.putExtra(Constants., value)
 		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
 		alarmmanager.cancel(pi);
 		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
