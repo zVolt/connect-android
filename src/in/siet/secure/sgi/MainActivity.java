@@ -198,7 +198,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		Intent intent = new Intent(this, BackgroundActivity.class);
+		Intent intent = new Intent(this, BackgroundService.class);
 		stopService(intent);
 	}
 
@@ -492,7 +492,7 @@ public class MainActivity extends ActionBarActivity {
 	public void startAlarm() {
 		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		int interval = 10000;
-		Intent intent = new Intent(this, BackgroundActivity.class);
+		Intent intent = new Intent(this, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
 		alarmmanager.cancel(pi);
 		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,

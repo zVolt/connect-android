@@ -35,7 +35,7 @@
         </activity>
 
         <service
-            android:name=".BackgroundActivity"
+            android:name=".BackgroundService"
             android:exported="false" >
         </service>
 

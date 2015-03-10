@@ -13,7 +13,7 @@ import android.os.PowerManager.WakeLock;
 
 import com.loopj.android.http.RequestParams;
 
-public class BackgroundActivity extends Service {
+public class BackgroundService extends Service {
 
 	SharedPreferences spref;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";

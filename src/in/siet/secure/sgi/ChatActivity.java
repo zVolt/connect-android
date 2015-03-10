@@ -118,7 +118,7 @@ public class ChatActivity extends ActionBarActivity {
 
 	@Override
 	public void onResume() {
-		super.onResume();	
+		super.onResume();
 		if (title != null)
 			getSupportActionBar().setTitle(title);
 		Utility.RaiseToast(getApplicationContext(), "resume " + receiver_id
@@ -137,10 +137,7 @@ public class ChatActivity extends ActionBarActivity {
 
 	public void fetchMessages() {
 		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, sender_lid);
-		params.put(Constants.QueryParameters.TOKEN,
-				spref.getString(Constants.PreferenceKeys.token, null));
-
+		Utility.putCredentials(params, spref);
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get(Utility.BASE_URL + "query/download_messages", params,
 				new JsonHttpResponseHandler() {
@@ -156,6 +153,10 @@ public class ChatActivity extends ActionBarActivity {
 							updateCursor();
 							int len = response.length();
 							JSONArray ack = new JSONArray();
+							/**
+							 * JSONArray is not a collection class so we cannot
+							 * use foreach loop
+							 */
 							for (int i = 0; i < len; i++) {
 								try {
 									ack.put(((JSONObject) response.get(i))
