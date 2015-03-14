@@ -30,7 +30,7 @@ public class ContactsAdapter extends CursorAdapter{
 		holder.detail.setText(FragmentContacts.student?"hi i am a student":"hi i am a teacher");
 		holder.extra.setText(FragmentContacts.student?c.getString(4)+" "+c.getString(5)+" "+c.getString(6)+" "+c.getString(7):c.getString(4)+" "+c.getString(5));
 		holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_person));
-		holder.user_id=c.getInt(0);
+		holder.user_pk_id=c.getInt(0);
 		
 		ImageLoader.getInstance().displayImage(c.getString(3), holder.image);
 	}
@@ -46,7 +46,7 @@ public class ContactsAdapter extends CursorAdapter{
 		holder.detail=(TextView)view.findViewById(R.id.textViewContactsDetails);
 		holder.image=(ImageView)view.findViewById(R.id.imageViewContactsImage);
 		
-		holder.user_id=c.getInt(0);
+		holder.user_pk_id=c.getInt(0);
 		
 		holder.name.setText(holder.user_name=c.getString(1)+c.getString(2));
 		holder.detail.setText(FragmentContacts.student?"hi i am a student":"hi i am a teacher");
@@ -58,7 +58,7 @@ public class ContactsAdapter extends CursorAdapter{
 	}
 
 	public static class ViewHolder{
-		public int user_id;
+		public int user_pk_id;
 		public String user_name;
 		TextView name;
 		TextView detail;

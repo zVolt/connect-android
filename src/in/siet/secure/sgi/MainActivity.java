@@ -153,14 +153,12 @@ public class MainActivity extends ActionBarActivity {
 				Constants.DrawerIconsInactive.NOTIFICATION,
 				Constants.DrawerIconsInactive.INTERACTION,
 				Constants.DrawerIconsInactive.ADD_USER,
-				Constants.DrawerIconsInactive.CREATE_NOTICE,
-				Constants.DrawerIconsInactive.TRIGGER };
+				Constants.DrawerIconsInactive.CREATE_NOTICE };
 		drawerActiveIconIds = new int[] {
 				Constants.DrawerIconsActive.NOTIFICATION,
 				Constants.DrawerIconsActive.INTERACTION,
 				Constants.DrawerIconsActive.ADD_USER,
-				Constants.DrawerIconsActive.CREATE_NOTICE,
-				Constants.DrawerIconsActive.TRIGGER };
+				Constants.DrawerIconsActive.CREATE_NOTICE };
 		drawerItemHolder = new View[panelOption.length];
 		int pos = 0;
 		View v;
@@ -245,12 +243,18 @@ public class MainActivity extends ActionBarActivity {
 
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			startActivity(SettingActivity.class);
+			Utility.startActivity(this, SettingActivity.class);
 			return true;
 		} else if (id == R.id.action_logout) {
+			// clear pref
 			spf.edit().clear().commit();
+
+			// clear db
+			DbHelper db = new DbHelper(getApplicationContext());
+			db.ClearDb(db.getWritableDatabase());
+
 			Log.d(TAG, "pref cleared");
-			startActivity(LoginActivity.class);
+			Utility.startActivity(this, LoginActivity.class);
 			finish();
 			return true;
 		} else if (id == R.id.action_reset) {
@@ -271,12 +275,6 @@ public class MainActivity extends ActionBarActivity {
 		} else {
 			super.onBackPressed();
 		}
-	}
-
-	public void startActivity(Class<?> activity) {
-		Intent intent = new Intent(this, activity);
-		Log.d(TAG, "stating login Activity");
-		startActivity(intent);
 	}
 
 	private void setSelectedItem(int pos) {
@@ -335,13 +333,6 @@ public class MainActivity extends ActionBarActivity {
 					.findFragmentByTag(FragmentNewNotification.TAG);
 			if (fragment == null)
 				fragment = new FragmentNewNotification();
-			break;
-		case Constants.DrawerIDs.TRIGGER:
-			ACTIVE_FRAGMENT_TAG = FragmentBackground.TAG;
-			fragment = fragmentManager
-					.findFragmentByTag(FragmentBackground.TAG);
-			if (fragment == null)
-				fragment = new FragmentBackground();
 			break;
 		default:
 			Toast.makeText(getApplicationContext(),
@@ -428,8 +419,8 @@ public class MainActivity extends ActionBarActivity {
 			params.put(Constants.QueryParameters.Notification.TIME, time);
 			params.put(Constants.QueryParameters.Notification.BODY, body);
 			params.put(Constants.QueryParameters.Notification.SUBJECT, subject);
-			client.get(Utility.BASE_URL + "query/set_new_notification", params,
-					new JsonHttpResponseHandler() {
+			client.get(Utility.getBaseURL() + "query/set_new_notification",
+					params, new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONArray response) {
@@ -498,6 +489,16 @@ public class MainActivity extends ActionBarActivity {
 		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
 				SystemClock.elapsedRealtime() + interval, interval, pi);
 		Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	protected void onDestroy() {
+		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(this, BackgroundService.class);
+		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
+		alarmmanager.cancel(pi);
+		Utility.log(TAG, "destroyed");
+		super.onDestroy();
 	}
 
 	private boolean verifyNewNotificationData(

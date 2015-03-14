@@ -35,23 +35,18 @@ import com.loopj.android.http.RequestParams;
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
 	private static ProgressDialog progress_dialog;
-	/**
-	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
-	 */
-	public static final int notification_msg_id = 1;
+	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
 	 * STRING TO HOLD THE TEXT OF THE NOTIFICATION TO BE RAISED FOR INCOMING
 	 * MESSAGE
 	 */
-	public static String notification_msg_text[] = new String[20];
+	public static String notification_msg_text[] = new String[MAX_NOTIFICATION_TEXT_LINES];
 	/**
 	 * BOOLEAN VARIABLE TO CHECK WHETHER NOTIFICATION IS ACTIVE IN THE
 	 * NOTIFICATION DRAWER OR NOT
 	 */
 	public static Boolean notification_msg_active = false;
 
-	public static String BASE_URL = "http://" + Constants.SERVER
-			+ Constants.COLON + Constants.PORT + "/SGI_webservice/";
 	public static String BASE_IMG_URL = "http://www.secure.siet.in/images/std_photo/";
 
 	public static void RaiseToast(Context context, String msg,
@@ -62,6 +57,11 @@ public class Utility {
 
 	public static void log(String TAG, String msg) {
 		Log.d(TAG, msg);
+	}
+
+	public static String getBaseURL() {
+		return "http://" + Constants.SERVER + Constants.COLON + Constants.PORT
+				+ "/SGI_webservice/";
 	}
 
 	public static void showProgressDialog(Context context) {
@@ -131,29 +131,23 @@ public class Utility {
 	 * @param text
 	 */
 	public static void buildNotification(Context context,
-			Class<?> resultantclass, int id, String title, String text) {
-		if (title == null)
-			title = "New notification";
-		if (text == null)
-			text = "You have a new notification";
+			Class<?> resultantclass, Intent action, String title, String text) {
 
 		NotificationCompat.Builder mBuilder = NotificationBuilder(context,
-				R.drawable.ic_action_chats_white, title, text);
+				R.drawable.ic_stat_launcher, title, text);
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-		inboxStyle.setBigContentTitle("BigTitle");
-		for (int i = 0; i < notification_msg_text.length; i++) {
-			if (notification_msg_active.equals(null))
-				break;
-			inboxStyle.addLine(notification_msg_text[i]);
-		}
+		inboxStyle.setBigContentTitle(title);
+
+		inboxStyle.addLine(text);
+
 		mBuilder.setStyle(inboxStyle);
-		Intent resultIntent = new Intent(context, resultantclass);
-		PendingIntent resultPendingIntent = PendingIntent.getActivity(context,
-				0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mBuilder.setContentIntent(resultPendingIntent);
+		PendingIntent p_intent = PendingIntent.getActivity(context, 0, action,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		mBuilder.setContentIntent(p_intent);
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.notify(id, mBuilder.build());
+		mNotifyMgr.notify(Constants.notification_msg_id, mBuilder.build());
 		notification_msg_active = true;
 	}
 
@@ -198,12 +192,12 @@ public class Utility {
 	 * @param context
 	 */
 	public static void CancelMessageNotification(Context context) {
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < MAX_NOTIFICATION_TEXT_LINES; i++)
 			notification_msg_text[i] = null;
 		notification_msg_active = false;
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.cancel(notification_msg_id);
+		mNotifyMgr.cancel(Constants.notification_msg_id);
 	}
 
 	public static RequestParams putCredentials(RequestParams params,
@@ -223,7 +217,7 @@ public class Utility {
 
 		@Override
 		protected Boolean doInBackground(String... arg0) {
-			id = new Integer(arg0[2]);
+			id = Integer.valueOf(arg0[2]);
 			try {
 				URL url = new URL(arg0[0]);
 				String filename = arg0[1];
@@ -261,4 +255,11 @@ public class Utility {
 				Utility.log(TAG, "download failed");
 		}
 	}
+
+	public static void startActivity(Context context, Class<?> activity) {
+		Intent intent = new Intent(context, activity);
+		Log.d(TAG, "stating login Activity");
+		context.startActivity(intent);
+	}
+
 }

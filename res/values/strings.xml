@@ -90,7 +90,6 @@
         <item>Interactions</item>
         <item>Add Users</item>
         <item>Create Notice</item>
-        <item>Trigger</item>
     </string-array>
     <string-array name="array_user_type">
         <item>Student</item>

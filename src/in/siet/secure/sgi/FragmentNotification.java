@@ -67,6 +67,7 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
+		
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_notification);
 		refresh();
@@ -115,7 +116,7 @@ public class FragmentNotification extends Fragment {
 					.setTransitionStyle(R.anim.abc_fade_out)
 					.replace(R.id.mainFrame, fragment,
 							FragmentDetailNotification.TAG)
-					.addToBackStack(null).commit();
+					.addToBackStack(FragmentDetailNotification.TAG).commit();
 		}
 	}
 
@@ -147,7 +148,7 @@ public class FragmentNotification extends Fragment {
 	private void PullNotifications() {
 		AsyncHttpClient client = new AsyncHttpClient();
 		RequestParams params = new RequestParams();
-		client.get(Utility.BASE_URL + "pull_notification", params,
+		client.get(Utility.getBaseURL() + "pull_notification", params,
 				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,

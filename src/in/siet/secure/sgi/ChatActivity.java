@@ -58,7 +58,7 @@ public class ChatActivity extends ActionBarActivity {
 		// if(savedInstanceState==null)
 		Intent intent = getIntent();
 		title = intent.getStringExtra("name");
-		receiver_id = intent.getIntExtra("user_id", -1);
+		receiver_id = intent.getIntExtra("user_pk_id", -1);
 		Utility.RaiseToast(getApplicationContext(), "onCreate null " + title,
 				false);
 		db = new DbHelper(getApplicationContext()).getWritableDatabase();
@@ -67,7 +67,7 @@ public class ChatActivity extends ActionBarActivity {
 		String tmpq = "select _id,login_id,pic_url from user where login_id='"
 				+ (sender_lid = spref.getString(
 						Constants.PreferenceKeys.user_id, null)) + "' or _id="
-				+ receiver_id;
+				+ receiver_id; // me or the receiver
 		c = db.rawQuery(tmpq, null);
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
@@ -139,7 +139,7 @@ public class ChatActivity extends ActionBarActivity {
 		RequestParams params = new RequestParams();
 		Utility.putCredentials(params, spref);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.BASE_URL + "query/download_messages", params,
+		client.get(Utility.getBaseURL() + "query/download_messages", params,
 				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
@@ -186,7 +186,7 @@ public class ChatActivity extends ActionBarActivity {
 		params.put(Constants.QueryParameters.TOKEN,
 				spref.getString(Constants.PreferenceKeys.token, null));
 		params.put(Constants.QueryParameters.MSGIDS, ids);
-		client.get(Utility.BASE_URL + "query/receive_ack", params,
+		client.get(Utility.getBaseURL() + "query/receive_ack", params,
 				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
@@ -244,7 +244,7 @@ public class ChatActivity extends ActionBarActivity {
 			params.put(Constants.QueryParameters.MESSAGES, mobj);
 			msg.setText("");
 			AsyncHttpClient client = new AsyncHttpClient();
-			client.get(Utility.BASE_URL + "query/upload_message", params,
+			client.get(Utility.getBaseURL() + "query/upload_message", params,
 					new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,

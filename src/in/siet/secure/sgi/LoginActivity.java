@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -96,12 +95,7 @@ public class LoginActivity extends ActionBarActivity {
 		back_pressed = false;
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			Fragment fragment = new FragmentSettings();
-			getFragmentManager().beginTransaction()
-					.replace(R.id.loginFrame, fragment).addToBackStack(null)
-					.commit();
-			Utility.log(TAG, "changing frame");
-			in_settings = true;
+			Utility.startActivity(this,SettingActivity.class);
 			return true;
 		} else if (id == R.id.action_about) {
 			return true;
@@ -280,7 +274,7 @@ public class LoginActivity extends ActionBarActivity {
 		Log.d(TAG + " queryServer", " at start");
 		AsyncHttpClient client = new AsyncHttpClient();
 		if (dologin) {
-			client.get(Utility.BASE_URL + "login/dologin", params,
+			client.get(Utility.getBaseURL() + "login/dologin", params,
 					new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
@@ -423,7 +417,7 @@ public class LoginActivity extends ActionBarActivity {
 
 					});
 		} else {
-			client.get(Utility.BASE_URL + "login/getInitial", params,
+			client.get(Utility.getBaseURL() + "login/getInitial", params,
 					new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,

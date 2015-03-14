@@ -83,25 +83,28 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	public void ClearDb(SQLiteDatabase db) {
-		db.execSQL(DbStructure.UserTable.COMMAND_DROP);
-		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
-		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
-		db.execSQL(DbStructure.FileTable.COMMAND_DROP);
-		db.execSQL(DbStructure.MessageTable.COMMAND_DROP);
-		db.execSQL(DbStructure.NotificationTable.COMMAND_DROP);
-		db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
-		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
-		db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
-
-		db.execSQL(DbStructure.UserTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.StudentContactsTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.NotificationTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.FileTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.MessageTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
-		db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
+		onUpgrade(db, 1, 1);
+		/*
+		 * db.execSQL(DbStructure.UserTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.FileTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.MessageTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.NotificationTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
+		 * db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
+		 * 
+		 * db.execSQL(DbStructure.UserTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.FcultyContactsTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.StudentContactsTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.NotificationTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.FileTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.MessageTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
+		 * db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
+		 */
 	}
 
 	public void getNotifications() {
@@ -322,7 +325,7 @@ public class DbHelper extends SQLiteOpenHelper {
 				user.user_id);
 		params.put(Constants.QueryParameters.USER_TYPE, is_student);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.BASE_URL + "query/get_user_info", params,
+		client.get(Utility.getBaseURL() + "query/get_user_info", params,
 				new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,

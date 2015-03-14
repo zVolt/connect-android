@@ -13,7 +13,8 @@ public class SettingActivity extends ActionBarActivity {
 				R.id.setting_fragment_container, new FragmentSettings()).commit();
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setDisplayShowHomeEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		
 	}
 }

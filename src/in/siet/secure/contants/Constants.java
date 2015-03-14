@@ -12,7 +12,10 @@ public class Constants {
 	// public static final String SOCKET=SERVER+COLON+PORT; //to allow user
 	// dynamic server ip change
 	public static final String SPACE = " ";
-
+	/**
+	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
+	 */
+	public static final int notification_msg_id = 1;
 	public static final String pathToApp = Environment
 			.getExternalStorageDirectory().getPath()
 			+ "/in.secure.siet.sgi/download/";
@@ -22,7 +25,6 @@ public class Constants {
 		public static int INTERACTION = 1;
 		public static int ADD_USER = 2;
 		public static int CREATE_NOTICE = 3;
-		public static int TRIGGER = 4;
 	}
 
 	public interface DrawerIconsInactive {
@@ -30,7 +32,6 @@ public class Constants {
 		public static int INTERACTION = R.drawable.ic_chat_inactive;
 		public static int ADD_USER = R.drawable.ic_adduser_inactive;
 		public static int CREATE_NOTICE = R.drawable.ic_newnotice_inactive;
-		public static int TRIGGER = R.drawable.ic_notifications_inactive;
 	}
 
 	public interface DrawerIconsActive {
@@ -38,7 +39,6 @@ public class Constants {
 		public static int INTERACTION = R.drawable.ic_chat_active;
 		public static int ADD_USER = R.drawable.ic_adduser_active;
 		public static int CREATE_NOTICE = R.drawable.ic_newnotice_active;
-		public static int TRIGGER = R.drawable.ic_notifications_active;
 	}
 
 	public static final String pref_file_name = "in.siet.secure.preference_file";
@@ -83,7 +83,6 @@ public class Constants {
 		}
 
 	}
-
 
 	public static interface MsgState {
 		int RECEIVED = 0;

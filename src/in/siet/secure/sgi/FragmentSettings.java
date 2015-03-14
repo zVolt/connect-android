@@ -8,15 +8,19 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 public class FragmentSettings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
 	public static final String TAG="in.siet.secure.sgi.FragmentSettings";
 	public FragmentSettings(){}
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.fragment_settings);
-		setRetainInstance(true);
+		//setRetainInstance(true);
 	}
 	
 	@Override
@@ -41,6 +45,7 @@ public class FragmentSettings extends PreferenceFragment implements OnSharedPref
             // Set summary to be the user-description for the selected value
             String ip=sharedPref.getString(key, "192.168.0.100");
             Constants.SERVER=ip;
+            
             (findPreference("server_ip")).setSummary(ip);
             Utility.RaiseToast(getActivity(), Constants.SERVER, false);
         }
