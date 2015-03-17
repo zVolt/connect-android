@@ -11,10 +11,15 @@ import in.siet.secure.dao.DbStructure;
 import java.util.ArrayList;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +36,13 @@ public class FragmentNotification extends Fragment {
 	public NotificationAdapter adapter;
 	public View rootView;
 	public ListView listView;
+	private BroadcastReceiver broadcast_receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Utility.log(TAG, "received local broadcast");
+			updateList();
+		}
+	};
 
 	// private static ProgressBar progressBar;
 	public FragmentNotification() {
@@ -67,7 +79,21 @@ public class FragmentNotification extends Fragment {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_notification);
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.registerReceiver(
+						broadcast_receiver,
+						new IntentFilter(
+								Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS));
 		refresh();
+	}
+
+	@Override
+	public void onPause() {
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.unregisterReceiver(broadcast_receiver);
+		super.onPause();
 	}
 
 	@Override
@@ -133,7 +159,8 @@ public class FragmentNotification extends Fragment {
 				bundle.putString(Constants.NOTIFICATION.SUBJECT, notify.subject);
 				bundle.putString(Constants.NOTIFICATION.TEXT, notify.text);
 				bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
-				bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
+				bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE,
+						notify.image);
 				bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
 				fragment.setArguments(bundle);
 			}
@@ -192,7 +219,6 @@ public class FragmentNotification extends Fragment {
 				c.moveToNext();
 			}
 			c.close();
-			db.close();
 			return notifications;
 		}
 

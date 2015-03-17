@@ -46,6 +46,12 @@ public class Constants {
 
 	public static final String pref_file_name = "in.siet.secure.preference_file";
 
+	public interface LOCAL_INTENT_ACTION {
+		String RELOAD_NOTIFICATIONS = "reload_notifications";
+		String RELOAD_MESSAGES = "reload_messages";
+		String RELOAD_CONTACTS = "reload_contacts";
+	}
+
 	public interface PREF_KEYS {
 		String user_id = "UserId";
 		String encripted_user_id = "EncriptedUserId";

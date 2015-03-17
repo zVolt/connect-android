@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -447,6 +448,7 @@ public class BackgroundService extends Service {
 											.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
 													db.fillNotifications(response
 															.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)));
+									sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 								}
 								// get messages and insert it into db(help of
 								// DbHelper)
@@ -502,5 +504,11 @@ public class BackgroundService extends Service {
 					|| ids_to_send.has(Constants.JSONKEYS.MESSAGES.ACK))
 				sendAck(ids_to_send);
 		}
+	}
+
+	private void sendBroadcast(String action) {
+		Intent intent = new Intent(action);
+		LocalBroadcastManager.getInstance(getApplicationContext())
+				.sendBroadcast(intent);
 	}
 }
