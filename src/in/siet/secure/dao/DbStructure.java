@@ -73,7 +73,7 @@ public final class DbStructure {
 				+ DbConstants.COMMA + COLUMN_SUBJECT + DbConstants.TYPE_TEXT
 				+ DbConstants.COMMA + COLUMN_STATE + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_TARGET + DbConstants.TYPE_INT
-				+ DbConstants.COMMA + COLUMN_TIME + DbConstants.TYPE_TEXT
+				+ DbConstants.COMMA + COLUMN_TIME + DbConstants.TYPE_INT
 				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE
 				+ TABLE_NAME + DbConstants.SEMICOLON;

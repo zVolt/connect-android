@@ -2,6 +2,7 @@ package in.siet.secure.Util;
 
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import in.siet.secure.sgi.BackgroundService;
 import in.siet.secure.sgi.R;
 
 import java.io.BufferedInputStream;
@@ -14,6 +15,7 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,7 +27,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.text.format.DateUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -59,6 +63,10 @@ public class Utility {
 		Log.d(TAG, msg);
 	}
 
+	public static void DEBUG(Exception e) {
+		e.printStackTrace();
+	}
+
 	public static String getBaseURL() {
 		return "http://" + Constants.SERVER + Constants.COLON + Constants.PORT
 				+ "/SGI_webservice/";
@@ -70,7 +78,7 @@ public class Utility {
 					"Please wait..", true, false);
 			Utility.log(TAG, "progress is OK");
 		} catch (Exception ex) {
-			log(TAG, "showProgressDialog " + ex.getMessage());
+			Utility.DEBUG(ex);
 		}
 	}
 
@@ -78,7 +86,7 @@ public class Utility {
 		try {
 			progress_dialog.dismiss();
 		} catch (Exception ex) {
-			log(TAG, "hideProgressDialog " + ex.getMessage());
+			Utility.DEBUG(ex);
 		}
 	}
 
@@ -103,7 +111,7 @@ public class Utility {
 			}
 			return sb.toString();
 		} catch (Exception ex) {
-			log("sha1", ex.getMessage());
+			Utility.DEBUG(ex);
 			return null;
 		}
 	}
@@ -133,8 +141,11 @@ public class Utility {
 	public static void buildNotification(Context context,
 			Class<?> resultantclass, Intent action, String title, String text) {
 
-		NotificationCompat.Builder mBuilder = NotificationBuilder(context,
-				R.drawable.ic_stat_launcher, title, text);
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+				context).setSmallIcon(R.drawable.ic_stat_launcher)
+				.setContentTitle(title).setContentText(text)
+				.setDefaults(Notification.DEFAULT_ALL);
+
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 		inboxStyle.setBigContentTitle(title);
 
@@ -149,24 +160,6 @@ public class Utility {
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotifyMgr.notify(Constants.notification_msg_id, mBuilder.build());
 		notification_msg_active = true;
-	}
-
-	/**
-	 * FUNCTION TO CREATE NOTIFICATION USING NotificationCompat.Builder AND
-	 * RETURN IT TO buildNotification FUNCTION
-	 * 
-	 * @param context
-	 * @param icon
-	 * @param title
-	 * @param text
-	 * @return
-	 */
-	public static NotificationCompat.Builder NotificationBuilder(
-			Context context, int icon, String title, String text) {
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-				context).setSmallIcon(icon).setContentTitle(title)
-				.setContentText(text).setDefaults(Notification.DEFAULT_ALL);
-		return mBuilder;
 	}
 
 	/**
@@ -204,10 +197,9 @@ public class Utility {
 			SharedPreferences sharedPreferences) {
 
 		params.put(Constants.QueryParameters.USERNAME, sharedPreferences
-				.getString(Constants.PreferenceKeys.encripted_user_id, null)
-				.trim());
+				.getString(Constants.PREF_KEYS.encripted_user_id, null).trim());
 		params.put(Constants.QueryParameters.TOKEN, sharedPreferences
-				.getString(Constants.PreferenceKeys.token, null).trim());
+				.getString(Constants.PREF_KEYS.token, null).trim());
 		return params;
 	}
 
@@ -237,7 +229,7 @@ public class Utility {
 				fileOutput.close();
 				return true;
 			} catch (Exception e) {
-				Utility.log(TAG, "" + e.getLocalizedMessage());
+				Utility.DEBUG(e);
 				return false;
 			}
 
@@ -262,4 +254,21 @@ public class Utility {
 		context.startActivity(intent);
 	}
 
+	public static void setAlarm(Context context, int time_in_milisec) {
+		AlarmManager alarmmanager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(context, BackgroundService.class);
+		PendingIntent pi = PendingIntent.getService(context, 0, intent, 0);
+		alarmmanager.cancel(pi);
+		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime() + time_in_milisec,
+				time_in_milisec, pi);
+		Utility.log(TAG, "alarm reset on " + time_in_milisec / 1000 + " sec");
+	}
+
+	public static String getTimeString(Context context, long time_in_milisec) {
+		return DateUtils.getRelativeDateTimeString(context, time_in_milisec,
+				DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0)
+				.toString();
+	}
 }

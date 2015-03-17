@@ -1,5 +1,6 @@
 package in.siet.secure.adapters;
 
+import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.R;
 import android.content.Context;
@@ -28,12 +29,11 @@ public class MessagesAdapter extends CursorAdapter {
 	public void bindView(View view, Context context, Cursor c) {
 		ViewHolder holder = (ViewHolder) view.getTag();
 		holder.text.setText(c.getString(1));
-		holder.time.setText(DateUtils.getRelativeDateTimeString(context,
-				c.getLong(2), DateUtils.SECOND_IN_MILLIS,
-				DateUtils.WEEK_IN_MILLIS, 0));
+		holder.time.setText(Utility.getTimeString(context, c.getLong(2)));
 		holder.state = c.getInt(3);
-		if (holder.state == Constants.MsgState.TO_SEND
-				|| holder.state == Constants.MsgState.SENT_SUCESSFULLY) {
+		if (holder.state == Constants.STATE.PENDING
+				|| holder.state == Constants.STATE.SENT
+				|| holder.state == Constants.STATE.ACK_RECEIVED) {
 			holder.container.setBackgroundResource(R.drawable.msg_right);
 			holder.text.setBackgroundColor(context.getResources().getColor(
 					R.color.msg_receive));
@@ -70,8 +70,8 @@ public class MessagesAdapter extends CursorAdapter {
 				c.getLong(2), DateUtils.SECOND_IN_MILLIS,
 				DateUtils.WEEK_IN_MILLIS, 0));
 		holder.state = c.getInt(3);
-		if (holder.state == Constants.MsgState.TO_SEND
-				|| holder.state == Constants.MsgState.SENT_SUCESSFULLY) {
+		if (holder.state == Constants.STATE.PENDING
+				|| holder.state == Constants.STATE.SENT) {
 			holder.container.setBackgroundResource(R.drawable.msg_right);
 			holder.text.setBackgroundColor(context.getResources().getColor(
 					R.color.msg_receive));

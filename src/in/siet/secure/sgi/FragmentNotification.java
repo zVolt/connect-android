@@ -3,15 +3,17 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
+import in.siet.secure.dao.DbStructure;
 
 import java.util.ArrayList;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.app.Fragment;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,16 +25,12 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
 public class FragmentNotification extends Fragment {
-	static String TAG = "in.siet.secure.sgi.FragmentNotification";
-	public static ArrayList<Notification> notifications = new ArrayList<Notification>();
-	public static NotificationAdapter adapter;
-	public static View rootView;
-	public static ListView listView;
+	public static final String TAG = "in.siet.secure.sgi.FragmentNotification";
+	public ArrayList<Notification> notifications = new ArrayList<Notification>();
+	public NotificationAdapter adapter;
+	public View rootView;
+	public ListView listView;
 
 	// private static ProgressBar progressBar;
 	public FragmentNotification() {
@@ -44,16 +42,16 @@ public class FragmentNotification extends Fragment {
 		rootView = inflater.inflate(R.layout.fragment_notification, container,
 				false);
 		adapter = new NotificationAdapter(getActivity(), notifications);
-		new DbHelper(getActivity()).getNotifications();
+
+		updateList();
+
 		setHasOptionsMenu(true);
-		// progressBar=(ProgressBar)rootView.findViewById(R.id.loading_notification);
 		listView = (ListView) rootView
 				.findViewById(R.id.fragment_notification_list);
 		listView.setOnItemClickListener(new itemClickListener());
 		listView.setAdapter(adapter);
 		listView.setEmptyView(rootView
 				.findViewById(R.id.notification_list_empty_view));
-		// hideList();
 		return rootView;
 	}
 
@@ -67,7 +65,6 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_notification);
 		refresh();
@@ -83,12 +80,41 @@ public class FragmentNotification extends Fragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_refresh_notifications) {
 			Utility.log(TAG, "refresh notification");
-			PullNotifications();
-			new DbHelper(getActivity().getApplicationContext())
-					.getNotifications();
+
+			updateList();
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * public method to update notification list
+	 */
+	public void updateList() {
+		Utility.showProgressDialog(getActivity());
+		new GetNotificationsFromDB().execute();
+	}
+
+	/**
+	 * This method tells the adapter to update as underlying data has been
+	 * changed
+	 */
+	public void refresh() {
+		if (adapter != null)
+			adapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * This method clear any previous data from adapter and add items in the
+	 * data passed
+	 * 
+	 * @param data
+	 *            ArrayList of Notification to be added in list
+	 */
+	public void setDataInAdapter(ArrayList<Notification> data) {
+		Utility.log(TAG, "received " + data.size());
+		adapter.clear();
+		adapter.addAll(data);
 	}
 
 	class itemClickListener implements OnItemClickListener {
@@ -104,11 +130,11 @@ public class FragmentNotification extends Fragment {
 			if (fragment == null) {
 				fragment = new FragmentDetailNotification();
 				Bundle bundle = new Bundle();
-				bundle.putString(Notification.SUBJECT, notify.subject);
-				bundle.putString(Notification.TEXT, notify.text);
-				bundle.putString(Notification.TIME, notify.time);
-				bundle.putString(Notification.SENDER_IMAGE, notify.image);
-				bundle.putInt(Notification.ID, notify.sender_id);
+				bundle.putString(Constants.NOTIFICATION.SUBJECT, notify.subject);
+				bundle.putString(Constants.NOTIFICATION.TEXT, notify.text);
+				bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
+				bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
+				bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
 				fragment.setArguments(bundle);
 			}
 			getFragmentManager()
@@ -121,79 +147,62 @@ public class FragmentNotification extends Fragment {
 	}
 
 	/**
-	 * This method tells the adapter to update as underlying data has been
-	 * changed
-	 */
-	public static void refresh() {
-		if (adapter != null)
-			adapter.notifyDataSetChanged();
-	}
-
-	/**
-	 * This method clear any prevoius data from adapter and add items in the
-	 * data passed
+	 * get the data for notification list from database
 	 * 
-	 * @param data
-	 *            ArrayList of Notification to be added in list
+	 * @author Zeeshan Khan
+	 * 
 	 */
-	public static void setData(ArrayList<Notification> data) {
-		Utility.log(TAG, "received " + data.size());
-		adapter.clear();
-		adapter.addAll(data);
-	}
+	private class GetNotificationsFromDB extends
+			AsyncTask<Void, Integer, ArrayList<Notification>> {
 
-	/**
-	 * Fetched New notifications from server and insert them in database
-	 */
-	private void PullNotifications() {
-		AsyncHttpClient client = new AsyncHttpClient();
-		RequestParams params = new RequestParams();
-		client.get(Utility.getBaseURL() + "pull_notification", params,
-				new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONArray response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusCode, headers, response);
-					}
+		@Override
+		protected ArrayList<Notification> doInBackground(Void... params) {
+			String[] columns = { DbStructure.NotificationTable._ID,
+					DbStructure.UserTable.COLUMN_PROFILE_PIC,
+					DbStructure.NotificationTable.COLUMN_SUBJECT,
+					DbStructure.NotificationTable.COLUMN_TEXT,
+					DbStructure.NotificationTable.COLUMN_TIME };
+			SQLiteDatabase db = new DbHelper(getActivity()
+					.getApplicationContext()).getDb();
+			Cursor c = db.rawQuery("select "
+					+ DbStructure.NotificationTable.TABLE_NAME
+					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
+					+ columns[1] + DbConstants.COMMA + columns[2]
+					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
+					+ columns[4] + " from "
+					+ DbStructure.NotificationTable.TABLE_NAME + " join "
+					+ DbStructure.UserTable.TABLE_NAME + " on "
+					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
+					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
+					+ DbStructure.UserTable._ID + " order by "
+					+ DbStructure.NotificationTable.COLUMN_TIME, null);
 
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONObject response) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusCode, headers, response);
-					}
+			ArrayList<Notification> notifications = new ArrayList<Notification>();
+			c.moveToFirst();
+			while (c.isAfterLast() == false) {
+				Utility.log(TAG, "processsing notification");
+				Notification tmpnot = new Notification(c.getInt(c
+						.getColumnIndexOrThrow(columns[0])), c.getString(c
+						.getColumnIndexOrThrow(columns[1])), c.getString(c
+						.getColumnIndexOrThrow(columns[2])), c.getString(c
+						.getColumnIndexOrThrow(columns[3])), c.getLong(c
+						.getColumnIndexOrThrow(columns[4])));
+				notifications.add(tmpnot);
+				Utility.log(TAG, tmpnot.subject);
+				c.moveToNext();
+			}
+			c.close();
+			db.close();
+			return notifications;
+		}
 
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							String responseString) {
-						// TODO Auto-generated method stub
-						super.onSuccess(statusCode, headers, responseString);
-					}
+		@Override
+		protected void onPostExecute(ArrayList<Notification> data) {
+			Utility.log(TAG, "we get data" + data.toString());
+			setDataInAdapter(data);
+			refresh();
+			Utility.hideProgressDialog();
+		}
 
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							String responseString, Throwable throwable) {
-						// TODO Auto-generated method stub
-						super.onFailure(statusCode, headers, responseString,
-								throwable);
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONArray errorResponse) {
-						// TODO Auto-generated method stub
-						super.onFailure(statusCode, headers, throwable,
-								errorResponse);
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-						// TODO Auto-generated method stub
-						super.onFailure(statusCode, headers, throwable,
-								errorResponse);
-					}
-				});
 	}
 }

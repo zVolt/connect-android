@@ -182,11 +182,11 @@ public class UserFilterDialog extends DialogFragment{
 				bundle=getArguments();
 				switch(bundle.getInt(UserFilterDialog.FRAGMENT_TO_OPEN, -1))
 				{
-				case Constants.DrawerIDs.ADD_USER:
-					((MainActivity)getActivity()).switch_fragment(Constants.DrawerIDs.ADD_USER);
+				case Constants.DRAWER_ID.ADD_USER:
+					((MainActivity)getActivity()).switch_fragment(Constants.DRAWER_ID.ADD_USER);
 					break;
-				case Constants.DrawerIDs.CREATE_NOTICE:
-					((MainActivity)getActivity()).switch_fragment(Constants.DrawerIDs.CREATE_NOTICE);
+				case Constants.DRAWER_ID.CREATE_NOTICE:
+					((MainActivity)getActivity()).switch_fragment(Constants.DRAWER_ID.CREATE_NOTICE);
 					break;
 				case -1:
 					Utility.RaiseToast(getActivity(),"dont know from where you reached on this dialog",true);

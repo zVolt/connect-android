@@ -151,7 +151,9 @@ public class FragmentUsers extends Fragment {
 		}
 
 	}
-
+/**
+ * fetch users from server based on filter
+ */
 	public void fetch_all() {
 
 		RequestParams params = new RequestParams();
@@ -211,25 +213,25 @@ public class FragmentUsers extends Fragment {
 					 * content of received data if it contains the data
 					 * corresponding to year he must be a student else a faculty
 					 */
-					if (tmpobj.has(Constants.JSONKeys.YEAR))
+					if (tmpobj.has(Constants.JSONKEYS.YEAR))
 						tmpusr = new Student(tmpobj
-								.getString(Constants.JSONKeys.FIRST_NAME),
-								tmpobj.getString(Constants.JSONKeys.LAST_NAME),
-								tmpobj.getString(Constants.JSONKeys.USER_ID),
+								.getString(Constants.JSONKEYS.FIRST_NAME),
+								tmpobj.getString(Constants.JSONKEYS.LAST_NAME),
+								tmpobj.getString(Constants.JSONKEYS.USER_ID),
 								tmpobj.getString(
-										Constants.JSONKeys.PROFILE_IMAGE)
+										Constants.JSONKEYS.PROFILE_IMAGE)
 										.replace("\\/", "/"), tmpobj
-										.getInt(Constants.JSONKeys.YEAR),
-								tmpobj.getString(Constants.JSONKeys.SECTION));
+										.getInt(Constants.JSONKEYS.YEAR),
+								tmpobj.getString(Constants.JSONKEYS.SECTION));
 					else
 						tmpusr = new Faculty(tmpobj
-								.getString(Constants.JSONKeys.FIRST_NAME),
-								tmpobj.getString(Constants.JSONKeys.LAST_NAME),
+								.getString(Constants.JSONKEYS.FIRST_NAME),
+								tmpobj.getString(Constants.JSONKEYS.LAST_NAME),
 								tmpobj.getString(
-										Constants.JSONKeys.PROFILE_IMAGE)
+										Constants.JSONKEYS.PROFILE_IMAGE)
 										.replace("\\/", "/"), tmpobj
-										.getString(Constants.JSONKeys.BRANCH),
-								tmpobj.getString(Constants.JSONKeys.USER_ID));
+										.getString(Constants.JSONKEYS.BRANCH),
+								tmpobj.getString(Constants.JSONKEYS.USER_ID));
 					tmpdata.add(tmpusr);
 				}
 			} catch (JSONException e) {

@@ -65,7 +65,7 @@ public class LoginActivity extends ActionBarActivity {
 		 * UPDATE THE SHARED PREF ABOUT THE CURRENT ACTIVITY
 		
 		Utility.setCurrentActivity(); */
-		if (spref.getBoolean(Constants.PreferenceKeys.logged_in, false)) {
+		if (spref.getBoolean(Constants.PREF_KEYS.logged_in, false)) {
 			startMainActivity();
 		}
 		setContentView(R.layout.activity_login);
@@ -171,7 +171,7 @@ public class LoginActivity extends ActionBarActivity {
 	public void startMainActivity() {
 		Intent intent = new Intent(this, MainActivity.class);
 		Utility.log(TAG, "stating new Activity");
-		intent.putExtra(Constants.PreferenceKeys.is_faculty, is_faculty);
+		intent.putExtra(Constants.PREF_KEYS.is_faculty, is_faculty);
 		startActivity(intent);
 		finish();
 	}
@@ -205,9 +205,9 @@ public class LoginActivity extends ActionBarActivity {
 		// get data from server
 		RequestParams params = new RequestParams();
 		params.put(Constants.QueryParameters.USERNAME, spref.getString(
-				Constants.PreferenceKeys.encripted_user_id, null));
+				Constants.PREF_KEYS.encripted_user_id, null));
 		params.put(Constants.QueryParameters.TOKEN,
-				spref.getString(Constants.PreferenceKeys.token, null));
+				spref.getString(Constants.PREF_KEYS.token, null));
 		queryServer(params, false);
 		// new DbHelper(getApplicationContext());
 		// Utility.log(TAG,"donedb");
@@ -225,36 +225,36 @@ public class LoginActivity extends ActionBarActivity {
 				.getSharedPreferences(Constants.pref_file_name,
 						Context.MODE_PRIVATE);
 		String saved_user_id = sharedPref.getString(
-				Constants.PreferenceKeys.user_id, null);
+				Constants.PREF_KEYS.user_id, null);
 		String saved_token = sharedPref.getString(
-				Constants.PreferenceKeys.token, null);
+				Constants.PREF_KEYS.token, null);
 		// all data have been set in the calling function
 
 		if (saved_user_id == null || saved_token != null) { // if detail doesnt
 															// exist
 			Editor editor = sharedPref.edit();
-			editor.putString(Constants.PreferenceKeys.user_id, user.user_id);
-			editor.putString(Constants.PreferenceKeys.encripted_user_id,
+			editor.putString(Constants.PREF_KEYS.user_id, user.user_id);
+			editor.putString(Constants.PREF_KEYS.encripted_user_id,
 					Utility.encode(user.user_id));
-			editor.putString(Constants.PreferenceKeys.token,
+			editor.putString(Constants.PREF_KEYS.token,
 					Utility.encode(token));
-			editor.putString(Constants.PreferenceKeys.f_name, user.f_name);
-			editor.putString(Constants.PreferenceKeys.l_name, user.l_name);
-			editor.putString(Constants.PreferenceKeys.pic_url, user.picUrl);
+			editor.putString(Constants.PREF_KEYS.f_name, user.f_name);
+			editor.putString(Constants.PREF_KEYS.l_name, user.l_name);
+			editor.putString(Constants.PREF_KEYS.pic_url, user.picUrl);
 			if (is_faculty) {
-				editor.putString(Constants.PreferenceKeys.branch,
+				editor.putString(Constants.PREF_KEYS.branch,
 						((Faculty) user).branch);
 
 			} else {
 				Student s_user = (Student) user;
-				editor.putString(Constants.PreferenceKeys.section,
+				editor.putString(Constants.PREF_KEYS.section,
 						s_user.section);
-				editor.putString(Constants.PreferenceKeys.year,
+				editor.putString(Constants.PREF_KEYS.year,
 						String.valueOf(s_user.year));
 
 			}
-			editor.putBoolean(Constants.PreferenceKeys.logged_in, true);
-			editor.putBoolean(Constants.PreferenceKeys.is_faculty, is_faculty);
+			editor.putBoolean(Constants.PREF_KEYS.logged_in, true);
+			editor.putBoolean(Constants.PREF_KEYS.is_faculty, is_faculty);
 			editor.commit();
 		}
 		createdb();
@@ -284,68 +284,68 @@ public class LoginActivity extends ActionBarActivity {
 								// Utility.hideProgressDialog();
 
 								if (response
-										.getString(Constants.JSONKeys.TAG)
+										.getString(Constants.JSONKEYS.TAG)
 										.equalsIgnoreCase(
-												Constants.JSONKeys.TAG_MSGS.LOGIN)
+												Constants.JSONKEYS.TAG_MSGS.LOGIN)
 										&& response
-												.getBoolean(Constants.JSONKeys.STATUS)) {
+												.getBoolean(Constants.JSONKEYS.STATUS)) {
 									// we can get course from branch
 									if (is_faculty) {
 										FacultyFull f_user = new FacultyFull();
 										user = f_user;
 
 										f_user.branch = response
-												.getString(Constants.JSONKeys.BRANCH);
+												.getString(Constants.JSONKEYS.BRANCH);
 										if (response
-												.has(Constants.JSONKeys.STREET))
+												.has(Constants.JSONKEYS.STREET))
 											f_user.street = response
-													.getString(Constants.JSONKeys.STREET);
+													.getString(Constants.JSONKEYS.STREET);
 										if (response
-												.has(Constants.JSONKeys.CITY))
+												.has(Constants.JSONKEYS.CITY))
 
 											f_user.city = response
-													.getString(Constants.JSONKeys.CITY);
+													.getString(Constants.JSONKEYS.CITY);
 										if (response
-												.has(Constants.JSONKeys.STATE))
+												.has(Constants.JSONKEYS.STATE))
 
 											f_user.state = response
-													.getString(Constants.JSONKeys.STATE);
+													.getString(Constants.JSONKEYS.STATE);
 										if (response
-												.has(Constants.JSONKeys.P_MOB))
+												.has(Constants.JSONKEYS.P_MOB))
 
 											f_user.p_mob = response
-													.getString(Constants.JSONKeys.P_MOB);
+													.getString(Constants.JSONKEYS.P_MOB);
 										if (response
-												.has(Constants.JSONKeys.H_MOB))
+												.has(Constants.JSONKEYS.H_MOB))
 
 											f_user.h_mob = response
-													.getString(Constants.JSONKeys.H_MOB);
+													.getString(Constants.JSONKEYS.H_MOB);
 										if (response
-												.has(Constants.JSONKeys.PIN))
+												.has(Constants.JSONKEYS.PIN))
 
 											f_user.pin = response
-													.getString(Constants.JSONKeys.PIN);
+													.getString(Constants.JSONKEYS.PIN);
 
 									} else {
 										StudentFull s_user = new StudentFull();
 										user = s_user;
 										s_user.section = response
-												.getString(Constants.JSONKeys.SECTION);
+												.getString(Constants.JSONKEYS.SECTION);
 										s_user.year = Integer.parseInt(response
-												.getString(Constants.JSONKeys.YEAR));
+												.getString(Constants.JSONKEYS.YEAR));
 										s_user.u_roll_no = response
-												.getString(Constants.JSONKeys.ROLL_NO);
+												.getString(Constants.JSONKEYS.ROLL_NO);
 									}
 									user.user_id = user_id;
 									user.f_name = response
-											.getString(Constants.JSONKeys.FIRST_NAME);
+											.getString(Constants.JSONKEYS.FIRST_NAME);
 									user.l_name = response
-											.getString(Constants.JSONKeys.LAST_NAME);
+											.getString(Constants.JSONKEYS.LAST_NAME);
 									user.picUrl = response
-											.getString(Constants.JSONKeys.PROFILE_IMAGE);
+											.getString(Constants.JSONKEYS.PROFILE_IMAGE);
 
 									saveUser(response
-											.getString(Constants.JSONKeys.TOKEN));
+											.getString(Constants.JSONKEYS.TOKEN));
 									// startMainActivity(); //hide this line
 								} else {
 

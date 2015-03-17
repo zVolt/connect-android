@@ -9,12 +9,12 @@ import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.FragmentDetailNotification;
-import in.siet.secure.sgi.FragmentNotification;
 
 import java.util.ArrayList;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.ContentValues;
@@ -55,11 +55,13 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
 		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
 		db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.UserMapper.COMMAND_CREATE);
+
 		db.execSQL(DbStructure.Branches.COMMAND_CREATE);
 		db.execSQL(DbStructure.Courses.COMMAND_CREATE);
 		db.execSQL(DbStructure.Sections.COMMAND_CREATE);
 		db.execSQL(DbStructure.Year.COMMAND_CREATE);
-		db.execSQL(DbStructure.UserMapper.COMMAND_CREATE);
+
 	}
 
 	@Override
@@ -73,51 +75,65 @@ public class DbHelper extends SQLiteOpenHelper {
 		db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
 		db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
+		db.execSQL(DbStructure.UserMapper.COMMAND_DROP);
+
 		db.execSQL(DbStructure.Branches.COMMAND_DROP);
 		db.execSQL(DbStructure.Courses.COMMAND_DROP);
 		db.execSQL(DbStructure.Sections.COMMAND_DROP);
 		db.execSQL(DbStructure.Year.COMMAND_DROP);
-		db.execSQL(DbStructure.UserMapper.COMMAND_DROP);
+
 		onCreate(db);
 		DATABASE_VERSION = newVersion;
 	}
 
 	public void ClearDb(SQLiteDatabase db) {
-		onUpgrade(db, 1, 1);
-		/*
-		 * db.execSQL(DbStructure.UserTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.FileTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.MessageTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.NotificationTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
-		 * db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
-		 * 
-		 * db.execSQL(DbStructure.UserTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.FcultyContactsTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.StudentContactsTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.NotificationTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.FileTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.MessageTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
-		 * db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
-		 */
+
+		db.execSQL(DbStructure.UserTable.COMMAND_DROP);
+		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
+		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
+		db.execSQL(DbStructure.FileTable.COMMAND_DROP);
+		db.execSQL(DbStructure.MessageTable.COMMAND_DROP);
+		db.execSQL(DbStructure.NotificationTable.COMMAND_DROP);
+		db.execSQL(DbStructure.StudentContactsTable.COMMAND_DROP);
+		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_DROP);
+		db.execSQL(DbStructure.UserInfoTable.COMMAND_DROP);
+		db.execSQL(DbStructure.UserMapper.COMMAND_DROP);
+
+		db.execSQL(DbStructure.UserTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.FcultyContactsTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.StudentContactsTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.NotificationTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.FileTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.MessageTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.UserInfoTable.COMMAND_CREATE);
+		db.execSQL(DbStructure.UserMapper.COMMAND_CREATE);
+
 	}
 
-	public void getNotifications() {
-		new FetchNotification().execute();
-	}
-
+	/**
+	 * this should be done by service
+	 * 
+	 * @param noti_id
+	 */
 	public void getFilesOfNotification(int noti_id) {
 		new FetchFilesOfNotification().execute(this, noti_id);
 	}
 
+	/**
+	 * provide users primary key i.e., the value of _id column corresponding to
+	 * the login_id provided
+	 * 
+	 * @param user_id
+	 *            user's login id like 'B-11-136' or 'EMP-100' for which we want
+	 *            primary key( _id )
+	 * @return value of _id column corresponding to user_id(B-11-136 like) or -1
+	 *         if not exist
+	 */
 	public int getUserPk(String user_id) {
-		if (db == null)
-			setDb();
+
+		setDb();
 		int pk_id = -1;
 		if (user_id != null) {
 			String[] columns = { DbStructure.UserTable._ID };
@@ -134,193 +150,144 @@ public class DbHelper extends SQLiteOpenHelper {
 					pk_id = c.getInt(col_index);
 			}
 		} else {
-			Utility.log(TAG, "inserting notification error user_id null");
+			Utility.log(TAG, "user_id null");
 		}
-		Utility.log(TAG, "returning pk " + pk_id);
 		return pk_id;
 	}
 
-	private class FetchNotification extends
-			AsyncTask<Void, Integer, ArrayList<Notification>> {
+	/**
+	 * fill messages received from server to db this should take ArrayList of
+	 * Messages
+	 * 
+	 * @param messages
+	 *            {@link JSONArray} of messages received
+	 * @param receiver
+	 *            {@link String} login id of user here the user is receiver
+	 * @return {@link JSONArray} ids(send by server i.e., these are message pk
+	 *         on server) of inserted messages
+	 */
+	public JSONArray fillMessages(JSONArray messages, String receiver) {
 
-		@Override
-		protected ArrayList<Notification> doInBackground(Void... params) {
-			// DbHelper db = params[0];
-			String[] columns = { DbStructure.NotificationTable._ID,
-					DbStructure.UserTable.COLUMN_PROFILE_PIC,
-					DbStructure.NotificationTable.COLUMN_SUBJECT,
-					DbStructure.NotificationTable.COLUMN_TEXT,
-					DbStructure.NotificationTable.COLUMN_TIME };
-			Utility.log(TAG, "select "
-					+ DbStructure.NotificationTable.TABLE_NAME
-					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
-					+ columns[1] + DbConstants.COMMA + columns[2]
-					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-					+ columns[4] + " from "
-					+ DbStructure.NotificationTable.TABLE_NAME + " join "
-					+ DbStructure.UserTable.TABLE_NAME + " on "
-					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
-					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-					+ DbStructure.UserTable._ID + " order by "
-					+ DbStructure.NotificationTable.COLUMN_TIME);
-			if (db == null)
-				setDb();
-			Cursor c = db.rawQuery("select "
-					+ DbStructure.NotificationTable.TABLE_NAME
-					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
-					+ columns[1] + DbConstants.COMMA + columns[2]
-					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-					+ columns[4] + " from "
-					+ DbStructure.NotificationTable.TABLE_NAME + " join "
-					+ DbStructure.UserTable.TABLE_NAME + " on "
-					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
-					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-					+ DbStructure.UserTable._ID + " order by "
-					+ DbStructure.NotificationTable.COLUMN_TIME, null);
-			c.moveToFirst();
-			ArrayList<Notification> notifications = new ArrayList<Notification>();
-			while (c.isAfterLast() == false) {
-				Utility.log(TAG, "processsing notification");
-				Notification tmpnot = new Notification(c.getInt(c
-						.getColumnIndexOrThrow(columns[0])), c.getString(c
-						.getColumnIndexOrThrow(columns[1])), c.getString(c
-						.getColumnIndexOrThrow(columns[2])), c.getString(c
-						.getColumnIndexOrThrow(columns[3])), c.getString(c
-						.getColumnIndexOrThrow(columns[4])));
-				notifications.add(tmpnot);
-				Utility.log(TAG, tmpnot.subject);
-				c.moveToNext();
-			}
-			return notifications;
-		}
-
-		@Override
-		protected void onPostExecute(ArrayList<Notification> data) {
-			Utility.log(TAG, "we get data" + data.toString());
-			FragmentNotification.setData(data);
-			FragmentNotification.refresh();
-			// FragmentNotification.showList();
-
-		}
-
-	}
-
-	private class FetchFilesOfNotification extends
-			AsyncTask<Object, Integer, ArrayList<Attachment>> {
-
-		@Override
-		protected ArrayList<Attachment> doInBackground(Object... params) {
-			DbHelper This = (DbHelper) params[0];
-			int noti_id = (Integer) params[1];
-			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
-			String[] column = { DbStructure.FileTable.COLUMN_NAME,
-					DbStructure.FileTable.COLUMN_STATE,
-					DbStructure.FileTable.COLUMN_URL, DbStructure.FileTable._ID };
-			Cursor c = This
-					.getReadableDatabase()
-					.rawQuery(
-							"select "
-									+ column[0]
-									+ DbConstants.COMMA
-									+ column[1]
-									+ DbConstants.COMMA
-									+ column[2]
-									+ DbConstants.COMMA
-									+ column[3]
-									+ " from "
-									+ DbStructure.FileTable.TABLE_NAME
-									+ " join "
-									+ DbStructure.FileNotificationMapTable.TABLE_NAME
-									+ " on "
-									+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
-									+ "="
-									+ DbStructure.FileTable._ID
-									+ " where "
-									+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
-									+ "=" + noti_id + DbConstants.SEMICOLON,
-							null);
-
-			c.moveToFirst();
-			Attachment tmp;
-			while (c.isAfterLast() == false) {
-				tmp = new Attachment(
-						c.getInt(c.getColumnIndexOrThrow(column[3])),
-						c.getString(c.getColumnIndexOrThrow(column[0])),
-						c.getInt(c.getColumnIndexOrThrow(column[1])),
-						c.getString(c
-								.getColumnIndexOrThrow(DbStructure.FileTable.COLUMN_URL)));
-				attachments.add(tmp);
-				c.moveToNext();
-				synchronized (this) {
-					try {
-						this.wait(100);
-					} catch (Exception e) {
-						Utility.log(TAG, "cannot wait");
-					}
-				}
-			}
-			return attachments;
-		}
-
-		@Override
-		protected void onPostExecute(ArrayList<Attachment> result) {
-			FragmentDetailNotification.setData(result);
-			FragmentDetailNotification.showAttachments();
-		}
-	}
-
-	public void fillMessages(JSONArray messages, int receiver_id) {
-		if (db == null)
-			setDb();
+		setDb();
+		JSONArray ids = new JSONArray();
 		int len = messages.length();
-		String query = "insert into messages(sender,receiver,text,time,is_group_msg) values";
-		JSONObject obj;
-		int j;
-		String[] args = new String[len * 5];
-		try {
-			for (int i = 0; i < len; i++) {
-				query += "((select _id from user where login_id=?),?,?,?,?)"
-						+ ((i == len - 1) ? "" : ",");
-
-				obj = messages.getJSONObject(i);
-				j = i * 5;
-				args[j] = obj.getString(Constants.JSONMEssageKeys.SENDER);
-				args[j + 1] = receiver_id + "";// me
-				args[j + 2] = obj.getString(Constants.JSONMEssageKeys.TEXT);
-				args[j + 3] = (obj.getLong(Constants.JSONMEssageKeys.TIME))
-						+ "";
-				args[j + 4] = obj
-						.getInt(Constants.JSONMEssageKeys.IS_GROUP_MESSAGE)
-						+ "";
-
+		if (len > 0) {
+			StringBuilder query = new StringBuilder(
+					"insert into messages(sender,receiver,text,time,is_group_msg) values");
+			JSONObject obj;
+			int j;
+			int receiver_id = getUserPk(receiver);
+			String[] args = new String[len * 5];
+			try {
+				for (int i = 0; i < len; i++) {
+					query.append("((select _id from user where login_id=?),?,?,?,?)");
+					query.append(DbConstants.COMMA);
+					obj = messages.getJSONObject(i);
+					j = i * 5;
+					args[j] = obj.getString(Constants.JSONKEYS.MESSAGES.SENDER);
+					args[j + 1] = String.valueOf(receiver_id);
+					args[j + 2] = obj
+							.getString(Constants.JSONKEYS.MESSAGES.TEXT);
+					args[j + 3] = String.valueOf(obj
+							.getLong(Constants.JSONKEYS.MESSAGES.TIME));
+					args[j + 4] = String
+							.valueOf(obj
+									.getInt(Constants.JSONKEYS.MESSAGES.IS_GROUP_MESSAGE));
+					ids.put(obj.getInt(Constants.JSONKEYS.MESSAGES.ID));
+				}
+				query.deleteCharAt(query.length() - 1);
+				db.execSQL(query.toString(), args);
+			} catch (Exception e) {
+				Utility.DEBUG(e);
 			}
-			db.execSQL(query, args);
-			Utility.log(TAG, "done inserting messages \n" + query);
-		} catch (Exception e) {
-			Utility.log(TAG, "" + e.getMessage());
 		}
+		return ids;
+	}
 
+	/**
+	 * 
+	 * @param notifications
+	 * @param receiver
+	 * @return
+	 */
+	public JSONArray fillNotifications(JSONArray notifications) {
+		setDb();
+		int len = notifications.length();
+		JSONArray ids = new JSONArray();
+		if (len > 0) {
+			JSONObject notification;
+			ContentValues values = new ContentValues();
+			long target_id;
+			try {
+				for (int i = 0; i < len; i++) {
+					// insert target
+					notification = notifications.getJSONObject(i);
+					values.clear();
+					values.put(
+							DbStructure.UserMapper.COLUMN_COURSE,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.COURSE));
+					values.put(
+							DbStructure.UserMapper.COLUMN_BRANCH,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.BRANCH));
+					values.put(DbStructure.UserMapper.COLUMN_YEAR, notification
+							.getString(Constants.JSONKEYS.NOTIFICATIONS.YEAR));
+					values.put(
+							DbStructure.UserMapper.COLUMN_SECTION,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.SECTION));
+					target_id = db.insert(DbStructure.UserMapper.TABLE_NAME,
+							null, values);
+
+					// insert new notification and get its pk id
+					values.clear();
+					values.put(
+							DbStructure.NotificationTable.COLUMN_SUBJECT,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.SUBJECT));
+					values.put(
+							DbStructure.NotificationTable.COLUMN_TEXT,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.TEXT));
+					values.put(
+							DbStructure.NotificationTable.COLUMN_TIME,
+							notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.TIME));
+					values.put(DbStructure.NotificationTable.COLUMN_STATE,
+							Constants.STATE.RECEIVED);
+					values.put(
+							DbStructure.NotificationTable.COLUMN_SENDER,
+							getUserPk(notification
+									.getString(Constants.JSONKEYS.NOTIFICATIONS.SENDER)));
+					values.put(DbStructure.NotificationTable.COLUMN_TARGET,
+							target_id);
+					db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
+							values);
+					ids.put(notification
+							.getInt(Constants.JSONKEYS.NOTIFICATIONS.ID));
+				}
+			} catch (Exception e) {
+				Utility.DEBUG(e);
+			}
+		}
+		return ids;
 	}
 
 	/**
 	 * get user info from server asynchronously add it to database show toast
+	 * getting data from server should be moved to service
 	 * 
 	 * @param user
 	 * @param is_student
 	 */
 	public void addUser(final User user, final boolean is_student) {
-
-		if (db == null)
-			setDb();
-
+		setDb();
 		RequestParams params = new RequestParams();
-		// SharedPreferences
-		// spf=context.getSharedPreferences(Constants.pref_file_name,
-		// Context.MODE_PRIVATE);
 		params.put(Constants.QueryParameters.USERNAME,
-				spf.getString(Constants.PreferenceKeys.encripted_user_id, null));
+				spf.getString(Constants.PREF_KEYS.encripted_user_id, null));
 		params.put(Constants.QueryParameters.TOKEN,
-				spf.getString(Constants.PreferenceKeys.token, null).trim());
+				spf.getString(Constants.PREF_KEYS.token, null).trim());
 		params.put(Constants.QueryParameters.GET_DETAILS_OF_USER_ID,
 				user.user_id);
 		params.put(Constants.QueryParameters.USER_TYPE, is_student);
@@ -414,7 +381,7 @@ public class DbHelper extends SQLiteOpenHelper {
 							}
 
 						} catch (Exception e) {
-							Utility.log(TAG + "yaha pe error", e.getMessage());
+							Utility.DEBUG(e);
 						}
 					}
 
@@ -463,14 +430,19 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	public void addInitialData(InitialData idata, String userid) {
-		if (db == null)
-			setDb();
-		new insertInitialData().execute(idata);// add initial data
+		setDb();
+		new insertInitialData().execute(idata);
 
 	}
 
 	private void setDb() {
-		db = this.getWritableDatabase();
+		if (db == null || !db.isOpen())
+			db = this.getWritableDatabase();
+	}
+
+	public SQLiteDatabase getDb() {
+		setDb();
+		return db;
 	}
 
 	/**
@@ -482,40 +454,117 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * @param body
 	 *            Content of the notification
 	 */
-	public void addNewNotification(Notification new_noti) {
-		if (db == null)
-			setDb();
-		new InsertNotification().execute(new_noti);
+	public void insertNewNotification(Notification new_noti) {
+		setDb();
+		new InsertNotifications().execute(new_noti);
 		// create new notification
 	}
 
-	private static class InsertNotification extends
-			AsyncTask<Notification, Void, Boolean> {
+	/**
+	 * update states of messages and notifications for which we have received
+	 * acknowledgment from server i.e., server received them sucessfully
+	 * 
+	 * @param acks
+	 */
+	public void receivedAck(JSONObject acks) {
+		setDb();
+		try {
+			int len;
+			JSONArray ids;
+			// messages
+			if (acks.has(Constants.JSONKEYS.MESSAGES.ACK)) {
+				ids = acks.getJSONArray(Constants.JSONKEYS.MESSAGES.ACK);
+
+				len = ids.length();
+				if (len > 0) {
+					StringBuilder query = new StringBuilder();
+					ContentValues value = new ContentValues();
+					value.put(DbStructure.MessageTable.COLUMN_STATE,
+							Constants.STATE.ACK_RECEIVED);
+					query.append("_id IN (");
+					String[] args = new String[len];
+					for (int i = 0; i < len; i++) {
+						query.append(DbConstants.QUESTION_MARK);
+						query.append(DbConstants.COMMA);
+						args[i] = String.valueOf(ids.getInt(i));
+					}
+					query.deleteCharAt(query.length() - 1); // delete the last
+															// comma
+					query.append(DbConstants.BRACES_CLOSE);
+					// update messages set state=1 where _id IN(........)
+					Utility.log(TAG, query.toString());
+					db.update(DbStructure.MessageTable.TABLE_NAME, value,
+							query.toString(), args);
+				}
+			}
+			// for notifications
+			if (acks.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
+				ids = acks.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.ACK);
+				len = ids.length();
+				if (len > 0) {
+					StringBuilder query = new StringBuilder();
+					ContentValues value = new ContentValues();
+					value.put(DbStructure.MessageTable.COLUMN_STATE,
+							Constants.STATE.ACK_RECEIVED);
+					query.append(" _id IN (");
+					String[] args = new String[len];
+					for (int i = 0; i < len; i++) {
+						query.append(DbConstants.QUESTION_MARK);
+						query.append(DbConstants.COMMA);
+						args[i] = String.valueOf(ids.getInt(i));
+					}
+					query.deleteCharAt(query.length() - 1); // delete the last
+															// comma
+					query.append(DbConstants.BRACES_CLOSE);
+					Utility.log(TAG, query.toString());
+					db.update(DbStructure.NotificationTable.TABLE_NAME, value,
+							query.toString(), args);
+				}
+			}
+			Utility.log(TAG, "done ack");
+		} catch (JSONException e) {
+			Utility.DEBUG(e);
+		}
+	}
+
+	/**
+	 * Insert notification into database
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	private static class InsertNotifications extends
+			AsyncTask<Notification, Void, Void> {
 
 		@Override
-		protected Boolean doInBackground(Notification... params) {
-			Notification n = params[0];
+		protected Void doInBackground(Notification... params) {
 			long target_id;
-			// insert target
 			ContentValues values = new ContentValues();
-			values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
-			values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
-			values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
-			values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
-			target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
-					values);
-			// insert new notification and get its pk id
-			values = new ContentValues();
-			values.put(DbStructure.NotificationTable.COLUMN_SUBJECT, n.subject);
-			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
-			values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
-			values.put(DbStructure.NotificationTable.COLUMN_STATE,
-					Notification.STATE.CREATED);
-			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
-			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
-			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
-
-			return true;
+			;
+			for (Notification n : params) {
+				// insert target
+				values.clear();
+				values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
+				values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
+				values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
+				values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
+				target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
+						values);
+				// insert new notification and get its pk id
+				values.clear();
+				values.put(DbStructure.NotificationTable.COLUMN_SUBJECT,
+						n.subject);
+				values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
+				values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
+				values.put(DbStructure.NotificationTable.COLUMN_STATE,
+						Constants.STATE.PENDING);
+				values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
+				values.put(DbStructure.NotificationTable.COLUMN_TARGET,
+						target_id);
+				db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
+						values);
+			}
+			return null;
 		}
 	}
 
@@ -578,4 +627,68 @@ public class DbHelper extends SQLiteOpenHelper {
 			return null;
 		}
 	}
+
+	/**
+	 * should be in service
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	private class FetchFilesOfNotification extends
+			AsyncTask<Object, Integer, ArrayList<Attachment>> {
+
+		@Override
+		protected ArrayList<Attachment> doInBackground(Object... params) {
+			DbHelper This = (DbHelper) params[0];
+			int noti_id = (Integer) params[1];
+			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
+			String[] column = { DbStructure.FileTable.COLUMN_NAME,
+					DbStructure.FileTable.COLUMN_STATE,
+					DbStructure.FileTable.COLUMN_URL, DbStructure.FileTable._ID };
+			Cursor c = This
+					.getReadableDatabase()
+					.rawQuery(
+							"select "
+									+ column[0]
+									+ DbConstants.COMMA
+									+ column[1]
+									+ DbConstants.COMMA
+									+ column[2]
+									+ DbConstants.COMMA
+									+ column[3]
+									+ " from "
+									+ DbStructure.FileTable.TABLE_NAME
+									+ " join "
+									+ DbStructure.FileNotificationMapTable.TABLE_NAME
+									+ " on "
+									+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
+									+ "="
+									+ DbStructure.FileTable._ID
+									+ " where "
+									+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
+									+ "=" + noti_id + DbConstants.SEMICOLON,
+							null);
+
+			c.moveToFirst();
+			Attachment tmp;
+			while (c.isAfterLast() == false) {
+				tmp = new Attachment(
+						c.getInt(c.getColumnIndexOrThrow(column[3])),
+						c.getString(c.getColumnIndexOrThrow(column[0])),
+						c.getInt(c.getColumnIndexOrThrow(column[1])),
+						c.getString(c
+								.getColumnIndexOrThrow(DbStructure.FileTable.COLUMN_URL)));
+				attachments.add(tmp);
+				c.moveToNext();
+			}
+			return attachments;
+		}
+
+		@Override
+		protected void onPostExecute(ArrayList<Attachment> result) {
+			FragmentDetailNotification.setData(result);
+			FragmentDetailNotification.showAttachments();
+		}
+	}
+
 }

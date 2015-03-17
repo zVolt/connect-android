@@ -1,7 +1,6 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Attachment;
-import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAttachmentAdapter;
 import in.siet.secure.contants.Constants;
@@ -16,8 +15,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,106 +24,130 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public class FragmentDetailNotification extends Fragment implements OnClickListener{
+public class FragmentDetailNotification extends Fragment implements
+		OnClickListener {
 	private int not_id;
 	public static LinearLayout listViewAtachments;
-	private static ArrayList<Attachment> attachments=new ArrayList<Attachment>();
+	private static ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 	private static NotificationAttachmentAdapter adapter;
 	public static View rootView;
-	public static final String TAG="in.siet.secure.sgi.FragmentDetailNotification";
-	
-	public FragmentDetailNotification(){}
+	public static final String TAG = "in.siet.secure.sgi.FragmentDetailNotification";
+
+	public FragmentDetailNotification() {
+	}
+
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		
-		adapter=new NotificationAttachmentAdapter(getActivity(),attachments);
-		Bundle bundle=getArguments();
-		not_id=bundle.getInt(Notification.ID);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+
+		adapter = new NotificationAttachmentAdapter(getActivity(), attachments);
+		Bundle bundle = getArguments();
+		not_id = bundle.getInt(Constants.NOTIFICATION.ID);
 		new DbHelper(getActivity()).getFilesOfNotification(not_id);
-		
-		rootView = inflater.inflate(R.layout.fragment_detailed_notification, container,false);
-		
-		ImageView image=(ImageView)rootView.findViewById(R.id.imageViewNotiImage);
-		TextView subject=(TextView)rootView.findViewById(R.id.notification_title);
-		TextView text=(TextView)rootView.findViewById(R.id.notification_text);
-		TextView time=(TextView)rootView.findViewById(R.id.notification_time);
-		listViewAtachments=(LinearLayout)rootView.findViewById(R.id.notification_list_attachments);
-		
-		subject.setText(bundle.getString(Notification.SUBJECT));
-		text.setText(bundle.getString(Notification.TEXT));
-		time.setText(bundle.getString(Notification.TIME));
-		
-		ImageLoader.getInstance().displayImage(bundle.getString(Notification.SENDER_IMAGE), image);
-		//adapter=new NotificationAttachmentAdapter(getActivity(), attachments);
+
+		rootView = inflater.inflate(R.layout.fragment_detailed_notification,
+				container, false);
+
+		ImageView image = (ImageView) rootView
+				.findViewById(R.id.imageViewNotiImage);
+		TextView subject = (TextView) rootView
+				.findViewById(R.id.notification_title);
+		TextView text = (TextView) rootView
+				.findViewById(R.id.notification_text);
+		TextView time = (TextView) rootView
+				.findViewById(R.id.notification_time);
+		listViewAtachments = (LinearLayout) rootView
+				.findViewById(R.id.notification_list_attachments);
+
+		subject.setText(bundle.getString(Constants.NOTIFICATION.SUBJECT));
+		text.setText(bundle.getString(Constants.NOTIFICATION.TEXT));
+
+		time.setText(Utility.getTimeString(getActivity()
+				.getApplicationContext(), bundle
+				.getLong(Constants.NOTIFICATION.TIME)));
+
+		ImageLoader.getInstance().displayImage(
+				bundle.getString(Constants.NOTIFICATION.SENDER_IMAGE), image);
+		// adapter=new NotificationAttachmentAdapter(getActivity(),
+		// attachments);
 		hideAttachments();
 		return rootView;
 	}
-	 @Override
-	    public void onCreate(Bundle savedInstanceState) {
-	        super.onCreate(savedInstanceState);
-	        // retain this fragment
-	        setRetainInstance(true);
-	    }
 
 	@Override
-	public void onStart(){
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// retain this fragment
+		setRetainInstance(true);
+	}
+
+	@Override
+	public void onStart() {
 		super.onStart();
 	}
+
 	@Override
-	public void onResume(){
+	public void onResume() {
 		super.onResume();
-		
+
 	}
-	public static void refresh(){
-		if(adapter!=null){
+
+	public static void refresh() {
+		if (adapter != null) {
 			adapter.notifyDataSetChanged();
-			for(int i=0;i<adapter.getCount();i++){
-				listViewAtachments.addView(adapter.getView(i,null,null));//;setAdapter(adapter);
+			for (int i = 0; i < adapter.getCount(); i++) {
+				listViewAtachments.addView(adapter.getView(i, null, null));// ;setAdapter(adapter);
 			}
 		}
-		
+
 	}
-	public static void setData(ArrayList<Attachment> data){
+
+	public static void setData(ArrayList<Attachment> data) {
 		adapter.clear();
 		adapter.addAll(data);
 		refresh();
 	}
-	public static void showAttachments(){
-		rootView.findViewById(R.id.loading_attachments).setVisibility(View.GONE);
+
+	public static void showAttachments() {
+		rootView.findViewById(R.id.loading_attachments)
+				.setVisibility(View.GONE);
 		listViewAtachments.setVisibility(View.VISIBLE);
 	}
-	public void hideAttachments(){
+
+	public void hideAttachments() {
 		listViewAtachments.setVisibility(View.GONE);
-		rootView.findViewById(R.id.loading_attachments).setVisibility(View.VISIBLE);
+		rootView.findViewById(R.id.loading_attachments).setVisibility(
+				View.VISIBLE);
 	}
-	
-		@Override
-		public void onClick(View v) {
-			NotificationAttachmentAdapter.ViewHolder h=(NotificationAttachmentAdapter.ViewHolder)v.getTag();
-			if(h.state==1){
-				//open file
-				File file=new File(Constants.pathToApp+h.name);
-				 MimeTypeMap map = MimeTypeMap.getSingleton();
-				    String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
-				    String type = map.getMimeTypeFromExtension(ext);
-				    
-				    if (type == null)
-				        type = "*/*";
 
-				    Intent intent = new Intent(Intent.ACTION_VIEW);
-				    Uri data = Uri.fromFile(file);
+	@Override
+	public void onClick(View v) {
+		NotificationAttachmentAdapter.ViewHolder h = (NotificationAttachmentAdapter.ViewHolder) v
+				.getTag();
+		if (h.state == 1) {
+			// open file
+			File file = new File(Constants.pathToApp + h.name);
+			MimeTypeMap map = MimeTypeMap.getSingleton();
+			String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+			String type = map.getMimeTypeFromExtension(ext);
 
-				    intent.setDataAndType(data, type);
-				    try{
-				    startActivity(intent);
-				    }catch(Exception e){
-				    	Utility.RaiseToast(getActivity(), "cannot open file", false);
-				    }
+			if (type == null)
+				type = "*/*";
+
+			Intent intent = new Intent(Intent.ACTION_VIEW);
+			Uri data = Uri.fromFile(file);
+
+			intent.setDataAndType(data, type);
+			try {
+				startActivity(intent);
+			} catch (Exception e) {
+				Utility.RaiseToast(getActivity(), "cannot open file", false);
 			}
-			else{
-				//download file
-				Utility.log("Yaha","clicked on "+h.name.getText());
-				new Utility.DownloadFile().execute(h.url,(String)h.name.getText(),""+h.id);
-			}
+		} else {
+			// download file
+			Utility.log("Yaha", "clicked on " + h.name.getText());
+			new Utility.DownloadFile().execute(h.url,
+					(String) h.name.getText(), "" + h.id);
 		}
+	}
 }

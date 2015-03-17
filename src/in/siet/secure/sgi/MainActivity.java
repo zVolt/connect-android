@@ -8,10 +8,6 @@ import in.siet.secure.dao.DbHelper;
 
 import java.util.Calendar;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -22,7 +18,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -39,9 +34,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -106,6 +98,7 @@ public class MainActivity extends ActionBarActivity {
 				R.drawable.ic_drawer, R.string.drawer_open);
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		drawerlayout.setDrawerListener(drawerToggle);
+
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
@@ -131,18 +124,18 @@ public class MainActivity extends ActionBarActivity {
 										R.dimen.drawer_user_image_radius)))
 				.build();
 		ImageLoader.getInstance().displayImage(
-				spf.getString(Constants.PreferenceKeys.pic_url, null),
-				user_pic, round_options);
-		user_name.setText(spf.getString(Constants.PreferenceKeys.f_name, null)
-				+ " " + spf.getString(Constants.PreferenceKeys.l_name, null));
-		user_id.setText(spf.getString(Constants.PreferenceKeys.user_id, null));
+				spf.getString(Constants.PREF_KEYS.pic_url, null), user_pic,
+				round_options);
+		user_name.setText(spf.getString(Constants.PREF_KEYS.f_name, null) + " "
+				+ spf.getString(Constants.PREF_KEYS.l_name, null));
+		user_id.setText(spf.getString(Constants.PREF_KEYS.user_id, null));
 		// end setting user details drawer header
 
 		fullDrawerLayout = (ScrollView) findViewById(R.id.drawer);
 		LinearLayout parent = (LinearLayout) findViewById(R.id.drawer_item_parent);
 		// options defined by users
 		String[] panelOption;
-		if (spf.getBoolean(Constants.PreferenceKeys.is_faculty, false)) {
+		if (spf.getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
 			panelOption = getResources().getStringArray(
 					R.array.array_panel_options_fact);
 		} else {
@@ -150,15 +143,15 @@ public class MainActivity extends ActionBarActivity {
 					R.array.array_panel_options);
 		}
 		drawerInactiveIconIds = new int[] {
-				Constants.DrawerIconsInactive.NOTIFICATION,
-				Constants.DrawerIconsInactive.INTERACTION,
-				Constants.DrawerIconsInactive.ADD_USER,
-				Constants.DrawerIconsInactive.CREATE_NOTICE };
+				Constants.DRAWER_IC_INACTIVE.NOTIFICATION,
+				Constants.DRAWER_IC_INACTIVE.INTERACTION,
+				Constants.DRAWER_IC_INACTIVE.ADD_USER,
+				Constants.DRAWER_IC_INACTIVE.CREATE_NOTICE };
 		drawerActiveIconIds = new int[] {
-				Constants.DrawerIconsActive.NOTIFICATION,
-				Constants.DrawerIconsActive.INTERACTION,
-				Constants.DrawerIconsActive.ADD_USER,
-				Constants.DrawerIconsActive.CREATE_NOTICE };
+				Constants.DRAWER_IC_ACTIVE.NOTIFICATION,
+				Constants.DRAWER_IC_ACTIVE.INTERACTION,
+				Constants.DRAWER_IC_ACTIVE.ADD_USER,
+				Constants.DRAWER_IC_ACTIVE.CREATE_NOTICE };
 		drawerItemHolder = new View[panelOption.length];
 		int pos = 0;
 		View v;
@@ -204,7 +197,7 @@ public class MainActivity extends ActionBarActivity {
 	public void onResume() {
 		super.onResume();
 		// Retrieve a PendingIntent that will perform a broadcast
-		startAlarm();
+		Utility.setAlarm(getApplication(), 15000);
 		back_pressed = false;
 	}
 
@@ -273,6 +266,8 @@ public class MainActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(),
 					getString(R.string.exit_warning), true);
 		} else {
+			Utility.setAlarm(getApplication(), (int) Constants.INTERVAL_IN_HOUR
+					* Constants.HOUR_TO_MILISEC);
 			super.onBackPressed();
 		}
 	}
@@ -300,21 +295,21 @@ public class MainActivity extends ActionBarActivity {
 		Fragment fragment = null;// =fragmentManager.findFragmentByTag(TAG+panelOption[position]);
 
 		switch (position) {
-		case Constants.DrawerIDs.NOTIFICATION:
+		case Constants.DRAWER_ID.NOTIFICATION:
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
 			fragment = fragmentManager
 					.findFragmentByTag(FragmentNotification.TAG);
 			if (fragment == null)
 				fragment = new FragmentNotification();
 			break;
-		case Constants.DrawerIDs.INTERACTION:
+		case Constants.DRAWER_ID.INTERACTION:
 			ACTIVE_FRAGMENT_TAG = FragmentContacts.TAG;
 			fragment = fragmentManager.findFragmentByTag(FragmentContacts.TAG);
 			if (fragment == null) {
 				fragment = new FragmentContacts();
 			}
 			break;
-		case Constants.DrawerIDs.ADD_USER:
+		case Constants.DRAWER_ID.ADD_USER:
 			ACTIVE_FRAGMENT_TAG = FragmentUsers.TAG;
 			Utility.log(TAG, "add user dialog");
 			fragment = getFragmentManager()
@@ -327,7 +322,7 @@ public class MainActivity extends ActionBarActivity {
 				((FragmentUsers) fragment).load();
 			}
 			break;
-		case Constants.DrawerIDs.CREATE_NOTICE: // only for faculty
+		case Constants.DRAWER_ID.CREATE_NOTICE: // only for faculty
 			ACTIVE_FRAGMENT_TAG = FragmentNewNotification.TAG;
 			fragment = fragmentManager
 					.findFragmentByTag(FragmentNewNotification.TAG);
@@ -356,14 +351,14 @@ public class MainActivity extends ActionBarActivity {
 
 			DrawerItemViewHolder holder = (DrawerItemViewHolder) view.getTag();
 			Bundle bundle = new Bundle();
-			if (holder.position == Constants.DrawerIDs.ADD_USER) {
+			if (holder.position == Constants.DRAWER_ID.ADD_USER) {
 				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-						Constants.DrawerIDs.ADD_USER);
+						Constants.DRAWER_ID.ADD_USER);
 				show.setArguments(bundle);
 				show.show(getFragmentManager(), UserFilterDialog.TAG);
-			} else if (holder.position == Constants.DrawerIDs.CREATE_NOTICE) {
+			} else if (holder.position == Constants.DRAWER_ID.CREATE_NOTICE) {
 				bundle.putInt(UserFilterDialog.FRAGMENT_TO_OPEN,
-						Constants.DrawerIDs.CREATE_NOTICE);
+						Constants.DRAWER_ID.CREATE_NOTICE);
 				show.setArguments(bundle);
 				show.show(getFragmentManager(), UserFilterDialog.TAG);
 			} else {
@@ -378,6 +373,8 @@ public class MainActivity extends ActionBarActivity {
 	/**
 	 * Creates a new Notification from data provided, Insert it in database and
 	 * send it to server.
+	 * 
+	 * sending part should be moved to server
 	 * 
 	 * @param view
 	 *            View on which the action is performed (ImageButton in this
@@ -396,18 +393,21 @@ public class MainActivity extends ActionBarActivity {
 			String subject, body;
 			year = FilterOptions.YEAR;
 			// fid string pk of user
-			int fid = new DbHelper(getApplicationContext()).getUserPk(spf
-					.getString(Constants.PreferenceKeys.user_id, null));
+			int pk_user = new DbHelper(getApplicationContext()).getUserPk(spf
+					.getString(Constants.PREF_KEYS.user_id, null));
 
-			Long time = Calendar.getInstance().getTimeInMillis();
+			long time = Calendar.getInstance().getTimeInMillis();
 			subject = holder.subject.getText().toString();
 			body = holder.body.getText().toString();
-			Notification new_noti = new Notification(subject, body, time, fid,
-					course, branch, section, year);
-			new DbHelper(getApplicationContext()).addNewNotification(new_noti);
+			Notification new_noti = new Notification(subject, body, time,
+					pk_user, course, branch, section, year);
+			// state if filled by db class
+			new DbHelper(getApplicationContext())
+					.insertNewNotification(new_noti);
 
 			holder.subject.getText().clear();
 			holder.body.getText().clear();
+			/*
 			// sending to server
 			AsyncHttpClient client = new AsyncHttpClient();
 			RequestParams params = new RequestParams();
@@ -432,12 +432,7 @@ public class MainActivity extends ActionBarActivity {
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
 							Utility.log(TAG, "got responce " + response);
-							/**
-							 * depending upon response change the state of
-							 * notification to send not send if send delete the
-							 * corresponding user_mapper entry else leave it as
-							 * it is and try to re-send with service
-							 */
+							
 						}
 
 						@Override
@@ -471,7 +466,7 @@ public class MainActivity extends ActionBarActivity {
 									errorResponse);
 						}
 					});
-
+*/
 			Utility.RaiseToast(getApplicationContext(), "send new message",
 					false);
 		} else {
@@ -480,23 +475,13 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	public void startAlarm() {
-		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		int interval = 10000;
-		Intent intent = new Intent(this, BackgroundService.class);
-		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
-		alarmmanager.cancel(pi);
-		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-				SystemClock.elapsedRealtime() + interval, interval, pi);
-		Toast.makeText(this, "Alarm Set", Toast.LENGTH_SHORT).show();
-	}
-
 	@Override
 	protected void onDestroy() {
 		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(this, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
 		alarmmanager.cancel(pi);
+
 		Utility.log(TAG, "destroyed");
 		super.onDestroy();
 	}

@@ -4,7 +4,11 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
+import java.io.UnsupportedEncodingException;
+
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,63 +37,64 @@ import com.loopj.android.http.SyncHttpClient;
  */
 public class BackgroundService extends Service {
 
-	static SharedPreferences spref;
+	private SharedPreferences spref;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
-	static String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
-	private static SQLiteDatabase db;
-	static int sender_id; // ye bhejny wali ki _id (pk in local table)
+	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
+	private WakeLock wake;
 
-	/**
-	 * if start getting ANR then start a new thread in the service
-	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		spref = getApplicationContext().getSharedPreferences(
 				Constants.pref_file_name, Context.MODE_PRIVATE);
-
-		/*
-		 * String tempquery = "select _id from user where login_id='" +
-		 * (sender_lid = spref.getString( Constants.PreferenceKeys.user_id,
-		 * null)) + "'";
-		 * 
-		 * db = new DbHelper(getApplicationContext()).getWritableDatabase(); c =
-		 * db.rawQuery(tempquery, null); c.moveToFirst(); sender_id =
-		 * c.getInt(0);
-		 */
 		if (spref != null) {
-			if (spref.getString(Constants.PreferenceKeys.user_id, null) != null)
-				handleIntent(intent); // not logged in
+			if ((sender_lid = spref
+					.getString(Constants.PREF_KEYS.user_id, null)) != null)
+				handleIntent(intent); // if logged in
 		} else {
 			Utility.log(TAG, "pref is null");
 		}
 		return START_STICKY;
 	}
 
-	/*
-	 * @SuppressWarnings("deprecation")
-	 * 
-	 * @Override public void onStart(Intent intent, int startId) { //
-	 * handleIntent(intent); super.onStart(intent, startId); }
+	/**
+	 * Hold a partial wake lock so that you don't get killed ;)
 	 */
-
-	WakeLock wake;
-
-	private void handleIntent(Intent intent) {
-		/**
-		 * Hold a partial wake lock so that you don't get killed :D
-		 */
+	private void holdWakeLock() {
 		PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
 		if (wake == null)
 			wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 		if (!wake.isHeld())
 			wake.acquire();
-		new doPopo().execute();
+	}
+
+	/**
+	 * release the wake lock
+	 */
+	private void releaseLock() {
+		if (wake != null && wake.isHeld())
+			wake.release();
+	}
+
+	public void handleIntent(Intent intent) {
+
+		holdWakeLock();
+		// sendToServer();
+		// getMessagesFromServer();
+		sync();
+	}
+
+	public void getMessagesFromServer() {
+		new GetMessagesFromServer().execute();
+	}
+
+	public void getNotificationsFromServer() {
+		// new GetNotificationsFromServer().execute();
 	}
 
 	@Override
 	public void onDestroy() {
+		releaseLock();
 		super.onDestroy();
-		wake.release();
 	}
 
 	@Override
@@ -97,138 +102,405 @@ public class BackgroundService extends Service {
 		return null;
 	}
 
-	private class doPopo extends AsyncTask<Void, Void, Void> {
-		@Override
-		protected Void doInBackground(Void... params) {
-			Utility.log(TAG, "executing I am a service" + sender_lid);
-			RequestParams reqparams = new RequestParams();
+	/**
+	 * get data(messages and/or notification) from server if any and send
+	 * acknowledgment for the same
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	private class GetMessagesFromServer extends
+			AsyncTask<Void, JSONArray, JSONObject> {
+		JSONObject ack_ids = new JSONObject();
 
+		@Override
+		protected JSONObject doInBackground(Void... params) {
+			RequestParams reqparams = new RequestParams();
 			Utility.putCredentials(reqparams, spref);
-			AsyncHttpClient client = new SyncHttpClient();
-			final String user_id = spref.getString(
-					Constants.PreferenceKeys.user_id, null); // this is me :D
-			client.get(Utility.getBaseURL() + "query/download_messages",
+			SyncHttpClient client = new SyncHttpClient();
+
+			final String user_id = spref.getString(Constants.PREF_KEYS.user_id,
+					null); // this is me :D
+			client.get(Utility.getBaseURL() + "query/give_me_messages",
 					reqparams, new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONArray response) {
-
 							try {
-								Utility.log(TAG, response.toString());
-								// insert into db
-
 								if (response.length() > 0) {
 
-									JSONObject tmpobj;
+									DbHelper db = new DbHelper(
+											getApplicationContext());
 
-									// for notification purpose
-									tmpobj = response.getJSONObject(0);
-									String sender_id, sender_name;
-									sender_id = tmpobj
-											.getString(Constants.JSONMEssageKeys.SENDER);
-									sender_name = null;
-									String noti_text = tmpobj
-											.getString(Constants.JSONMEssageKeys.TEXT);
-									// sender db me se nikal le yaha
-									String qry = "select _id,f_name,l_name from user where login_id='"
-											+ sender_id + "'";
-									Utility.log(TAG, qry);
-									db = new DbHelper(getApplicationContext())
-											.getWritableDatabase();
-									Cursor c = db.rawQuery(qry, null);
-									int user_pk_id = -1;
-									if (c.moveToFirst()) {
-										sender_name = c.getString(1)
-												+ c.getString(2);
-										user_pk_id = c.getInt(0);
-									} else {
-										sender_name = "Guddu";
-										/**
-										 * no such user in local db get it from
-										 * server if sender is a
-										 * faculty(optional)
-										 */
-
-									}
-									c.close();
-									int mera_pk = -1;
-									Utility.log(TAG, user_id);
-									qry = "select _id from user where login_id='"
-											+ user_id + "'";
-									c = db.rawQuery(qry, null);
-									if (c.moveToFirst()) {
-										mera_pk = c.getInt(0);
-									} else {
-										Utility.log(TAG, "pk not found");
-									}
-									c.close();
-									new DbHelper(getApplicationContext())
-											.fillMessages(response, mera_pk);
+									ack_ids.put(
+											Constants.JSONKEYS.MESSAGES.ACK,
+											db.fillMessages(response, user_id));
 
 									Intent intent = new Intent(
 											getApplicationContext(),
 											ChatActivity.class);
-									intent.putExtra("name", sender_name);
-									intent.putExtra("user_pk_id", user_pk_id); // receivers
-																				// pk
+
 									Utility.buildNotification(
 											getApplicationContext(),
-											ChatActivity.class, intent,
-											sender_name, noti_text);
+											MainActivity.class, intent,
+											"New Messages",
+											"You have new messages");
 
-									int len = response.length();
-									JSONArray ack = new JSONArray();
-									for (int i = 0; i < len; i++) {
-										try {
-											ack.put(((JSONObject) response
-													.get(i))
-													.getInt(Constants.JSONMEssageKeys.ID));
-										} catch (JSONException e) {
-											Utility.log(TAG,
-													"" + e.getMessage());
-										}
-									}
-									sendAckForMessages(ack);
 								} else {
 									Utility.log(TAG, "no messages");
 								}
 							} catch (Exception e) {
-								e.printStackTrace();
+								Utility.DEBUG(e);
 							}
 						}
 
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								Throwable throwable, JSONObject errorResponse) {
-							Utility.log(TAG, "" + errorResponse);
+							Utility.log(TAG, throwable.getLocalizedMessage());
 						}
 
-						// override all failure methods
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.log(TAG, throwable.getLocalizedMessage());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.log(TAG, throwable.getLocalizedMessage());
+						}
 					});
-			return null;
+			return ack_ids;
 		}
 
-		public void sendAckForMessages(JSONArray ids) {
-			AsyncHttpClient client = new SyncHttpClient();
-			RequestParams params = new RequestParams();
-			params.put(Constants.QueryParameters.USERNAME, sender_lid);
-			params.put(Constants.QueryParameters.TOKEN,
-					spref.getString(Constants.PreferenceKeys.token, null));
-			params.put(Constants.QueryParameters.MSGIDS, ids);
-			client.get(Utility.getBaseURL() + "query/receive_ack", params,
+		@Override
+		protected void onPostExecute(JSONObject ack_ids) {
+			sendAck(ack_ids);
+		}
+	}
+
+	/**
+	 * send JSONArray(2 size) containing JSONArray of messages and JSONArray of
+	 * notifications (First two lines will be the users credentials to match) to
+	 * server containing data to send and receive the the for itself if any
+	 * 
+	 * 1. get pending messages from database 2. get pending notifications from
+	 * database in case user is faculty 3. create JSON string with user
+	 * credentials out of data collected above 4. send to server 5. receive data
+	 * from server (messages and notification) 6. fill database accordingly 7.
+	 * trigger notification action
+	 */
+	public void sync() {
+		JSONObject data_to_send = new JSONObject();
+		StringBuilder strb = new StringBuilder();
+
+		try {
+			/**
+			 * set user credentials
+			 */
+			strb.append(spref.getString(Constants.PREF_KEYS.encripted_user_id,
+					null).trim());
+			strb.append(Constants.NEW_LINE);
+
+			strb.append(spref.getString(Constants.PREF_KEYS.token, null).trim());
+			strb.append(Constants.NEW_LINE);
+			strb.append(spref.getBoolean(Constants.PREF_KEYS.is_faculty, false));
+			strb.append(Constants.NEW_LINE);
+			/**
+			 * set pending messages
+			 */
+			JSONArray pending_messages = getPendingMessages();
+			if (pending_messages.length() > 0)
+				data_to_send.put(Constants.JSONKEYS.MESSAGES.MESSAGES,
+						pending_messages);
+
+			/**
+			 * set pending notifications if user is faculty
+			 */
+			if (spref.getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
+				JSONArray pending_notifications = getPendingNotifications();
+				if (pending_notifications.length() > 0)
+					data_to_send.put(
+							Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS,
+							pending_notifications);
+			}
+		} catch (JSONException e) {
+			Utility.DEBUG(e);
+		}
+		/**
+		 * convert to one data to be send, hit server only if you have some data
+		 */
+		if (data_to_send.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)
+				|| data_to_send.has(Constants.JSONKEYS.MESSAGES.MESSAGES))
+			strb.append(data_to_send.toString());
+
+		HttpEntity body = null;
+		try {
+			body = new StringEntity(strb.toString());
+		} catch (Exception e) {
+			Utility.DEBUG(e);
+		}
+		/**
+		 * send to server either credentials only or with some pending data
+		 */
+		Utility.log(TAG, "sending this " + strb.toString());
+		new SendDataToServer().execute(body);
+
+	}
+
+	private JSONArray getPendingNotifications() {
+		JSONArray notifications = new JSONArray();
+		JSONObject notification;
+
+		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
+		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+		String[] args = { String.valueOf(Constants.STATE.PENDING),
+				spref.getString(Constants.PREF_KEYS.user_id, null) };
+		Cursor c = db.rawQuery(query, args);
+		if (c.moveToFirst()) {
+			while (!c.isAfterLast()) {
+				try {
+					notification = new JSONObject();
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.TEXT,
+							c.getString(0));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.SUBJECT,
+							c.getString(1));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.TIME,
+							c.getLong(2));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.COURSE,
+							c.getString(3));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.BRANCH,
+							c.getString(4));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.YEAR,
+							c.getString(5));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.SECTION,
+							c.getString(6));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ID,
+							c.getInt(7));
+					notifications.put(notification);
+				} catch (Exception e) {
+					Utility.DEBUG(e);
+				}
+				c.moveToNext();
+			}
+			c.close();
+		}
+
+		return notifications;
+
+	}
+
+	private JSONArray getPendingMessages() {
+		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
+		String[] args = { spref.getString(Constants.PREF_KEYS.user_id, null),
+				String.valueOf(Constants.STATE.PENDING) };
+		Cursor c = db.rawQuery(query, args);
+		JSONArray messages = new JSONArray();
+		JSONObject message;
+		if (c.moveToFirst()) {
+			message = new JSONObject();
+			while (!c.isAfterLast()) {
+				try {
+					// sender is the user no need t oput it in every message
+					// object
+					message.put(Constants.JSONKEYS.MESSAGES.RECEIVER,
+							c.getString(0));
+					message.put(Constants.JSONKEYS.MESSAGES.TEXT,
+							c.getString(1));
+					message.put(Constants.JSONKEYS.MESSAGES.IS_GROUP_MESSAGE,
+							c.getInt(2));
+					message.put(Constants.JSONKEYS.MESSAGES.TIME, c.getLong(3));
+					message.put(Constants.JSONKEYS.MESSAGES.ID, c.getInt(4));
+					messages.put(message);
+				} catch (JSONException e) {
+					Utility.DEBUG(e);
+				}
+				c.moveToNext();
+			}
+		}
+		c.close();
+
+		return messages;
+
+	}
+
+	/**
+	 * Send acknowledgment for received messages and notifications
+	 * 
+	 * @param msg_and_noti_ids
+	 *            {@link JSONObject} containing two {@link JSONArray} first one
+	 *            will contain IDs of messages and second one will contain IDs
+	 *            of notification
+	 */
+	public void sendAck(JSONObject msg_and_noti_ids) {
+		AsyncHttpClient client = new AsyncHttpClient();
+		StringBuilder strb = new StringBuilder();
+		/**
+		 * set user credentials
+		 */
+		strb.append(spref
+				.getString(Constants.PREF_KEYS.encripted_user_id, null).trim());
+		strb.append(Constants.NEW_LINE);
+		strb.append(spref.getString(Constants.PREF_KEYS.token, null).trim());
+		strb.append(Constants.NEW_LINE);
+		strb.append(msg_and_noti_ids);
+		HttpEntity entity = null;
+		try {
+			entity = new StringEntity(strb.toString());
+		} catch (UnsupportedEncodingException e) {
+			Utility.DEBUG(e);
+		}
+		Utility.log(TAG, "ack sending " + strb.toString());
+		client.addHeader("Content-Type", "application/json");
+		client.post(getApplicationContext(), Utility.getBaseURL()
+				+ "query/receive_ack", entity, null,
+				new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							JSONObject response) {
+						Utility.log(TAG, "ack received " + response.toString());
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							Throwable throwable, JSONObject errorResponse) {
+						Utility.log(
+								TAG,
+								"on failure sendAck "
+										+ throwable.getLocalizedMessage());
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							String responseString, Throwable throwable) {
+						Utility.log(
+								TAG,
+								"on failure sendAck "
+										+ throwable.getLocalizedMessage());
+					}
+
+					@Override
+					public void onFailure(int statusCode, Header[] headers,
+							Throwable throwable, JSONArray errorResponse) {
+						Utility.log(
+								TAG,
+								"on failure sendAck "
+										+ throwable.getLocalizedMessage());
+					}
+				});
+	}
+
+	class SendDataToServer extends AsyncTask<HttpEntity, Void, Void> {
+
+		JSONObject ids_to_send = new JSONObject();
+
+		@Override
+		protected Void doInBackground(HttpEntity... params) {
+			SyncHttpClient client = new SyncHttpClient();
+
+			client.addHeader("Content-Type", "application/json");
+			client.post(getApplicationContext(), Utility.getBaseURL()
+					+ "query/sync", params[0], null,
 					new JsonHttpResponseHandler() {
+						/**
+						 * got data(messages and notifications and
+						 * acknowledgment for the data we have send) form server
+						 * insert it into database
+						 */
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
-							Utility.log("TAG", response.toString());
+							Utility.log(TAG, "received this: " + response);
+							try {
+								// get acks from data received from server and
+								// update database
+								JSONObject acks = new JSONObject();
+								// get the ack ids for messages
+								if (response
+										.has(Constants.JSONKEYS.MESSAGES.ACK))
+									acks.put(
+											Constants.JSONKEYS.MESSAGES.ACK,
+											response.getJSONArray(Constants.JSONKEYS.MESSAGES.ACK));
+								// get ack ids for notifications
+								if (response
+										.has(Constants.JSONKEYS.NOTIFICATIONS.ACK))
+									acks.put(
+											Constants.JSONKEYS.NOTIFICATIONS.ACK,
+											response.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.ACK));
+
+								if (acks.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)
+										|| acks.has(Constants.JSONKEYS.MESSAGES.ACK))
+									new DbHelper(getApplicationContext())
+											.receivedAck(acks);
+
+								// get notification and insert it into db(help
+								// of
+								// DbHelper)
+								DbHelper db = new DbHelper(
+										getApplicationContext());
+								if (response
+										.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
+									ids_to_send
+											.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
+													db.fillNotifications(response
+															.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)));
+								}
+								// get messages and insert it into db(help of
+								// DbHelper)
+								if (response
+										.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
+									ids_to_send.put(
+											Constants.JSONKEYS.MESSAGES.ACK,
+											db.fillMessages(
+													response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
+													sender_lid));
+								}
+
+							} catch (JSONException e) {
+								Utility.DEBUG(e);
+							}
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.log(
+									TAG,
+									"on failure sync "
+											+ throwable.getLocalizedMessage());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.log(
+									TAG,
+									"on failure sync "
+											+ throwable.getLocalizedMessage());
 						}
 
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								Throwable throwable, JSONObject errorResponse) {
-
+							Utility.log(
+									TAG,
+									"on failure sync "
+											+ throwable.getLocalizedMessage());
 						}
+						// override all sucess and failure methods
 					});
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			// on main thread
+			if (ids_to_send.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)
+					|| ids_to_send.has(Constants.JSONKEYS.MESSAGES.ACK))
+				sendAck(ids_to_send);
 		}
 	}
 }

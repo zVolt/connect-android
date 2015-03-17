@@ -8,11 +8,6 @@ import in.siet.secure.dao.DbStructure;
 
 import java.util.Calendar;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -29,10 +24,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
+/**
+ * this activity display the chat history between two users
+ * 
+ * @author Zeeshan Khan
+ * 
+ */
 public class ChatActivity extends ActionBarActivity {
 	String title;
 	ListView list;
@@ -40,34 +37,36 @@ public class ChatActivity extends ActionBarActivity {
 	private Cursor c;
 	MessagesAdapter adapter;
 	SharedPreferences spref;
-	static int receiver_id; // this is id of the receiver to whom user will text
-	static String receiver_lid, user_image_url;
-	static int sender_id; // sender is the user itself who is using the app
-	static String sender_lid;
-	private static SQLiteDatabase db;
+	int receiver_id; // this is id of the receiver to whom user will text
+	String receiver_lid, user_image_url;
+	int sender_id; // sender is the user itself who is using the app
+	String sender_lid;
+
 	long msg_id;
 	private static final String TAG = "in.siet.secure.sgi.ChatActivity";
 	Toolbar toolbar;
-	static final String query = "select messages._id,text,time,state from messages where sender=? or receiver=?";
+	private static final String query = "select messages._id,text,time,state from messages where sender=? or receiver=?";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
 
-		// if(savedInstanceState==null)
 		Intent intent = getIntent();
 		title = intent.getStringExtra("name");
 		receiver_id = intent.getIntExtra("user_pk_id", -1);
-		Utility.RaiseToast(getApplicationContext(), "onCreate null " + title,
-				false);
-		db = new DbHelper(getApplicationContext()).getWritableDatabase();
 		spref = getSharedPreferences(Constants.pref_file_name,
 				Context.MODE_PRIVATE);
+		list = (ListView) findViewById(R.id.listViewChats);
+		msg = (EditText) findViewById(R.id.editTextChats);
+		toolbar = (Toolbar) findViewById(R.id.toolbar);
+
 		String tmpq = "select _id,login_id,pic_url from user where login_id='"
 				+ (sender_lid = spref.getString(
-						Constants.PreferenceKeys.user_id, null)) + "' or _id="
+						Constants.PREF_KEYS.user_id, null)) + "' or _id="
 				+ receiver_id; // me or the receiver
+
+		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		c = db.rawQuery(tmpq, null);
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
@@ -78,23 +77,22 @@ public class ChatActivity extends ActionBarActivity {
 				sender_id = c.getInt(0);
 			c.moveToNext();
 		}
+		c.close();
 
-		list = (ListView) findViewById(R.id.listViewChats);
-		msg = (EditText) findViewById(R.id.editTextChats);
-		String[] args = { "" + receiver_id, "" + receiver_id };
+		String[] args = { String.valueOf(receiver_id),
+				String.valueOf(receiver_id) };
 		c = db.rawQuery(query, args);
 		adapter = new MessagesAdapter(getApplicationContext(), c, 0);
 		list.setAdapter(adapter);
-		toolbar = (Toolbar) findViewById(R.id.toolbar);
+
 		setSupportActionBar(toolbar);
-		Utility.RaiseToast(getApplicationContext(), "onCreate " + title, false);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-
+		Utility.setAlarm(getApplication(), 5000);
 	}
 
 	@Override
@@ -110,7 +108,7 @@ public class ChatActivity extends ActionBarActivity {
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		case R.id.action_refresh_messages:
-			fetchMessages();
+			//you cannot refresh the list 
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -121,89 +119,29 @@ public class ChatActivity extends ActionBarActivity {
 		super.onResume();
 		if (title != null)
 			getSupportActionBar().setTitle(title);
-		Utility.RaiseToast(getApplicationContext(), "resume " + receiver_id
-				+ " " + sender_id, false);
-		// Utility.log(TAG,"count is "+adapter.getCount());
-		// list.smoothScrollToPosition(adapter.getCount()); //to show latest
-		// messages
 	}
 
 	public void updateCursor() {
-		Cursor cc;
+		Cursor new_cursor;
 		String[] args = { "" + receiver_id, "" + receiver_id };
-		cc = db.rawQuery(query, args);
-		adapter.changeCursor(cc);
+
+		new_cursor = new DbHelper(getApplicationContext()).getDb().rawQuery(
+				query, args);
+		Cursor old_cursor = adapter.swapCursor(new_cursor);
+		if (old_cursor != null)
+			old_cursor.close();
 	}
 
-	public void fetchMessages() {
-		RequestParams params = new RequestParams();
-		Utility.putCredentials(params, spref);
-		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.getBaseURL() + "query/download_messages", params,
-				new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONArray response) {
-						Utility.log(TAG, response.toString());
-						// insert into db
-						if (response.length() > 0) {
-							new DbHelper(getApplicationContext()).fillMessages(
-									response, sender_id);
-							// send server msg to change state of messages
-							updateCursor();
-							int len = response.length();
-							JSONArray ack = new JSONArray();
-							/**
-							 * JSONArray is not a collection class so we cannot
-							 * use foreach loop
-							 */
-							for (int i = 0; i < len; i++) {
-								try {
-									ack.put(((JSONObject) response.get(i))
-											.getInt(Constants.JSONMEssageKeys.ID));
-								} catch (JSONException e) {
-									Utility.log(TAG, "" + e.getMessage());
-								}
-							}
-							sendAckForMessages(ack);
-						}
-					}
 
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-						Utility.log(TAG, "" + errorResponse);
-					}
-
-					// override all failure methods
-				});
-	}
-
-	public void sendAckForMessages(JSONArray ids) {
-		AsyncHttpClient client = new AsyncHttpClient();
-		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, sender_lid);
-		params.put(Constants.QueryParameters.TOKEN,
-				spref.getString(Constants.PreferenceKeys.token, null));
-		params.put(Constants.QueryParameters.MSGIDS, ids);
-		client.get(Utility.getBaseURL() + "query/receive_ack", params,
-				new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONObject response) {
-						Utility.log("TAG", response.toString());
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-
-					}
-				});
-	}
-
-	public void sendMessage(View view) {
+	/**
+	 * insert new message into database
+	 * move the sending part to service
+	 * 
+	 * @param view
+	 */
+	public void insertMessageToDb(View view) {
 		String msgtxt = msg.getText().toString();
+		msg.setText("");
 		if (msgtxt.trim().length() > 0) {
 			SQLiteDatabase db = new DbHelper(getApplicationContext())
 					.getWritableDatabase();
@@ -211,24 +149,19 @@ public class ChatActivity extends ActionBarActivity {
 
 			values.put(DbStructure.MessageTable.COLUMN_TEXT, msgtxt);
 			values.put(DbStructure.MessageTable.COLUMN_TIME, Calendar
-					.getInstance().getTimeInMillis());// (String)DateUtils.getRelativeDateTimeString(getApplicationContext(),
-														// cal.getTimeInMillis(),
-														// DateUtils.SECOND_IN_MILLIS,
-														// DateUtils.WEEK_IN_MILLIS,
-														// 0));
+					.getInstance().getTimeInMillis());
 			values.put(DbStructure.MessageTable.COLUMN_SENDER, sender_id);
 			values.put(DbStructure.MessageTable.COLUMN_RECEIVER, receiver_id);
 			values.put(DbStructure.MessageTable.COLUMN_STATE,
-					Constants.MsgState.TO_SEND);
-			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG, "false");
+					Constants.STATE.PENDING);
+			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG, Constants.IS_GROUP_MSG.NO);
 
 			msg_id = db.insert(DbStructure.MessageTable.TABLE_NAME, null,
 					values);
-
-			// Utility.RaiseToast(getApplicationContext(), "send", false);
-			// ((LinearLayout)(view.getParent().getParent()));
 			updateCursor();
-			// send to server
+			
+			/*
+			 // send to server
 			RequestParams params = new RequestParams();
 			Utility.putCredentials(params, spref);
 			JSONObject mobj = new JSONObject();
@@ -242,7 +175,7 @@ public class ChatActivity extends ActionBarActivity {
 				Utility.log(TAG, "" + e.getMessage());
 			}
 			params.put(Constants.QueryParameters.MESSAGES, mobj);
-			msg.setText("");
+			
 			AsyncHttpClient client = new AsyncHttpClient();
 			client.get(Utility.getBaseURL() + "query/upload_message", params,
 					new JsonHttpResponseHandler() {
@@ -279,6 +212,7 @@ public class ChatActivity extends ActionBarActivity {
 						}
 
 					});
+			 */
 		}
 	}
 
@@ -287,6 +221,7 @@ public class ChatActivity extends ActionBarActivity {
 		if (c != null)
 			c.close();
 		Utility.log(TAG, "closed cursor");
+
 		super.onDestroy();
 	}
 }
