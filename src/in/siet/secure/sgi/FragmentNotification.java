@@ -36,7 +36,7 @@ public class FragmentNotification extends Fragment {
 	public NotificationAdapter adapter;
 	public View rootView;
 	public ListView listView;
-	private BroadcastReceiver broadcast_receiver = new BroadcastReceiver() {
+	private BroadcastReceiver local_broadcast_receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Utility.log(TAG, "received local broadcast");
@@ -82,7 +82,7 @@ public class FragmentNotification extends Fragment {
 		LocalBroadcastManager
 				.getInstance(getActivity().getApplicationContext())
 				.registerReceiver(
-						broadcast_receiver,
+						local_broadcast_receiver,
 						new IntentFilter(
 								Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS));
 		refresh();
@@ -92,7 +92,7 @@ public class FragmentNotification extends Fragment {
 	public void onPause() {
 		LocalBroadcastManager
 				.getInstance(getActivity().getApplicationContext())
-				.unregisterReceiver(broadcast_receiver);
+				.unregisterReceiver(local_broadcast_receiver);
 		super.onPause();
 	}
 

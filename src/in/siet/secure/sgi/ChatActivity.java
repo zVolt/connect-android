@@ -8,14 +8,17 @@ import in.siet.secure.dao.DbStructure;
 
 import java.util.Calendar;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -46,6 +49,14 @@ public class ChatActivity extends ActionBarActivity {
 	private static final String TAG = "in.siet.secure.sgi.ChatActivity";
 	Toolbar toolbar;
 	private static final String query = "select messages._id,text,time,state from messages where sender=? or receiver=?";
+	private BroadcastReceiver local_broadcast_receiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Utility.log(TAG, "received broadcast update messages");
+			updateCursor();
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +73,9 @@ public class ChatActivity extends ActionBarActivity {
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 
 		String tmpq = "select _id,login_id,pic_url from user where login_id='"
-				+ (sender_lid = spref.getString(
-						Constants.PREF_KEYS.user_id, null)) + "' or _id="
-				+ receiver_id; // me or the receiver
+				+ (sender_lid = spref.getString(Constants.PREF_KEYS.user_id,
+						null)) + "' or _id=" + receiver_id; // me or the
+															// receiver
 
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		c = db.rawQuery(tmpq, null);
@@ -108,7 +119,7 @@ public class ChatActivity extends ActionBarActivity {
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		case R.id.action_refresh_messages:
-			//you cannot refresh the list 
+			// you cannot refresh the list
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -119,6 +130,18 @@ public class ChatActivity extends ActionBarActivity {
 		super.onResume();
 		if (title != null)
 			getSupportActionBar().setTitle(title);
+		LocalBroadcastManager.getInstance(getApplicationContext())
+				.registerReceiver(
+						local_broadcast_receiver,
+						new IntentFilter(
+								Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES));
+	}
+
+	@Override
+	protected void onPause() {
+		LocalBroadcastManager.getInstance(getApplicationContext())
+				.unregisterReceiver(local_broadcast_receiver);
+		super.onPause();
 	}
 
 	public void updateCursor() {
@@ -132,10 +155,8 @@ public class ChatActivity extends ActionBarActivity {
 			old_cursor.close();
 	}
 
-
 	/**
-	 * insert new message into database
-	 * move the sending part to service
+	 * insert new message into database move the sending part to service
 	 * 
 	 * @param view
 	 */
@@ -154,64 +175,46 @@ public class ChatActivity extends ActionBarActivity {
 			values.put(DbStructure.MessageTable.COLUMN_RECEIVER, receiver_id);
 			values.put(DbStructure.MessageTable.COLUMN_STATE,
 					Constants.STATE.PENDING);
-			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG, Constants.IS_GROUP_MSG.NO);
+			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG,
+					Constants.IS_GROUP_MSG.NO);
 
 			msg_id = db.insert(DbStructure.MessageTable.TABLE_NAME, null,
 					values);
 			updateCursor();
-			
+
 			/*
-			 // send to server
-			RequestParams params = new RequestParams();
-			Utility.putCredentials(params, spref);
-			JSONObject mobj = new JSONObject();
-			try {
-				mobj.put(Constants.JSONMEssageKeys.SENDER, sender_lid);
-				mobj.put(Constants.JSONMEssageKeys.TEXT, msgtxt);
-				mobj.put(Constants.JSONMEssageKeys.TIME, Calendar.getInstance()
-						.getTimeInMillis());
-				mobj.put(Constants.JSONMEssageKeys.RECEIVER, receiver_lid);
-			} catch (JSONException e) {
-				Utility.log(TAG, "" + e.getMessage());
-			}
-			params.put(Constants.QueryParameters.MESSAGES, mobj);
-			
-			AsyncHttpClient client = new AsyncHttpClient();
-			client.get(Utility.getBaseURL() + "query/upload_message", params,
-					new JsonHttpResponseHandler() {
-						@Override
-						public void onSuccess(int statusCode, Header[] headers,
-								JSONObject response) {
-							Utility.log(TAG, response.toString());
-							// if status is false then reset message state to
-							// send again id in msg_id
-							// update messages
-							try {
-								if (response
-										.getBoolean(Constants.JSONKeys.STATUS)) {
-									ContentValues values = new ContentValues();
-									values.put(
-											DbStructure.MessageTable.COLUMN_STATE,
-											Constants.MsgState.SENT_SUCESSFULLY);
-									new DbHelper(getApplicationContext())
-											.getWritableDatabase()
-											.update(DbStructure.MessageTable.TABLE_NAME,
-													values,
-													"_id=?",
-													new String[] { msg_id + "" });
-								}
-							} catch (Exception e) {
-								Utility.log(TAG, "" + e.getMessage());
-							}
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONObject errorResponse) {
-							// set status of message to not sent or to be send
-						}
-
-					});
+			 * // send to server RequestParams params = new RequestParams();
+			 * Utility.putCredentials(params, spref); JSONObject mobj = new
+			 * JSONObject(); try { mobj.put(Constants.JSONMEssageKeys.SENDER,
+			 * sender_lid); mobj.put(Constants.JSONMEssageKeys.TEXT, msgtxt);
+			 * mobj.put(Constants.JSONMEssageKeys.TIME, Calendar.getInstance()
+			 * .getTimeInMillis()); mobj.put(Constants.JSONMEssageKeys.RECEIVER,
+			 * receiver_lid); } catch (JSONException e) { Utility.log(TAG, "" +
+			 * e.getMessage()); } params.put(Constants.QueryParameters.MESSAGES,
+			 * mobj);
+			 * 
+			 * AsyncHttpClient client = new AsyncHttpClient();
+			 * client.get(Utility.getBaseURL() + "query/upload_message", params,
+			 * new JsonHttpResponseHandler() {
+			 * 
+			 * @Override public void onSuccess(int statusCode, Header[] headers,
+			 * JSONObject response) { Utility.log(TAG, response.toString()); //
+			 * if status is false then reset message state to // send again id
+			 * in msg_id // update messages try { if (response
+			 * .getBoolean(Constants.JSONKeys.STATUS)) { ContentValues values =
+			 * new ContentValues(); values.put(
+			 * DbStructure.MessageTable.COLUMN_STATE,
+			 * Constants.MsgState.SENT_SUCESSFULLY); new
+			 * DbHelper(getApplicationContext()) .getWritableDatabase()
+			 * .update(DbStructure.MessageTable.TABLE_NAME, values, "_id=?", new
+			 * String[] { msg_id + "" }); } } catch (Exception e) {
+			 * Utility.log(TAG, "" + e.getMessage()); } }
+			 * 
+			 * @Override public void onFailure(int statusCode, Header[] headers,
+			 * Throwable throwable, JSONObject errorResponse) { // set status of
+			 * message to not sent or to be send }
+			 * 
+			 * });
 			 */
 		}
 	}

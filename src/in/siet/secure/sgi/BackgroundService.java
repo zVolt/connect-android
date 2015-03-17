@@ -459,6 +459,7 @@ public class BackgroundService extends Service {
 											db.fillMessages(
 													response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
 													sender_lid));
+									sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
 								}
 
 							} catch (JSONException e) {
