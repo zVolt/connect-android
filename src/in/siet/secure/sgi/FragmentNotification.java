@@ -32,10 +32,10 @@ import android.widget.ListView;
 
 public class FragmentNotification extends Fragment {
 	public static final String TAG = "in.siet.secure.sgi.FragmentNotification";
-	public ArrayList<Notification> notifications = new ArrayList<Notification>();
-	public NotificationAdapter adapter;
-	public View rootView;
-	public ListView listView;
+	private ArrayList<Notification> notifications = new ArrayList<Notification>();
+	private NotificationAdapter adapter;
+	private View rootView;
+	private ListView listView;
 	private BroadcastReceiver local_broadcast_receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {

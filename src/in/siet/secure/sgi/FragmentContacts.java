@@ -23,9 +23,12 @@ import android.widget.TextView;
 public class FragmentContacts extends Fragment implements OnItemClickListener {
 	public static String TAG = "in.siet.secure.sgi.FramentContacts";
 
-	public static ContactsAdapter adapter;
-	Cursor cs, cf;
-	SQLiteDatabase db;
+	private ContactsAdapter adapter;
+	private Cursor cs, cf;
+	private SQLiteDatabase db;
+	/**
+	 * to maintain the which list to show students or faculty
+	 */
 	public static boolean student;
 	final String ss = "select user._id,f_name,l_name,pic_url,sections.name,year.year,branches.name,courses.name,login_id from user join student on user._id=student.user_id join sections on section_id=sections._id join year on year_id=year._id join branches on branch_id=branches._id join courses on course_id=courses._id",
 			sf = "select user._id,f_name,l_name,pic_url,branches.name,courses.name,login_id from user join faculty on user._id=faculty.user_id join branches on branch_id=branches._id join courses on course_id=courses._id";
@@ -43,7 +46,7 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 				.findViewById(R.id.listViewContacts);
 		contactList.setAdapter(adapter);
 		TextView emptyTextView = (TextView) rootView
-				.findViewById(R.id.test_view_empty_list);
+				.findViewById(R.id.contacts_empty_list_view);
 		contactList.setEmptyView(emptyTextView);
 		contactList.setOnItemClickListener(this);
 		setHasOptionsMenu(true);

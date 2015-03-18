@@ -1,16 +1,12 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Utility;
-import in.siet.secure.contants.Constants;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 public class FragmentSettings extends PreferenceFragment implements OnSharedPreferenceChangeListener{
 	public static final String TAG="in.siet.secure.sgi.FragmentSettings";

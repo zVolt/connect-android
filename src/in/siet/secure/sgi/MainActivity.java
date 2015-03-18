@@ -41,15 +41,15 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 
 public class MainActivity extends ActionBarActivity {
 	public static final String TAG = "in.siet.secure.sgi.MainActivity";
-
+	public static boolean UNI_IMG_LOADER_SET = false;
 	private DrawerLayout drawerlayout;
 	private ScrollView fullDrawerLayout;
 	private boolean back_pressed = false;
-	private static ActionBarDrawerToggle drawerToggle;
+	private ActionBarDrawerToggle drawerToggle;
 	static final UserFilterDialog show = new UserFilterDialog();
-	private static SharedPreferences spf;
-	public static final String EXTRA_MESSAGE = "message";
-	public static String ACTIVE_FRAGMENT_TAG;
+	private SharedPreferences spf;
+	public final String EXTRA_MESSAGE = "message";
+	public String ACTIVE_FRAGMENT_TAG;
 	Toolbar toolbar;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
@@ -62,14 +62,16 @@ public class MainActivity extends ActionBarActivity {
 		if (savedInstanceState == null) {
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
 		}
-		DisplayImageOptions options = new DisplayImageOptions.Builder()
-				.cacheInMemory(true).cacheOnDisk(true).build();
+		if (!UNI_IMG_LOADER_SET) {
+			DisplayImageOptions options = new DisplayImageOptions.Builder()
+					.cacheInMemory(true).cacheOnDisk(true).build();
 
-		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
-				getApplicationContext()).defaultDisplayImageOptions(options)
-				.build();
-		ImageLoader.getInstance().init(config);
-
+			ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+					getApplicationContext())
+					.defaultDisplayImageOptions(options).build();
+			ImageLoader.getInstance().init(config);
+			UNI_IMG_LOADER_SET = true;
+		}
 		Fragment notification = getFragmentManager().findFragmentByTag(
 				ACTIVE_FRAGMENT_TAG);
 		if (notification == null || ACTIVE_FRAGMENT_TAG == null) {
@@ -408,65 +410,49 @@ public class MainActivity extends ActionBarActivity {
 			holder.subject.getText().clear();
 			holder.body.getText().clear();
 			/*
-			// sending to server
-			AsyncHttpClient client = new AsyncHttpClient();
-			RequestParams params = new RequestParams();
-			Utility.putCredentials(params, spf);
-			params.put(Constants.QueryParameters.SECTION, section);
-			params.put(Constants.QueryParameters.COURSE, course);
-			params.put(Constants.QueryParameters.YEAR, year);
-			params.put(Constants.QueryParameters.BRANCH, branch);
-			params.put(Constants.QueryParameters.Notification.TIME, time);
-			params.put(Constants.QueryParameters.Notification.BODY, body);
-			params.put(Constants.QueryParameters.Notification.SUBJECT, subject);
-			client.get(Utility.getBaseURL() + "query/set_new_notification",
-					params, new JsonHttpResponseHandler() {
-						@Override
-						public void onSuccess(int statusCode, Header[] headers,
-								JSONArray response) {
-							// TODO Auto-generated method stub
-							super.onSuccess(statusCode, headers, response);
-						}
-
-						@Override
-						public void onSuccess(int statusCode, Header[] headers,
-								JSONObject response) {
-							Utility.log(TAG, "got responce " + response);
-							
-						}
-
-						@Override
-						public void onSuccess(int statusCode, Header[] headers,
-								String responseString) {
-							// TODO Auto-generated method stub
-							super.onSuccess(statusCode, headers, responseString);
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								String responseString, Throwable throwable) {
-							// TODO Auto-generated method stub
-							super.onFailure(statusCode, headers,
-									responseString, throwable);
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONArray errorResponse) {
-							// TODO Auto-generated method stub
-							super.onFailure(statusCode, headers, throwable,
-									errorResponse);
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONObject errorResponse) {
-							// TODO Auto-generated method stub
-							super.onFailure(statusCode, headers, throwable,
-									errorResponse);
-						}
-					});
-*/
+			 * // sending to server AsyncHttpClient client = new
+			 * AsyncHttpClient(); RequestParams params = new RequestParams();
+			 * Utility.putCredentials(params, spf);
+			 * params.put(Constants.QueryParameters.SECTION, section);
+			 * params.put(Constants.QueryParameters.COURSE, course);
+			 * params.put(Constants.QueryParameters.YEAR, year);
+			 * params.put(Constants.QueryParameters.BRANCH, branch);
+			 * params.put(Constants.QueryParameters.Notification.TIME, time);
+			 * params.put(Constants.QueryParameters.Notification.BODY, body);
+			 * params.put(Constants.QueryParameters.Notification.SUBJECT,
+			 * subject); client.get(Utility.getBaseURL() +
+			 * "query/set_new_notification", params, new
+			 * JsonHttpResponseHandler() {
+			 * 
+			 * @Override public void onSuccess(int statusCode, Header[] headers,
+			 * JSONArray response) { // TODO Auto-generated method stub
+			 * super.onSuccess(statusCode, headers, response); }
+			 * 
+			 * @Override public void onSuccess(int statusCode, Header[] headers,
+			 * JSONObject response) { Utility.log(TAG, "got responce " +
+			 * response);
+			 * 
+			 * }
+			 * 
+			 * @Override public void onSuccess(int statusCode, Header[] headers,
+			 * String responseString) { // TODO Auto-generated method stub
+			 * super.onSuccess(statusCode, headers, responseString); }
+			 * 
+			 * @Override public void onFailure(int statusCode, Header[] headers,
+			 * String responseString, Throwable throwable) { // TODO
+			 * Auto-generated method stub super.onFailure(statusCode, headers,
+			 * responseString, throwable); }
+			 * 
+			 * @Override public void onFailure(int statusCode, Header[] headers,
+			 * Throwable throwable, JSONArray errorResponse) { // TODO
+			 * Auto-generated method stub super.onFailure(statusCode, headers,
+			 * throwable, errorResponse); }
+			 * 
+			 * @Override public void onFailure(int statusCode, Header[] headers,
+			 * Throwable throwable, JSONObject errorResponse) { // TODO
+			 * Auto-generated method stub super.onFailure(statusCode, headers,
+			 * throwable, errorResponse); } });
+			 */
 			Utility.RaiseToast(getApplicationContext(), "send new message",
 					false);
 		} else {

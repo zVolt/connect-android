@@ -1,23 +1,17 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/CardStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
 
     <ListView
         android:id="@+id/listViewContacts"
-        style="@style/CardStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
     </ListView>
 
-    <TextView
-        android:id="@+id/test_view_empty_list"
-        style="@style/CardStyle"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/list_item_content_height"
-        android:gravity="center"
-        android:text="@string/nothing_found"
-        android:textAppearance="?android:attr/textAppearanceMedium" >
-    </TextView>
+    <include
+        android:id="@+id/contacts_empty_list_view"
+        layout="@layout/list_empty_item" >
+    </include>
 
-</LinearLayout>
+</RelativeLayout>

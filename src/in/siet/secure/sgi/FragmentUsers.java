@@ -30,7 +30,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -38,11 +37,10 @@ import com.loopj.android.http.RequestParams;
 
 public class FragmentUsers extends Fragment {
 	public static final String TAG = "in.siet.secure.sgi.FragmentUsers";
-	SharedPreferences sharedPreferences = null;
-	private static ArrayList<User> users = new ArrayList<User>();
-	private static UsersAdapter adapter;
-	public static ListView listview;
-	public static TextView emptyText;
+	private SharedPreferences sharedPreferences = null;
+	// private static ArrayList<User> users = new ArrayList<User>();
+	private UsersAdapter adapter;
+	private ListView listview;
 
 	// public static View emptyView;
 
@@ -52,7 +50,7 @@ public class FragmentUsers extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		adapter = new UsersAdapter(getActivity(), users);
+		adapter = new UsersAdapter(getActivity(), new ArrayList<User>());
 		sharedPreferences = getActivity().getSharedPreferences(
 				Constants.pref_file_name, Context.MODE_PRIVATE);
 		View rootView = inflater.inflate(R.layout.fragment_users, container,
@@ -63,7 +61,7 @@ public class FragmentUsers extends Fragment {
 		listview = (ListView) rootView.findViewById(R.id.listViewUsers);
 
 		listview.setAdapter(adapter);
-		listview.setEmptyView(rootView.findViewById(R.id.test_view_empty_list));
+		listview.setEmptyView(rootView.findViewById(R.id.users_empty_list_view));
 		listview.setOnItemClickListener(new ItemClickListener());
 
 		return rootView;
@@ -114,14 +112,14 @@ public class FragmentUsers extends Fragment {
 		fetch_all();
 	}
 
-	public static void refresh() {
+	public void refresh() {
 		if (adapter != null)
 			adapter.notifyDataSetChanged();
 		else
 			Utility.log(TAG + " refresh()", "adapter is null");
 	}
 
-	public static void setData(ArrayList<User> data) {
+	public void setData(ArrayList<User> data) {
 		if (adapter != null) {
 			adapter.clear();
 			adapter.addAll(data);
@@ -151,9 +149,10 @@ public class FragmentUsers extends Fragment {
 		}
 
 	}
-/**
- * fetch users from server based on filter
- */
+
+	/**
+	 * fetch users from server based on filter
+	 */
 	public void fetch_all() {
 
 		RequestParams params = new RequestParams();

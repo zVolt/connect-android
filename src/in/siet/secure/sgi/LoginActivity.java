@@ -39,8 +39,8 @@ import com.loopj.android.http.RequestParams;
 
 public class LoginActivity extends ActionBarActivity {
 	private static String TAG = "in.siet.secure.sgi.LoginActivity";
-	private static String user_id = null;
-	private static String pwd = null;
+	private String user_id = null;
+	private String pwd = null;
 	// private static String f_name = null;
 	// private static String l_name = null;
 	// private static String profile_url = null;
@@ -48,10 +48,10 @@ public class LoginActivity extends ActionBarActivity {
 	// private static String section = null;
 	// private static String course = null;
 	// private static String year = null;
-	private static User user = null;
-	private static boolean back_pressed = false;
-	private static boolean in_settings = false;
-	private static boolean is_faculty = false;
+	private User user = null;
+	private boolean back_pressed = false;
+	private boolean in_settings = false;
+	private boolean is_faculty = false;
 	private SharedPreferences spref;
 	Toolbar toolbar;
 
@@ -63,8 +63,9 @@ public class LoginActivity extends ActionBarActivity {
 				Constants.pref_file_name, Context.MODE_PRIVATE);
 		/*
 		 * UPDATE THE SHARED PREF ABOUT THE CURRENT ACTIVITY
-		
-		Utility.setCurrentActivity(); */
+		 * 
+		 * Utility.setCurrentActivity();
+		 */
 		if (spref.getBoolean(Constants.PREF_KEYS.logged_in, false)) {
 			startMainActivity();
 		}
@@ -95,7 +96,7 @@ public class LoginActivity extends ActionBarActivity {
 		back_pressed = false;
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			Utility.startActivity(this,SettingActivity.class);
+			Utility.startActivity(this, SettingActivity.class);
 			return true;
 		} else if (id == R.id.action_about) {
 			return true;
@@ -204,8 +205,8 @@ public class LoginActivity extends ActionBarActivity {
 	public void createdb() {
 		// get data from server
 		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, spref.getString(
-				Constants.PREF_KEYS.encripted_user_id, null));
+		params.put(Constants.QueryParameters.USERNAME,
+				spref.getString(Constants.PREF_KEYS.encripted_user_id, null));
 		params.put(Constants.QueryParameters.TOKEN,
 				spref.getString(Constants.PREF_KEYS.token, null));
 		queryServer(params, false);
@@ -226,8 +227,8 @@ public class LoginActivity extends ActionBarActivity {
 						Context.MODE_PRIVATE);
 		String saved_user_id = sharedPref.getString(
 				Constants.PREF_KEYS.user_id, null);
-		String saved_token = sharedPref.getString(
-				Constants.PREF_KEYS.token, null);
+		String saved_token = sharedPref.getString(Constants.PREF_KEYS.token,
+				null);
 		// all data have been set in the calling function
 
 		if (saved_user_id == null || saved_token != null) { // if detail doesnt
@@ -236,8 +237,7 @@ public class LoginActivity extends ActionBarActivity {
 			editor.putString(Constants.PREF_KEYS.user_id, user.user_id);
 			editor.putString(Constants.PREF_KEYS.encripted_user_id,
 					Utility.encode(user.user_id));
-			editor.putString(Constants.PREF_KEYS.token,
-					Utility.encode(token));
+			editor.putString(Constants.PREF_KEYS.token, Utility.encode(token));
 			editor.putString(Constants.PREF_KEYS.f_name, user.f_name);
 			editor.putString(Constants.PREF_KEYS.l_name, user.l_name);
 			editor.putString(Constants.PREF_KEYS.pic_url, user.picUrl);
@@ -247,8 +247,7 @@ public class LoginActivity extends ActionBarActivity {
 
 			} else {
 				Student s_user = (Student) user;
-				editor.putString(Constants.PREF_KEYS.section,
-						s_user.section);
+				editor.putString(Constants.PREF_KEYS.section, s_user.section);
 				editor.putString(Constants.PREF_KEYS.year,
 						String.valueOf(s_user.year));
 
