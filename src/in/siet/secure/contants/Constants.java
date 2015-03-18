@@ -3,25 +3,22 @@ package in.siet.secure.contants;
 import in.siet.secure.sgi.R;
 import android.os.Environment;
 
-public class Constants {
-
-	// elephant Notation
-	public static String SERVER = "192.168.0.100";
-	public static final String PORT = "8080";
-	public static final String COLON = ":";
+public interface Constants {
+	
+	public String PORT = "8080";
+	public String COLON = ":";
 	// public static final String SOCKET=SERVER+COLON+PORT; //to allow user
 	// dynamic server ip change
-	public static final String SPACE = " ";
-	public static final String NEW_LINE = "\n";
-	public static float INTERVAL_IN_HOUR = 1;
-	public static int HOUR_TO_MILISEC = 360000;
+	public String SPACE = " ";
+	public String NEW_LINE = "\n";
+	public float INTERVAL_IN_HOUR = 1;
+	public int HOUR_TO_MILISEC = 360000;
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
 	 */
-	public static final int notification_msg_id = 1;
-	public static final String pathToApp = Environment
-			.getExternalStorageDirectory().getPath()
-			+ "/in.secure.siet.sgi/download/";
+	public int notification_msg_id = 1;
+	public String pathToApp = Environment.getExternalStorageDirectory()
+			.getPath() + "/in.secure.siet.sgi/download/";
 
 	public interface DRAWER_ID {
 		int NOTIFICATION = 0;
@@ -44,7 +41,7 @@ public class Constants {
 		int CREATE_NOTICE = R.drawable.ic_newnotice_active;
 	}
 
-	public static final String pref_file_name = "in.siet.secure.preference_file";
+	public String pref_file_name = "in.siet.secure.preference_file";
 
 	public interface LOCAL_INTENT_ACTION {
 		String RELOAD_NOTIFICATIONS = "reload_notifications";
@@ -93,7 +90,7 @@ public class Constants {
 
 	}
 
-	public static interface STATE {
+	public interface STATE {
 		/**
 		 * this means that the message or notification is received from server
 		 */
@@ -121,12 +118,16 @@ public class Constants {
 		int ACK_RECEIVED = 4;
 	}
 
-	public static interface IS_GROUP_MSG {
+	public interface IS_GROUP_MSG {
 		int YES = 0;
 		int NO = 1;
 	}
 
-	public static interface JSONKEYS {
+	public interface JSONKEYS {
+
+		String STUDENT = "Student";
+		String FACULTY = "Faculty";
+
 		String FIRST_NAME = "FirstName";
 		String LAST_NAME = "LastName";
 		String PROFILE_IMAGE = "ProfileImage";
@@ -149,11 +150,11 @@ public class Constants {
 		String STATUS = "Status";
 		String TAG = "Tag";
 
-		public static interface TAG_MSGS {
+		public interface TAG_MSGS {
 			String LOGIN = "Login";
 		}
 
-		public static interface MESSAGES {
+		public interface MESSAGES {
 			String ID = "Id";
 			String MESSAGES = "Messages";
 			String RECEIVER = "Receiver";

@@ -44,10 +44,10 @@ public class FragmentSettings extends PreferenceFragment implements OnSharedPref
 		if (key.equals("server_ip")) {
             // Set summary to be the user-description for the selected value
             String ip=sharedPref.getString(key, "192.168.0.100");
-            Constants.SERVER=ip;
+            Utility.SERVER=ip;
             
             (findPreference("server_ip")).setSummary(ip);
-            Utility.RaiseToast(getActivity(), Constants.SERVER, false);
+            Utility.RaiseToast(getActivity(), Utility.SERVER, false);
         }
 		
 	}

@@ -2,9 +2,11 @@ package in.siet.secure.dao;
 
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Faculty;
+import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Student;
+import in.siet.secure.Util.StudentFull;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
@@ -275,19 +277,53 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
+	 * insert a faculty with full detials
+	 * 
+	 * @param faculty
+	 */
+	public void insertUser(FacultyFull faculty) {
+		setDb();
+		//todo insert faculty into db
+	}
+
+	/**
+	 * insert faculty with half details
+	 * 
+	 * @param faculty
+	 */
+	public void insertUser(Faculty faculty) {
+
+	}
+
+	/**
+	 * insert student with full details
+	 * 
+	 * @param student
+	 */
+	public void insertUser(StudentFull student) {
+
+	}
+
+	/**
+	 * insert student with half details
+	 * 
+	 * @param student
+	 */
+	public void insertUser(Student student) {
+
+	}
+
+	/**
 	 * get user info from server asynchronously add it to database show toast
 	 * getting data from server should be moved to service
 	 * 
 	 * @param user
 	 * @param is_student
 	 */
-	public void addUser(final User user, final boolean is_student) {
+	public void getAndAddUser(final User user, final boolean is_student) {
 		setDb();
 		RequestParams params = new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME,
-				spf.getString(Constants.PREF_KEYS.encripted_user_id, null));
-		params.put(Constants.QueryParameters.TOKEN,
-				spf.getString(Constants.PREF_KEYS.token, null).trim());
+		Utility.putCredentials(params, spf);
 		params.put(Constants.QueryParameters.GET_DETAILS_OF_USER_ID,
 				user.user_id);
 		params.put(Constants.QueryParameters.USER_TYPE, is_student);
@@ -312,11 +348,11 @@ public class DbHelper extends SQLiteOpenHelper {
 							values.put(DbStructure.UserTable.COLUMN_LOGIN_ID,
 									user.user_id);
 
-							Utility.log(TAG, response.toString());
+							Utility.log(TAG, response.toString()); // use it
 
 							long user_pk = db.insertWithOnConflict(
 									DbStructure.UserTable.TABLE_NAME, null,
-									values, SQLiteDatabase.CONFLICT_IGNORE);
+									values, SQLiteDatabase.CONFLICT_REPLACE);
 
 							if (user_pk != -1) {
 								if (is_student) {

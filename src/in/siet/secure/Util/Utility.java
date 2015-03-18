@@ -38,6 +38,7 @@ import com.loopj.android.http.RequestParams;
 
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
+	public static String SERVER = "192.168.43.73";
 	private static ProgressDialog progress_dialog;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
@@ -68,7 +69,7 @@ public class Utility {
 	}
 
 	public static String getBaseURL() {
-		return "http://" + Constants.SERVER + Constants.COLON + Constants.PORT
+		return "http://" + Utility.SERVER + Constants.COLON + Constants.PORT
 				+ "/SGI_webservice/";
 	}
 
@@ -201,6 +202,18 @@ public class Utility {
 		params.put(Constants.QueryParameters.TOKEN, sharedPreferences
 				.getString(Constants.PREF_KEYS.token, null).trim());
 		return params;
+	}
+
+	public static StringBuilder putCredentials(StringBuilder strb,
+			SharedPreferences sharedPreferences) {
+
+		strb.append(sharedPreferences.getString(
+				Constants.PREF_KEYS.encripted_user_id, null).trim());
+		strb.append(Constants.NEW_LINE);
+		strb.append(sharedPreferences
+				.getString(Constants.PREF_KEYS.token, null).trim());
+		strb.append(Constants.NEW_LINE);
+		return strb;
 	}
 
 	public static class DownloadFile extends

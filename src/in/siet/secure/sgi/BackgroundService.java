@@ -1,7 +1,9 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 
 import java.io.UnsupportedEncodingException;
@@ -201,18 +203,14 @@ public class BackgroundService extends Service {
 			/**
 			 * set user credentials
 			 */
-			strb.append(spref.getString(Constants.PREF_KEYS.encripted_user_id,
-					null).trim());
-			strb.append(Constants.NEW_LINE);
-
-			strb.append(spref.getString(Constants.PREF_KEYS.token, null).trim());
-			strb.append(Constants.NEW_LINE);
+			Utility.putCredentials(strb, spref);
 			strb.append(spref.getBoolean(Constants.PREF_KEYS.is_faculty, false));
 			strb.append(Constants.NEW_LINE);
 			/**
 			 * set pending messages
 			 */
 			JSONArray pending_messages = getPendingMessages();
+
 			if (pending_messages.length() > 0)
 				data_to_send.put(Constants.JSONKEYS.MESSAGES.MESSAGES,
 						pending_messages);
@@ -302,11 +300,11 @@ public class BackgroundService extends Service {
 		JSONArray messages = new JSONArray();
 		JSONObject message;
 		if (c.moveToFirst()) {
-			message = new JSONObject();
 			while (!c.isAfterLast()) {
 				try {
 					// sender is the user no need t oput it in every message
 					// object
+					message = new JSONObject();
 					message.put(Constants.JSONKEYS.MESSAGES.RECEIVER,
 							c.getString(0));
 					message.put(Constants.JSONKEYS.MESSAGES.TEXT,
@@ -323,9 +321,7 @@ public class BackgroundService extends Service {
 			}
 		}
 		c.close();
-
 		return messages;
-
 	}
 
 	/**
@@ -440,14 +436,109 @@ public class BackgroundService extends Service {
 								// get notification and insert it into db(help
 								// of
 								// DbHelper)
+
+								// if sender of notification and/or message is
+								// not
+								// present fetch its data
+								// and put him into contacts table before
+								// inserting notification
+
+								JSONArray ids_to_get = getNewSenders(response);
+								// hit server synchronously :P
+								try {
+									HttpEntity entity = null;
+									StringBuilder strb = new StringBuilder();
+									Utility.putCredentials(strb, spref);
+									strb.append(ids_to_get);
+									entity = new StringEntity(strb.toString());
+									SyncHttpClient client = new SyncHttpClient();
+									client.addHeader("Content-Type",
+											"application/json");
+									client.post(
+											getApplicationContext(),
+											Utility.getBaseURL()
+													+ "query/get_full_user_info",
+											entity, null,
+											new JsonHttpResponseHandler() {
+												public void onSuccess(
+														int statusCode,
+														Header[] headers,
+														JSONObject response) {
+													Utility.log(TAG,
+															"sucess get ids of new user \n"
+																	+ response);
+													// got the data now insert
+													// it into database and you
+													// will be free
+													int len;
+													try {
+														if (response
+																.has(Constants.JSONKEYS.FACULTY)) {
+															JSONArray faculties = response
+																	.getJSONArray(Constants.JSONKEYS.FACULTY);
+															JSONObject faculty;
+															len = faculties
+																	.length();
+															if (len > 0) {
+																// insert
+																// faculty into
+																// db with their
+																// data
+																FacultyFull tmp_faculty;
+																DbHelper db = new DbHelper(
+																		getApplicationContext());
+																for (int i = 0; i < len; i++) {
+																	faculty = faculties
+																			.getJSONObject(i);
+																	tmp_faculty = new FacultyFull(
+																			faculty.getString(Constants.JSONKEYS.FIRST_NAME),
+																			faculty.getString(Constants.JSONKEYS.LAST_NAME),
+																			faculty.getString(Constants.JSONKEYS.BRANCH),
+																			faculty.getString(Constants.JSONKEYS.PROFILE_IMAGE),
+																			faculty.getString(Constants.JSONKEYS.L_ID),
+																			faculty.getString(Constants.JSONKEYS.STREET),
+																			faculty.getString(Constants.JSONKEYS.CITY),
+																			faculty.getString(Constants.JSONKEYS.STATE),
+																			faculty.getString(Constants.JSONKEYS.PIN),
+																			faculty.getString(Constants.JSONKEYS.P_MOB),
+																			faculty.getString(Constants.JSONKEYS.H_MOB));
+																	// skipped
+																	// details
+																	// contact
+																	// info
+																	db.insertUser(tmp_faculty);
+																}
+															}
+														}
+														if (response
+																.has(Constants.JSONKEYS.STUDENT)) {
+															// dont insert users
+															// for
+															// now give an
+															// option to
+															// user
+														}
+													} catch (JSONException e) {
+														Utility.DEBUG(e);
+													}
+												};
+											});
+
+								} catch (UnsupportedEncodingException e) {
+									Utility.DEBUG(e);
+								}
+								Utility.log(TAG, "line afeter server hit");
 								DbHelper db = new DbHelper(
 										getApplicationContext());
 								if (response
 										.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
+									JSONArray notifs = response
+											.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS);
+
 									ids_to_send
 											.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
-													db.fillNotifications(response
-															.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)));
+													db.fillNotifications(notifs));
+
 									sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 								}
 								// get messages and insert it into db(help of
@@ -505,6 +596,105 @@ public class BackgroundService extends Service {
 					|| ids_to_send.has(Constants.JSONKEYS.MESSAGES.ACK))
 				sendAck(ids_to_send);
 		}
+	}
+
+	/**
+	 * 
+	 * @param response
+	 *            {@link JSONObject} containing notifications and messages we
+	 *            got from server
+	 * @return {@link JSONArray} of new senders (only their IDs) among the data
+	 *         provided by server
+	 */
+	private JSONArray getNewSenders(JSONObject response) {
+		// check db for sender if not get from server
+		JSONArray data_array;
+		JSONArray userids_local = new JSONArray();
+		JSONArray new_senders = null;
+		int len;
+		try {
+			if (response.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
+				data_array = response
+						.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES);
+				len = data_array.length();
+				if (len > 0) {
+					for (int i = 0; i < len; i++) {
+						// create array of userids need to be checked from local
+						// db
+						userids_local.put(data_array.getJSONObject(i).get(
+								Constants.JSONKEYS.MESSAGES.SENDER));
+					}
+				}
+			}
+			if (response.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
+				data_array = response
+						.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS);
+				len = data_array.length();
+				if (len > 0) {
+					for (int i = 0; i < len; i++) {
+						// append userids need to be checked from local
+						// db
+						userids_local
+								.put(data_array
+										.getJSONObject(i)
+										.getString(
+												Constants.JSONKEYS.NOTIFICATIONS.SENDER));
+					}
+				}
+			}
+			new_senders = getUsersNotInDb(userids_local); // check userids
+		} catch (JSONException e) {
+			Utility.DEBUG(e);
+		}
+		return new_senders;
+	}
+
+	/**
+	 * 
+	 * @param userids
+	 *            {@link JSONArray} of senders needs to be checked in local
+	 *            database
+	 * @return {@link JSONArray} on senders that are new i.e., do not exist in
+	 *         local database
+	 */
+	private JSONArray getUsersNotInDb(JSONArray userids) {
+		// select login_id from (select 'emp-091' as login_id union all select 'b-11-136'
+		// union all select 'emp-000') as a where a.login_id not in (select
+		// login_id from user)
+
+		String unionall = " union all ";
+		String select = " select ";
+		JSONArray ids_to_get_from_server = new JSONArray();
+		StringBuilder query = new StringBuilder("select login_id from (");
+		int len = userids.length();
+		try {
+			if (len > 0) {
+				String[] args = new String[len];
+
+				query.append("select ? as login_id ");
+				for (int i = 0; i < len; i++) {
+					args[i] = userids.getString(i);
+					query.append(unionall);
+					query.append(select);
+					query.append(DbConstants.QUESTION_MARK);
+				}
+				query.append(") as a where a.login_id NOT IN (select login_id from user)");
+
+				Cursor c = new DbHelper(getApplicationContext()).getDb()
+						.rawQuery(query.toString(), args);
+				if (c.moveToFirst()) {
+					while (!c.isAfterLast()) {
+						// ids that has to be get from server
+						ids_to_get_from_server.put(c.getString(0));
+						c.moveToNext();
+					}
+				}
+
+			}
+		} catch (Exception e) {
+			Utility.DEBUG(e);
+		}
+		return ids_to_get_from_server;
 	}
 
 	private void sendBroadcast(String action) {

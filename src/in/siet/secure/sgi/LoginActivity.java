@@ -258,7 +258,7 @@ public class LoginActivity extends ActionBarActivity {
 			editor.commit();
 		}
 		createdb();
-		new DbHelper(getApplicationContext()).addUser(user, is_faculty);
+		new DbHelper(getApplicationContext()).getAndAddUser(user, !is_faculty);
 		// save user in db also
 
 	}

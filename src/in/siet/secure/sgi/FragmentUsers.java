@@ -139,7 +139,7 @@ public class FragmentUsers extends Fragment {
 			// (view.findViewById(R.id.ListItemUsersTextViewName)).toString();
 			UsersAdapter.ViewHolder holder = (UsersAdapter.ViewHolder) view
 					.getTag();
-			new DbHelper(getActivity()).addUser(holder.user,
+			new DbHelper(getActivity()).getAndAddUser(holder.user,
 					FilterOptions.STUDENT);
 			// Utility.RaiseToast(getActivity(),
 			// ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts",
