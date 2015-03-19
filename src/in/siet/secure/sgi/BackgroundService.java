@@ -1,6 +1,5 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
@@ -10,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -396,6 +396,7 @@ public class BackgroundService extends Service {
 
 		@Override
 		protected Void doInBackground(HttpEntity... params) {
+
 			SyncHttpClient client = new SyncHttpClient();
 
 			client.addHeader("Content-Type", "application/json");
@@ -470,57 +471,10 @@ public class BackgroundService extends Service {
 													// got the data now insert
 													// it into database and you
 													// will be free
-													int len;
-													try {
-														if (response
-																.has(Constants.JSONKEYS.FACULTY)) {
-															JSONArray faculties = response
-																	.getJSONArray(Constants.JSONKEYS.FACULTY);
-															JSONObject faculty;
-															len = faculties
-																	.length();
-															if (len > 0) {
-																// insert
-																// faculty into
-																// db with their
-																// data
-																FacultyFull tmp_faculty;
-																DbHelper db = new DbHelper(
-																		getApplicationContext());
-																for (int i = 0; i < len; i++) {
-																	faculty = faculties
-																			.getJSONObject(i);
-																	tmp_faculty = new FacultyFull(
-																			faculty.getString(Constants.JSONKEYS.FIRST_NAME),
-																			faculty.getString(Constants.JSONKEYS.LAST_NAME),
-																			faculty.getString(Constants.JSONKEYS.BRANCH),
-																			faculty.getString(Constants.JSONKEYS.PROFILE_IMAGE),
-																			faculty.getString(Constants.JSONKEYS.L_ID),
-																			faculty.getString(Constants.JSONKEYS.STREET),
-																			faculty.getString(Constants.JSONKEYS.CITY),
-																			faculty.getString(Constants.JSONKEYS.STATE),
-																			faculty.getString(Constants.JSONKEYS.PIN),
-																			faculty.getString(Constants.JSONKEYS.P_MOB),
-																			faculty.getString(Constants.JSONKEYS.H_MOB));
-																	// skipped
-																	// details
-																	// contact
-																	// info
-																	db.insertUser(tmp_faculty);
-																}
-															}
-														}
-														if (response
-																.has(Constants.JSONKEYS.STUDENT)) {
-															// dont insert users
-															// for
-															// now give an
-															// option to
-															// user
-														}
-													} catch (JSONException e) {
-														Utility.DEBUG(e);
-													}
+													new DbHelper(
+															getApplicationContext())
+															.insertUser(response);
+
 												};
 											});
 
@@ -565,6 +519,7 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
+							super.onFailure(statusCode, headers, responseString, throwable);
 						}
 
 						@Override
@@ -574,6 +529,7 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
+							super.onFailure(statusCode, headers, throwable, errorResponse);
 						}
 
 						@Override
@@ -583,9 +539,11 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
+							super.onFailure(statusCode, headers, throwable, errorResponse);
 						}
 						// override all sucess and failure methods
 					});
+
 			return null;
 		}
 
@@ -658,7 +616,8 @@ public class BackgroundService extends Service {
 	 *         local database
 	 */
 	private JSONArray getUsersNotInDb(JSONArray userids) {
-		// select login_id from (select 'emp-091' as login_id union all select 'b-11-136'
+		// select login_id from (select 'emp-091' as login_id union all select
+		// 'b-11-136'
 		// union all select 'emp-000') as a where a.login_id not in (select
 		// login_id from user)
 

@@ -117,7 +117,7 @@ public class FragmentNotification extends Fragment {
 	 * public method to update notification list
 	 */
 	public void updateList() {
-		Utility.showProgressDialog(getActivity());
+		// Utility.showProgressDialog(getActivity());
 		new GetNotificationsFromDB().execute();
 	}
 
@@ -227,7 +227,7 @@ public class FragmentNotification extends Fragment {
 			Utility.log(TAG, "we get data" + data.toString());
 			setDataInAdapter(data);
 			refresh();
-			Utility.hideProgressDialog();
+			// Utility.hideProgressDialog();
 		}
 
 	}

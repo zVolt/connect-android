@@ -2,11 +2,9 @@ package in.siet.secure.dao;
 
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Faculty;
-import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Student;
-import in.siet.secure.Util.StudentFull;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
@@ -279,38 +277,104 @@ public class DbHelper extends SQLiteOpenHelper {
 	/**
 	 * insert a faculty with full detials
 	 * 
-	 * @param faculty
+	 * @param response
 	 */
-	public void insertUser(FacultyFull faculty) {
+	public void insertUser(JSONObject response) {
 		setDb();
-		//todo insert faculty into db
-	}
+		int len;
+		try {
+			if (response.has(Constants.JSONKEYS.FACULTY)) {
+				JSONArray faculties = response
+						.getJSONArray(Constants.JSONKEYS.FACULTY);
+				JSONObject faculty;
+				len = faculties.length();
+				if (len > 0) {
+					/**
+					 * insert faculty into db with their data
+					 */
+					ContentValues values = new ContentValues();
+					long user_pk, branch_id;
+					Cursor c;
+					for (int i = 0; i < len; i++) {
+						faculty = faculties.getJSONObject(i);
+						values.clear();
+						values.put(DbStructure.UserTable.COLUMN_FNAME, faculty
+								.getString(Constants.JSONKEYS.FIRST_NAME));
+						values.put(DbStructure.UserTable.COLUMN_LNAME,
+								faculty.getString(Constants.JSONKEYS.LAST_NAME));
+						values.put(
+								DbStructure.UserTable.COLUMN_PROFILE_PIC,
+								faculty.getString(Constants.JSONKEYS.PROFILE_IMAGE));
+						values.put(DbStructure.UserTable.COLUMN_LOGIN_ID,
+								faculty.getString(Constants.JSONKEYS.L_ID));
 
-	/**
-	 * insert faculty with half details
-	 * 
-	 * @param faculty
-	 */
-	public void insertUser(Faculty faculty) {
+						user_pk = db.insert(DbStructure.UserTable.TABLE_NAME,
+								null, values);
+						/**
+						 * inserted in user table table
+						 */
+						values.clear();
+						if (user_pk != -1) {
+							c = db.rawQuery(
+									"select branches._id from branches  where branches.name=?",
+									new String[] { faculty
+											.getString(Constants.JSONKEYS.BRANCH) });
 
-	}
+							branch_id = 0;
+							c.moveToFirst();
+							if (!c.isAfterLast())
+								branch_id = c.getInt(0);
+							c.close();
 
-	/**
-	 * insert student with full details
-	 * 
-	 * @param student
-	 */
-	public void insertUser(StudentFull student) {
+							values.put(
+									DbStructure.FcultyContactsTable.COLUMN_BRANCH_ID,
+									branch_id);
+							values.put(
+									DbStructure.FcultyContactsTable.COLUMN_USER_ID,
+									user_pk);
 
-	}
+							db.insert(
+									DbStructure.FcultyContactsTable.TABLE_NAME,
+									null, values);
+							/**
+							 * inserted in faculty table
+							 */
 
-	/**
-	 * insert student with half details
-	 * 
-	 * @param student
-	 */
-	public void insertUser(Student student) {
+							values.clear();
 
+							values.put(
+									DbStructure.UserInfoTable.COLUMN_STREET,
+									faculty.getString(Constants.JSONKEYS.STREET));
+							values.put(DbStructure.UserInfoTable.COLUMN_CITY,
+									faculty.getString(Constants.JSONKEYS.CITY));
+							values.put(DbStructure.UserInfoTable.COLUMN_STATE,
+									faculty.getString(Constants.JSONKEYS.STATE));
+							values.put(DbStructure.UserInfoTable.COLUMN_PIN,
+									faculty.getString(Constants.JSONKEYS.PIN));
+							values.put(DbStructure.UserInfoTable.COLUMN_P_MOB,
+									faculty.getString(Constants.JSONKEYS.P_MOB));
+							values.put(DbStructure.UserInfoTable.COLUMN_H_MOB,
+									faculty.getString(Constants.JSONKEYS.H_MOB));
+							values.put(
+									DbStructure.UserInfoTable.COLUMN_USER_ID,
+									user_pk);
+
+							db.insert(DbStructure.UserInfoTable.TABLE_NAME,
+									null, values);
+						}
+					}
+				}
+			}
+			if (response.has(Constants.JSONKEYS.STUDENT)) {
+				/**
+				 * don't insert users for now give an option to user
+				 */
+				Utility.log(TAG, "ignoring new student senders :P");
+			}
+		} catch (Exception e) {
+			Utility.DEBUG(e);
+
+		}
 	}
 
 	/**
@@ -389,8 +453,8 @@ public class DbHelper extends SQLiteOpenHelper {
 											.rawQuery(
 													"select branches._id from branches  where branches.name=?",
 													args);
-									c.moveToFirst();
 									int branch_id = 0;
+									c.moveToFirst();
 									if (!c.isAfterLast())
 										branch_id = c.getInt(0);
 									c.close();

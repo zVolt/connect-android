@@ -232,9 +232,10 @@ public final class DbStructure {
 
 	public static abstract class UserInfoTable implements BaseColumns {
 		public static final String TABLE_NAME = "user_info";
-
-		public static final String COLUMN_USER_ID = "user_id"; // fk of
-																// users._id
+		/**
+		 * fk of users._id not of faculty
+		 */
+		public static final String COLUMN_USER_ID = "user_id";
 		public static final String COLUMN_STREET = "street";
 		public static final String COLUMN_CITY = "city";
 		public static final String COLUMN_STATE = "state";
