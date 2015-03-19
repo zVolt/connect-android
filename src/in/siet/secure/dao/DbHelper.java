@@ -342,19 +342,30 @@ public class DbHelper extends SQLiteOpenHelper {
 
 							values.clear();
 
-							values.put(
-									DbStructure.UserInfoTable.COLUMN_STREET,
-									faculty.getString(Constants.JSONKEYS.STREET));
-							values.put(DbStructure.UserInfoTable.COLUMN_CITY,
-									faculty.getString(Constants.JSONKEYS.CITY));
-							values.put(DbStructure.UserInfoTable.COLUMN_STATE,
-									faculty.getString(Constants.JSONKEYS.STATE));
-							values.put(DbStructure.UserInfoTable.COLUMN_PIN,
-									faculty.getString(Constants.JSONKEYS.PIN));
-							values.put(DbStructure.UserInfoTable.COLUMN_P_MOB,
-									faculty.getString(Constants.JSONKEYS.P_MOB));
-							values.put(DbStructure.UserInfoTable.COLUMN_H_MOB,
-									faculty.getString(Constants.JSONKEYS.H_MOB));
+							if (faculty.has(Constants.JSONKEYS.STREET))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_STREET,
+										faculty.getString(Constants.JSONKEYS.STREET));
+							if (faculty.has(Constants.JSONKEYS.CITY))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_CITY,
+										faculty.getString(Constants.JSONKEYS.CITY));
+							if (faculty.has(Constants.JSONKEYS.STATE))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_STATE,
+										faculty.getString(Constants.JSONKEYS.STATE));
+							if (faculty.has(Constants.JSONKEYS.PIN))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_PIN,
+										faculty.getString(Constants.JSONKEYS.PIN));
+							if (faculty.has(Constants.JSONKEYS.P_MOB))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_P_MOB,
+										faculty.getString(Constants.JSONKEYS.P_MOB));
+							if (faculty.has(Constants.JSONKEYS.H_MOB))
+								values.put(
+										DbStructure.UserInfoTable.COLUMN_H_MOB,
+										faculty.getString(Constants.JSONKEYS.H_MOB));
 							values.put(
 									DbStructure.UserInfoTable.COLUMN_USER_ID,
 									user_pk);
@@ -439,7 +450,9 @@ public class DbHelper extends SQLiteOpenHelper {
 									values.put(
 											DbStructure.StudentContactsTable.COLUMN_SECTION_ID,
 											section_id);
-
+									values.put(
+											DbStructure.StudentContactsTable.COLUMN_ROLL_NO,
+											response.getString(Constants.JSONKEYS.ROLL_NO));
 									db.insert(
 											DbStructure.StudentContactsTable.TABLE_NAME,
 											null, values);
@@ -453,10 +466,10 @@ public class DbHelper extends SQLiteOpenHelper {
 											.rawQuery(
 													"select branches._id from branches  where branches.name=?",
 													args);
-									int branch_id = 0;
+									long branch_id = 0;
 									c.moveToFirst();
 									if (!c.isAfterLast())
-										branch_id = c.getInt(0);
+										branch_id = c.getLong(0);
 									c.close();
 									values.clear();
 									values.put(
@@ -465,10 +478,50 @@ public class DbHelper extends SQLiteOpenHelper {
 									values.put(
 											DbStructure.FcultyContactsTable.COLUMN_USER_ID,
 											user_pk);
-									db.insert(
-											DbStructure.FcultyContactsTable.TABLE_NAME,
-											null, values);
-									// db.rawQuery(query,args);
+
+									long facut_id = db
+											.insert(DbStructure.FcultyContactsTable.TABLE_NAME,
+													null, values);
+									// adding additional details
+									if (facut_id != -1) {
+										values.clear();
+										values.put(
+												DbStructure.UserInfoTable.COLUMN_USER_ID,
+												facut_id);
+										if (response
+												.has(Constants.JSONKEYS.STATE))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_STATE,
+													response.getString(Constants.JSONKEYS.STATE));
+										if (response
+												.has(Constants.JSONKEYS.CITY))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_CITY,
+													response.getString(Constants.JSONKEYS.CITY));
+										if (response
+												.has(Constants.JSONKEYS.STREET))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_STREET,
+													response.getString(Constants.JSONKEYS.STREET));
+										if (response
+												.has(Constants.JSONKEYS.P_MOB))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_P_MOB,
+													response.getString(Constants.JSONKEYS.P_MOB));
+										if (response
+												.has(Constants.JSONKEYS.H_MOB))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_H_MOB,
+													response.getString(Constants.JSONKEYS.H_MOB));
+										if (response
+												.has(Constants.JSONKEYS.PIN))
+											values.put(
+													DbStructure.UserInfoTable.COLUMN_PIN,
+													response.getString(Constants.JSONKEYS.PIN));
+										db.insert(
+												DbStructure.UserInfoTable.TABLE_NAME,
+												null, values);
+									}
 								}
 								Utility.RaiseToast(context, user.f_name + " "
 										+ user.l_name + " added Sucessfully",

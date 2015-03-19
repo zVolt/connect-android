@@ -84,16 +84,15 @@ public final class DbStructure {
 
 		// public static final String COLUMN_YEAR = "year";
 		public static final String COLUMN_SECTION_ID = "section_id";
+		public static final String COLUMN_ROLL_NO = "roll_no";
 		public static final String COLUMN_USER_ID = "user_id";
 
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE
 				+ TABLE_NAME + DbConstants.BRACES_OPEN + _ID
 				+ DbConstants.TYPE_INT + DbConstants.CONSTRAIN_PRIMARY_KEY
 				+ DbConstants.COMMA + COLUMN_USER_ID + DbConstants.TYPE_INT
-				+ DbConstants.COMMA
-				+
-				// COLUMN_YEAR+DbConstants.TYPE_INT+DbConstants.COMMA+
-				COLUMN_SECTION_ID + DbConstants.TYPE_INT
+				+ DbConstants.COMMA + COLUMN_ROLL_NO + DbConstants.TYPE_TEXT
+				+ DbConstants.COMMA + COLUMN_SECTION_ID + DbConstants.TYPE_INT
 				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE
 				+ TABLE_NAME + DbConstants.SEMICOLON;
@@ -233,7 +232,7 @@ public final class DbStructure {
 	public static abstract class UserInfoTable implements BaseColumns {
 		public static final String TABLE_NAME = "user_info";
 		/**
-		 * fk of users._id not of faculty
+		 * fk of users._id not of faculty only
 		 */
 		public static final String COLUMN_USER_ID = "user_id";
 		public static final String COLUMN_STREET = "street";

@@ -150,26 +150,18 @@ public class FragmentNotification extends Fragment {
 				int position, long id) {
 			Notification notify = ((Notification) adapter
 					.getItemAtPosition(position));
-			Fragment fragment = getFragmentManager().findFragmentByTag(
-					FragmentDetailNotification.TAG);
 
-			if (fragment == null) {
-				fragment = new FragmentDetailNotification();
-				Bundle bundle = new Bundle();
-				bundle.putString(Constants.NOTIFICATION.SUBJECT, notify.subject);
-				bundle.putString(Constants.NOTIFICATION.TEXT, notify.text);
-				bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
-				bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE,
-						notify.image);
-				bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
-				fragment.setArguments(bundle);
-			}
-			getFragmentManager()
-					.beginTransaction()
-					.setTransitionStyle(R.anim.abc_fade_out)
-					.replace(R.id.mainFrame, fragment,
-							FragmentDetailNotification.TAG)
-					.addToBackStack(FragmentDetailNotification.TAG).commit();
+			Intent intent = new Intent(getActivity().getApplicationContext(),
+					NotificationActivity.class);
+
+			Bundle bundle = new Bundle();
+			bundle.putString(Constants.NOTIFICATION.SUBJECT, notify.subject);
+			bundle.putString(Constants.NOTIFICATION.TEXT, notify.text);
+			bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
+			bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
+			bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
+			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
+			startActivity(intent);
 		}
 	}
 

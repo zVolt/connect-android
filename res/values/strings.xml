@@ -1,70 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- App Name -->
     <string name="app_name">SGI</string>
-    <!--
- 	<string name="user_id">User Id</string>
- 	<string name="acess_token">token</string>
- 	<string name="year">year</string>
- 	
- 	 <string name="f_name">First name</string>
-    <string name="l_name">Last name</string>
-    <string name="profile_url">pic_url</string>
-    <string name="branch_fac">branch_faculty</string>
-    <string name="section_stu">section_student</string>
-    <string name="logged_in">logged_in</string>
-    -->
-    <string name="pref_cat_server">Server</string>
-    <string name="user_login">College Login Id</string>
-    <string name="user_password">Password</string>
-    <string name="signin">LOGIN</string>
+    <!-- Titles -->
+    <string name="title_notification">Notification</string>
+    <string name="title_main">Notification</string>
+    <string name="title_chat">Notification</string>
+
+    <!-- for Drawer Accessiblity -->
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Closed</string>
-    <string name="load_next">&gt;</string>
-    <string name="load_prev">&lt;</string>
-    <string name="wrong_choice">Wrong Choice.. Try Again</string>
-    <string name="sendMsg">Send</string>
-    <string name="typeMsg">Type a Message</string>
-    <string name="getMsg">Refresh</string>
-    <string name="user_list">Users</string>
-    <string name="start">Start</string>
-    <string name="interaction">Interactions</string>
-    <!--
-	<string name="web_prm_usr">username</string>
-	<string name="web_prm_token">token</string>
-	<string name="web_prm_pwd">password</string>
-	<string name="web_prm_isfac">is_faculty</string>
-	<string name="web_prm_query_user_type">user_type</string>
-	<string name="web_prm_query_department">department</string>
-	<string name="web_prm_query_course">course</string>
-	<string name="web_prm_query_section">section</string>
-	<string name="web_prm_query_year">year</string>
-	<string name="web_prm_query_id">query_id</string>
-	<string name="web_prm_login_id">login_id</string>
-	
-	<string name="preference_file_name">in.siet.secure.preference_file</string>
-    -->
 
-    <string name="password">Password</string>
+    <!-- Menu actions -->
     <string name="action_settings">Setting</string>
     <string name="action_filter">Filter</string>
     <string name="action_logout">Logout</string>
     <string name="action_about">About</string>
     <string name="action_contacts">Contacts</string>
     <string name="action_users">All Users</string>
-    <string name="action_Filter">Filter</string>
     <string name="action_reset">Reset</string>
     <string name="action_refresh_notifications">Refresh Notifications</string>
+
+    <!-- Form texts -->
+    <string name="user_login">College Login Id</string>
+    <string name="user_password">Password</string>
+    <string name="sendMsg">Send</string>
+    <string name="typeMsg">Type a Message</string>
+
+    <!-- Toast Messages -->
+    <string name="wrong_choice">Wrong Choice.. Try Again</string>
+
+    <!-- Button -->
+    <string name="load_next">&gt;</string>
+    <string name="load_prev">&lt;</string>
+    <string name="signin">LOGIN</string>
+
+    <!-- user filter dialog buttons -->
+    <string name="ok">OK</string>
+    <string name="cancle">Cancle</string>
+
+    <!-- Settings -->
+    <string name="pref_cat_server">Server</string>
+    <string name="pref_cat_general">General</string>
+
+    <!-- Setting titles -->
+    <string name="pref_title_server_ip">Server IP Address</string>
+    <string name="pref_title_update_interval">Update Interval</string>
+
+    <!-- Setting Desc -->
+    <string name="pref_desc_server_ip">Server\'s IP Address (Developers only)</string>
+    <string name="pref_desc_update_interval">How frequently you want updates</string>
+    <!-- Setting Desc -->
+    <string name="pref_key_server_ip">server_ip</string>
+    <string name="pref_key_update_interval">update_interval</string>
+
+    <!-- Drawer text -->
+    <string name="getMsg">Refresh</string>
+    <string name="user_list">Users</string>
+    <string name="start">Start</string>
+    <string name="interaction">Interactions</string>
+    <string name="password">Password</string>
     <string name="radio_student">Student</string>
     <string name="radio_faculty">Faculty</string>
     <string name="user_image_desc">Image of the user</string>
     <string name="userType">Select Type</string>
     <string name="attachments">Attachments</string>
-    <string name="ok">OK</string>
-    <string name="cancle">Cancle</string>
     <string name="filter_title">Filter Users</string>
     <string name="year">Year</string>
     <string name="department">Department</string>
+
+    <!-- Fragment titiles -->
     <string name="fragemnt_title_notification">Notifications</string>
     <string name="fragemnt_title_users">Add Users</string>
     <string name="fragemnt_title_contacts">Interactions</string>
@@ -80,6 +86,7 @@
     <string name="type_message">Remaining body here</string>
     <string name="type_subject">Subject here</string>
 
+    <!-- Arrays -->
     <string-array name="array_panel_options">
         <item>Notifications</item>
         <item>Interactions</item>

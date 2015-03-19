@@ -4,14 +4,14 @@ import in.siet.secure.sgi.R;
 import android.os.Environment;
 
 public interface Constants {
-	
+
 	public String PORT = "8080";
 	public String COLON = ":";
 	// public static final String SOCKET=SERVER+COLON+PORT; //to allow user
 	// dynamic server ip change
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
-	public float INTERVAL_IN_HOUR = 1;
+	//public float INTERVAL_IN_HOUR = 1;
 	public int HOUR_TO_MILISEC = 360000;
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
@@ -25,6 +25,10 @@ public interface Constants {
 		int INTERACTION = 1;
 		int ADD_USER = 2;
 		int CREATE_NOTICE = 3;
+	}
+
+	public interface INTENT_EXTRA {
+		String BUNDLE_NAME = "extra_bundle";
 	}
 
 	public interface DRAWER_IC_INACTIVE {
@@ -64,6 +68,7 @@ public interface Constants {
 		String section = "Section";
 		String year = "Year";
 		String db_id = "DbId";
+		String UPDATE_INTERVAL = "update_interval";
 	}
 
 	public interface QueryParameters {

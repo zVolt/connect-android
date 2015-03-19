@@ -97,7 +97,7 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
-				R.drawable.ic_drawer, R.string.drawer_open);
+				R.string.drawer_open, R.string.drawer_close);
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		drawerlayout.setDrawerListener(drawerToggle);
 
@@ -268,8 +268,12 @@ public class MainActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(),
 					getString(R.string.exit_warning), true);
 		} else {
-			Utility.setAlarm(getApplication(), (int) Constants.INTERVAL_IN_HOUR
-					* Constants.HOUR_TO_MILISEC);
+			Utility.setAlarm(
+					getApplication(),
+					Integer.parseInt(spf.getString(
+							Constants.PREF_KEYS.UPDATE_INTERVAL,
+							String.valueOf(1)))
+							* Constants.HOUR_TO_MILISEC);
 			super.onBackPressed();
 		}
 	}

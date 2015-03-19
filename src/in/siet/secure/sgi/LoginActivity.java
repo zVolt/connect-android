@@ -1,5 +1,7 @@
 package in.siet.secure.sgi;
 
+import java.util.Locale;
+
 import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
@@ -136,9 +138,9 @@ public class LoginActivity extends ActionBarActivity {
 			InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 			inputMethodManager.hideSoftInputFromWindow(getCurrentFocus()
 					.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-			Log.d(TAG + " onClick", " at start");
+
 			user_id = ((EditText) findViewById(R.id.editText_userid)).getText()
-					.toString().trim();
+					.toString().toUpperCase(Locale.US).trim();
 			pwd = ((EditText) findViewById(R.id.editText_userpassword))
 					.getText().toString().trim();
 			if (verifyInput()) {
@@ -153,10 +155,8 @@ public class LoginActivity extends ActionBarActivity {
 						Utility.encode(spwd));
 				params.put(Constants.QueryParameters.IS_FACULTY, is_faculty);
 
-				Log.d("username", Utility.encode(user_id));
-				Log.d("Password", Utility.encode(spwd));
 				queryServer(params, true);
-				Log.d(TAG + " onClick", " at end");
+				
 			} else {
 				clearInput();
 				Utility.hideProgressDialog();
@@ -171,7 +171,6 @@ public class LoginActivity extends ActionBarActivity {
 
 	public void startMainActivity() {
 		Intent intent = new Intent(this, MainActivity.class);
-		Utility.log(TAG, "stating new Activity");
 		intent.putExtra(Constants.PREF_KEYS.is_faculty, is_faculty);
 		startActivity(intent);
 		finish();
@@ -210,8 +209,6 @@ public class LoginActivity extends ActionBarActivity {
 		params.put(Constants.QueryParameters.TOKEN,
 				spref.getString(Constants.PREF_KEYS.token, null));
 		queryServer(params, false);
-		// new DbHelper(getApplicationContext());
-		// Utility.log(TAG,"donedb");
 	}
 
 	/**
@@ -270,7 +267,7 @@ public class LoginActivity extends ActionBarActivity {
 	 *            either you want to login or you want to get initial data
 	 */
 	public void queryServer(RequestParams params, boolean dologin) {
-		Log.d(TAG + " queryServer", " at start");
+		
 		AsyncHttpClient client = new AsyncHttpClient();
 		if (dologin) {
 			client.get(Utility.getBaseURL() + "login/dologin", params,
@@ -278,7 +275,7 @@ public class LoginActivity extends ActionBarActivity {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
-							Log.d(TAG + " onSucess", " at start");
+							
 							try {
 								// Utility.hideProgressDialog();
 
@@ -544,6 +541,5 @@ public class LoginActivity extends ActionBarActivity {
 						}
 					});
 		}
-		Utility.log(TAG + " queryServer", " at end");
 	}
 }
