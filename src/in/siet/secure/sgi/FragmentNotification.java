@@ -44,7 +44,6 @@ public class FragmentNotification extends Fragment {
 		}
 	};
 
-	// private static ProgressBar progressBar;
 	public FragmentNotification() {
 	}
 
@@ -70,7 +69,6 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// retain this fragment
 		setRetainInstance(true);
 	}
 
@@ -104,6 +102,10 @@ public class FragmentNotification extends Fragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		/**
+		 * updates notifications only from local db is probably useless need to
+		 * delete this or implement the server hit method real refresh
+		 */
 		if (item.getItemId() == R.id.action_refresh_notifications) {
 			Utility.log(TAG, "refresh notification");
 
@@ -117,7 +119,6 @@ public class FragmentNotification extends Fragment {
 	 * public method to update notification list
 	 */
 	public void updateList() {
-		// Utility.showProgressDialog(getActivity());
 		new GetNotificationsFromDB().execute();
 	}
 
@@ -143,6 +144,13 @@ public class FragmentNotification extends Fragment {
 		adapter.addAll(data);
 	}
 
+	/**
+	 * handling click on notification lead to fire a intent to start a
+	 * notification activity
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
 	class itemClickListener implements OnItemClickListener {
 
 		@Override
@@ -219,7 +227,6 @@ public class FragmentNotification extends Fragment {
 			Utility.log(TAG, "we get data" + data.toString());
 			setDataInAdapter(data);
 			refresh();
-			// Utility.hideProgressDialog();
 		}
 
 	}
