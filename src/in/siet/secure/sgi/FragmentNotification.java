@@ -119,7 +119,8 @@ public class FragmentNotification extends Fragment {
 	 * public method to update notification list
 	 */
 	public void updateList() {
-		new GetNotificationsFromDB().execute();
+		new GetNotificationsFromDB(getActivity().getApplicationContext())
+				.execute();
 	}
 
 	/**
@@ -181,52 +182,67 @@ public class FragmentNotification extends Fragment {
 	 */
 	private class GetNotificationsFromDB extends
 			AsyncTask<Void, Integer, ArrayList<Notification>> {
+		private Context context;
+
+		public GetNotificationsFromDB(Context context_) {
+			context = context_;
+
+		}
 
 		@Override
 		protected ArrayList<Notification> doInBackground(Void... params) {
-			String[] columns = { DbStructure.NotificationTable._ID,
-					DbStructure.UserTable.COLUMN_PROFILE_PIC,
-					DbStructure.NotificationTable.COLUMN_SUBJECT,
-					DbStructure.NotificationTable.COLUMN_TEXT,
-					DbStructure.NotificationTable.COLUMN_TIME };
-			SQLiteDatabase db = new DbHelper(getActivity()
-					.getApplicationContext()).getDb();
-			Cursor c = db.rawQuery("select "
-					+ DbStructure.NotificationTable.TABLE_NAME
-					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
-					+ columns[1] + DbConstants.COMMA + columns[2]
-					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-					+ columns[4] + " from "
-					+ DbStructure.NotificationTable.TABLE_NAME + " join "
-					+ DbStructure.UserTable.TABLE_NAME + " on "
-					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
-					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-					+ DbStructure.UserTable._ID + " order by "
-					+ DbStructure.NotificationTable.COLUMN_TIME, null);
+			/**
+			 * to prevent fc when the activity is reconstructed and the
+			 * background thread is still executing
+			 */
+			if (context != null) {
+				String[] columns = { DbStructure.NotificationTable._ID,
+						DbStructure.UserTable.COLUMN_PROFILE_PIC,
+						DbStructure.NotificationTable.COLUMN_SUBJECT,
+						DbStructure.NotificationTable.COLUMN_TEXT,
+						DbStructure.NotificationTable.COLUMN_TIME };
+				SQLiteDatabase db = new DbHelper(context).getDb();
+				Cursor c = db.rawQuery("select "
+						+ DbStructure.NotificationTable.TABLE_NAME
+						+ DbConstants.DOT + columns[0] + DbConstants.COMMA
+						+ columns[1] + DbConstants.COMMA + columns[2]
+						+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
+						+ columns[4] + " from "
+						+ DbStructure.NotificationTable.TABLE_NAME + " join "
+						+ DbStructure.UserTable.TABLE_NAME + " on "
+						+ DbStructure.NotificationTable.COLUMN_SENDER + "="
+						+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
+						+ DbStructure.UserTable._ID + " order by "
+						+ DbStructure.NotificationTable.COLUMN_TIME, null);
 
-			ArrayList<Notification> notifications = new ArrayList<Notification>();
-			c.moveToFirst();
-			while (c.isAfterLast() == false) {
-				Utility.log(TAG, "processsing notification");
-				Notification tmpnot = new Notification(c.getInt(c
-						.getColumnIndexOrThrow(columns[0])), c.getString(c
-						.getColumnIndexOrThrow(columns[1])), c.getString(c
-						.getColumnIndexOrThrow(columns[2])), c.getString(c
-						.getColumnIndexOrThrow(columns[3])), c.getLong(c
-						.getColumnIndexOrThrow(columns[4])));
-				notifications.add(tmpnot);
-				Utility.log(TAG, tmpnot.subject);
-				c.moveToNext();
+				ArrayList<Notification> notifications = new ArrayList<Notification>();
+				c.moveToFirst();
+				while (c.isAfterLast() == false) {
+					Utility.log(TAG, "processsing notification");
+					Notification tmpnot = new Notification(c.getInt(c
+							.getColumnIndexOrThrow(columns[0])), c.getString(c
+							.getColumnIndexOrThrow(columns[1])), c.getString(c
+							.getColumnIndexOrThrow(columns[2])), c.getString(c
+							.getColumnIndexOrThrow(columns[3])), c.getLong(c
+							.getColumnIndexOrThrow(columns[4])));
+					notifications.add(tmpnot);
+					Utility.log(TAG, tmpnot.subject);
+					c.moveToNext();
+				}
+				c.close();
+				return notifications;
+			} else {
+				return null;
 			}
-			c.close();
-			return notifications;
 		}
 
 		@Override
 		protected void onPostExecute(ArrayList<Notification> data) {
-			Utility.log(TAG, "we get data" + data.toString());
-			setDataInAdapter(data);
-			refresh();
+			if (data != null) {
+				Utility.log(TAG, "we get data" + data.toString());
+				setDataInAdapter(data);
+				refresh();
+			}
 		}
 
 	}

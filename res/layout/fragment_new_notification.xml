@@ -1,41 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    style="@style/CardStyle"
-     >
+    android:layout_height="match_parent" >
 
-    <EditText
-        android:id="@+id/editTextNewNoticeSubject"
+    <LinearLayout
+        style="@style/CardStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:hint="@string/type_subject"
-        android:layout_margin="@dimen/default_margin"
-        android:ems="10" >
-        <requestFocus />
-    </EditText>
+        android:orientation="vertical" >
 
-    <EditText
-        android:id="@+id/editTextNewNoticeBody"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:lines="10"
-        android:hint="@string/type_message"
-        android:ems="10"
-        android:layout_margin="@dimen/default_margin"
-        android:inputType="textMultiLine" />
+        <EditText
+            android:id="@+id/editTextNewNoticeSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_margin"
+            android:ems="10"
+            android:hint="@string/type_subject"
+            android:inputType="textMultiLine"
+            android:maxLines="2" >
 
-    <ImageButton
-        android:id="@+id/buttonSendNotice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_send_white"
-        android:layout_margin="@dimen/default_margin"
-        android:padding="@dimen/default_padding"
-        android:onClick="sendNewNotification"
-        android:background="@drawable/button_dark_gray"
-         />
+            <requestFocus />
+        </EditText>
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/editTextNewNoticeBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_margin"
+            android:ems="10"
+            android:hint="@string/type_message"
+            android:inputType="textMultiLine"
+            android:maxLines="6" />
+
+        <LinearLayout
+            android:id="@+id/linearLayoutAttachmetns"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/textViewAttachmentTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/default_margin"
+                android:text="Attachments"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/buttonFileSelector"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/default_margin"
+                android:text="select file" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/buttonSendNotice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_margin"
+            android:background="@drawable/button_dark_gray"
+            android:onClick="sendNewNotification"
+            android:padding="@dimen/default_padding"
+            android:src="@drawable/ic_action_send_white" />
+    </LinearLayout>
+
+</ScrollView>

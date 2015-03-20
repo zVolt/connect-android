@@ -49,7 +49,7 @@ public class MainActivity extends ActionBarActivity {
 	static final UserFilterDialog show = new UserFilterDialog();
 	private SharedPreferences spf;
 	public final String EXTRA_MESSAGE = "message";
-	public String ACTIVE_FRAGMENT_TAG;
+	public static String ACTIVE_FRAGMENT_TAG;
 	Toolbar toolbar;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
@@ -59,9 +59,6 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		if (savedInstanceState == null) {
-			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
-		}
 		if (!UNI_IMG_LOADER_SET) {
 			DisplayImageOptions options = new DisplayImageOptions.Builder()
 					.cacheInMemory(true).cacheOnDisk(true).build();
@@ -72,9 +69,13 @@ public class MainActivity extends ActionBarActivity {
 			ImageLoader.getInstance().init(config);
 			UNI_IMG_LOADER_SET = true;
 		}
+		
+		if (ACTIVE_FRAGMENT_TAG == null) {
+			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
+		}
 		Fragment notification = getFragmentManager().findFragmentByTag(
 				ACTIVE_FRAGMENT_TAG);
-		if (notification == null || ACTIVE_FRAGMENT_TAG == null) {
+		if (notification == null) {
 			notification = new FragmentNotification();
 			Utility.log(TAG, "active fragment null");
 		}
