@@ -21,6 +21,20 @@ public class Attachment implements Parcelable {
 		url = url_;
 	}
 
+	/**
+	 * used for new notification creation i.e., when user is uploading a file
+	 * with notification
+	 * 
+	 * @param name_
+	 * @param url_
+	 * @param url_
+	 */
+	public Attachment(String name_, String url_, long size_) {
+		size = size_;
+		name = name_;
+		url = url_;
+	}
+
 	public Attachment(Parcel in) {
 		name = in.readString();
 		url = in.readString();

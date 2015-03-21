@@ -1,11 +1,14 @@
 package in.siet.secure.Util;
 
+import java.util.ArrayList;
+
 public class Notification {
-	
+
 	public String image, text, subject, branch, section, course;
 	public long time;
 	public int sender_id, state, year;
 	public int sid; // sender ki primary key according to local table
+	public ArrayList<Attachment> files;
 
 	/**
 	 * Notification fetched from server should be instantiated using this
@@ -51,7 +54,7 @@ public class Notification {
 	 */
 	public Notification(String subject_, String text_, long time_,
 			int pk_user_id, String course_, String branch_, String section_,
-			int year_) {
+			int year_, ArrayList<Attachment> files_) {
 		time = time_;
 		subject = subject_;
 		text = text_;
@@ -62,5 +65,6 @@ public class Notification {
 		branch = branch_;
 		year = year_;
 		section = section_;
+		files = files_;
 	}
 }

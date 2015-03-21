@@ -1,5 +1,6 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.FilterOptions;
 import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
@@ -32,7 +33,7 @@ public class FragmentNewNotification extends Fragment implements
 		OnClickListener {
 	public static final String TAG = "in.siet.secure.sgi.FragmentNewNotification";
 	private LinearLayout container_layout;
-	private ArrayList<File> file_list;
+	private ArrayList<Attachment> file_list;
 	private SharedPreferences spf;
 	private EditText subject, body;
 
@@ -52,7 +53,7 @@ public class FragmentNewNotification extends Fragment implements
 		body = (EditText) rootView.findViewById(R.id.editTextNewNoticeBody);
 
 		// send.setTag(holder);
-		file_list = new ArrayList<File>();
+		file_list = new ArrayList<Attachment>();
 		container_layout = (LinearLayout) rootView
 				.findViewById(R.id.linearLayoutContainer);
 
@@ -109,18 +110,21 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public void onActivityResult(int request, int result, Intent data) {
 		if (request == 1 && result == Activity.RESULT_OK) {
+
 			File file = new File(data.getData().getPath());
 
+			Attachment tmp_atc = new Attachment(file.getName(),
+					file.getAbsolutePath(), file.length());
 			LayoutInflater inflater = (LayoutInflater) getActivity()
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View child = inflater.inflate(R.layout.notification_attachements,
 					container_layout, false);
 
 			((TextView) child.findViewById(R.id.textViewNotiFileName))
-					.setText(data.getData().getPath());
+					.setText(tmp_atc.name);
 
 			((TextView) child.findViewById(R.id.textViewNotiFileDetail))
-					.setText(Utility.getSizeString(file.length()));
+					.setText(Utility.getSizeString(tmp_atc.size));
 
 			((ImageView) child.findViewById(R.id.imageViewState))
 					.setImageResource(R.drawable.ic_file_upload);
@@ -141,11 +145,9 @@ public class FragmentNewNotification extends Fragment implements
 			 * button so that actions can be performed upon clicking them
 			 */
 			container_layout.addView(child);
-			file_list.add(file);
+			file_list.add(tmp_atc);
 		}
 	}
-
-	
 
 	private void removeFile(View view) {
 		ViewHolder holder = (ViewHolder) view.getTag();
@@ -201,7 +203,7 @@ public class FragmentNewNotification extends Fragment implements
 			subject_txt = subject.getText().toString();
 			body_txt = body.getText().toString();
 			Notification new_noti = new Notification(subject_txt, body_txt,
-					time, pk_user, course, branch, section, year);
+					time, pk_user, course, branch, section, year,file_list);
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
 

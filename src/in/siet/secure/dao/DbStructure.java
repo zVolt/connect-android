@@ -122,12 +122,14 @@ public final class DbStructure {
 		public static final String COLUMN_NAME = "name";
 		public static final String COLUMN_STATE = "state";
 		public static final String COLUMN_SENDER = "sender";
+		public static final String COLUMN_SIZE = "size";
 
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE
 				+ TABLE_NAME + DbConstants.BRACES_OPEN + _ID
 				+ DbConstants.TYPE_INT + DbConstants.CONSTRAIN_PRIMARY_KEY
 				+ DbConstants.COMMA + COLUMN_NAME + DbConstants.TYPE_TEXT
 				+ DbConstants.COMMA + COLUMN_URL + DbConstants.TYPE_TEXT
+				+ DbConstants.COMMA + COLUMN_SIZE + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_STATE + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_SENDER + DbConstants.TYPE_INT
 				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
@@ -150,7 +152,7 @@ public final class DbStructure {
 				+ TABLE_NAME + DbConstants.SEMICOLON;
 	}
 
-	public static interface FileMessageMapTable {
+	public static class FileMessageMapTable {
 		public static final String TABLE_NAME = "file_message_map";
 
 		public static final String COLUMN_MESSAGE_ID = "message_id";

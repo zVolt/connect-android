@@ -2,6 +2,7 @@ package in.siet.secure.adapters;
 
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Utility;
+import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.R;
 
 import java.util.ArrayList;
@@ -41,13 +42,12 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 					.findViewById(R.id.textViewNotiFileDetail);
 			holder.image = (ImageView) convertView
 					.findViewById(R.id.imageViewState);
-			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
 		Attachment tmp = files.get(position);
-		if (tmp.state == 1)
+		if (tmp.state == Constants.STATE.ACK_SEND ||tmp.state == Constants.STATE.DOWNLOADED)
 			holder.image.setImageDrawable(context.getResources().getDrawable(
 					R.drawable.ic_action_saved));
 		else
@@ -59,10 +59,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 		holder.state = tmp.state;
 		holder.url = tmp.url;
 		holder.id = tmp.id;
-	/*	convertView
-				.setOnClickListener((FragmentDetailNotification) ((MainActivity) context)
-						.getFragmentManager().findFragmentByTag(
-								FragmentDetailNotification.TAG));*/
+		
 		convertView.setTag(holder);
 		return convertView;
 	}

@@ -613,7 +613,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	 */
 	public void insertNewNotification(Notification new_noti) {
 		setDb();
-		new InsertNotifications().execute(new_noti);
+		new InsertNotification().execute(new_noti);
 		// create new notification
 	}
 
@@ -690,37 +690,36 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * @author Zeeshan Khan
 	 * 
 	 */
-	private static class InsertNotifications extends
+	private static class InsertNotification extends
 			AsyncTask<Notification, Void, Void> {
 
 		@Override
 		protected Void doInBackground(Notification... params) {
 			long target_id;
 			ContentValues values = new ContentValues();
-			;
-			for (Notification n : params) {
-				// insert target
-				values.clear();
-				values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
-				values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
-				values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
-				values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
-				target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
-						values);
-				// insert new notification and get its pk id
-				values.clear();
-				values.put(DbStructure.NotificationTable.COLUMN_SUBJECT,
-						n.subject);
-				values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
-				values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
-				values.put(DbStructure.NotificationTable.COLUMN_STATE,
-						Constants.STATE.PENDING);
-				values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
-				values.put(DbStructure.NotificationTable.COLUMN_TARGET,
-						target_id);
-				db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
-						values);
-			}
+			Notification n = params[0];
+
+			// insert user mapper entry
+			values.clear();
+			values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
+			values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
+			values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
+			values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
+			target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
+					values);
+			// insert new notification and get its pk id
+			values.clear();
+			values.put(DbStructure.NotificationTable.COLUMN_SUBJECT, n.subject);
+			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
+			values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
+			values.put(DbStructure.NotificationTable.COLUMN_STATE,
+					Constants.STATE.PENDING);
+			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
+			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
+			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
+
+			// insert files into db here
+			
 			return null;
 		}
 	}
