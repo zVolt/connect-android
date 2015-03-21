@@ -212,9 +212,8 @@ public class FragmentNotification extends Fragment {
 			while (c.isAfterLast() == false) {
 				Utility.log(TAG, "processsing notification");
 				Notification tmpnot = new Notification(
-						c.getInt(c.getColumnIndexOrThrow(columns[5])) == Constants.FOR_FACULTY.YES ? true
-								: false, c.getInt(c
-								.getColumnIndexOrThrow(columns[0])),
+						c.getInt(c.getColumnIndexOrThrow(columns[5])),
+						c.getInt(c.getColumnIndexOrThrow(columns[0])),
 						c.getString(c.getColumnIndexOrThrow(columns[1])),
 						c.getString(c.getColumnIndexOrThrow(columns[2])),
 						c.getString(c.getColumnIndexOrThrow(columns[3])), c

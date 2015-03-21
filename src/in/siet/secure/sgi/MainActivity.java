@@ -392,7 +392,9 @@ public class MainActivity extends ActionBarActivity {
 			String course = FilterOptions.COURSE;
 			String branch = FilterOptions.BRANCH;
 			String section = FilterOptions.SECTION;
-			boolean for_faculty=!FilterOptions.STUDENT;
+			int for_faculty = !FilterOptions.STUDENT == true ?
+					Constants.FOR_FACULTY.YES :
+						Constants.FOR_FACULTY.NO;
 			String subject, body;
 			year = FilterOptions.YEAR;
 			// fid string pk of user
