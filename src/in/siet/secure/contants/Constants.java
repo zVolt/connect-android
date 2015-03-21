@@ -107,33 +107,64 @@ public interface Constants {
 
 	}
 
+	/**
+	 * <b>Files:</b>
+	 * <ul>
+	 * <li>user uploads files goes through following states PENDING(inserted to
+	 * db)->SENT(uploaded to server)->ACK_RECEIVED(upload confirmed by server)</li>
+	 * <li>
+	 * user receiving new files goes through following states RECEIVED(only file
+	 * listed in database)->DOWNLOADED(saved to local)->ACK_SEND(Acknowledged
+	 * server that we successfully received the file)</li>
+	 * </ul>
+	 * <b> Messages:</b>
+	 * <ul>
+	 * <li>user create messages goes through following states
+	 * PENDING->SENT->ACK_RECEIVED</li>
+	 * <li>user receiving a message will go through following states
+	 * RECEIVED->ACK_SEND</li>
+	 * </ul>
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
 	public interface STATE {
+
 		/**
 		 * this means that the message or notification is received from server
+		 * i.e, not created by user
 		 */
 		int RECEIVED = 0;
+
 		/**
 		 * this means that the message or notification has been send to server
 		 * but no acknowledgment is received (PENDING->SENT)
 		 */
 		int SENT = 1;
+
 		/**
 		 * this means the message or notification is not yet send to server
 		 * (PENDING->SENT)
 		 */
 		int PENDING = 2;
+
 		/**
+		 * equivalent to DOWNLOADED in case of files
+		 * 
 		 * this comes after RECEIVED state it means the notification or message
 		 * has been received from server and acknowledgment has been send to
 		 * server (RECEIVED->ACK_SEND)
 		 */
 		int ACK_SEND = 3;
+
 		/**
 		 * this comes after SENT state it means the pending message or
 		 * notification has been sent to server and the server send
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
+
+		int DOWNLOADED = 1;
 	}
 
 	public interface IS_GROUP_MSG {
