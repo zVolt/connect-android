@@ -8,7 +8,10 @@ public class Notification {
 	public long time;
 	public int sender_id, state, year;
 	public int sid; // sender ki primary key according to local table
+
 	public ArrayList<Attachment> files;
+
+	public int for_faculty;
 
 	/**
 	 * Notification fetched from server should be instantiated using this
@@ -20,8 +23,9 @@ public class Notification {
 	 * @param text_
 	 * @param time_
 	 */
-	public Notification(int pk_user_id, String image_, String subject_,
-			String text_, long time_) {
+	public Notification(int for_faculty_, int pk_user_id, String image_,
+			String subject_, String text_, long time_) {
+		for_faculty = for_faculty_;
 		sender_id = pk_user_id;
 		time = time_;
 		subject = subject_;
@@ -52,9 +56,10 @@ public class Notification {
 	 * 
 	 * 
 	 */
-	public Notification(String subject_, String text_, long time_,
-			int pk_user_id, String course_, String branch_, String section_,
-			int year_, ArrayList<Attachment> files_) {
+	public Notification(int for_faculty_, String subject_, String text_,
+			long time_, int pk_user_id, String course_, String branch_,
+			String section_, int year_, ArrayList<Attachment> files_) {
+		for_faculty = for_faculty_;
 		time = time_;
 		subject = subject_;
 		text = text_;

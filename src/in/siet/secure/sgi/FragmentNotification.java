@@ -191,6 +191,7 @@ public class FragmentNotification extends Fragment {
 
 		@Override
 		protected ArrayList<Notification> doInBackground(Void... params) {
+
 			/**
 			 * to prevent fc when the activity is reconstructed and the
 			 * background thread is still executing
@@ -200,19 +201,22 @@ public class FragmentNotification extends Fragment {
 						DbStructure.UserTable.COLUMN_PROFILE_PIC,
 						DbStructure.NotificationTable.COLUMN_SUBJECT,
 						DbStructure.NotificationTable.COLUMN_TEXT,
-						DbStructure.NotificationTable.COLUMN_TIME };
+						DbStructure.NotificationTable.COLUMN_TIME,
+						DbStructure.NotificationTable.COLUMN_FOR_FACULTY };
 				SQLiteDatabase db = new DbHelper(context).getDb();
 				Cursor c = db.rawQuery("select "
 						+ DbStructure.NotificationTable.TABLE_NAME
 						+ DbConstants.DOT + columns[0] + DbConstants.COMMA
 						+ columns[1] + DbConstants.COMMA + columns[2]
 						+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-						+ columns[4] + " from "
-						+ DbStructure.NotificationTable.TABLE_NAME + " join "
-						+ DbStructure.UserTable.TABLE_NAME + " on "
+						+ columns[4] + DbConstants.COMMA + columns[5]
+						+ " from " + DbStructure.NotificationTable.TABLE_NAME
+						+ " join " + DbStructure.UserTable.TABLE_NAME + " on "
 						+ DbStructure.NotificationTable.COLUMN_SENDER + "="
 						+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-						+ DbStructure.UserTable._ID + " order by "
+						+ DbStructure.UserTable._ID
+
+						+ " order by "
 						+ DbStructure.NotificationTable.COLUMN_TIME, null);
 
 				ArrayList<Notification> notifications = new ArrayList<Notification>();
@@ -220,6 +224,7 @@ public class FragmentNotification extends Fragment {
 				while (c.isAfterLast() == false) {
 					Utility.log(TAG, "processsing notification");
 					Notification tmpnot = new Notification(c.getInt(c
+							.getColumnIndexOrThrow(columns[5])), c.getInt(c
 							.getColumnIndexOrThrow(columns[0])), c.getString(c
 							.getColumnIndexOrThrow(columns[1])), c.getString(c
 							.getColumnIndexOrThrow(columns[2])), c.getString(c
@@ -228,8 +233,8 @@ public class FragmentNotification extends Fragment {
 					notifications.add(tmpnot);
 					Utility.log(TAG, tmpnot.subject);
 					c.moveToNext();
+
 				}
-				c.close();
 				return notifications;
 			} else {
 				return null;

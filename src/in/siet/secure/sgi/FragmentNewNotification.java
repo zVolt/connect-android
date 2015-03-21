@@ -194,6 +194,8 @@ public class FragmentNewNotification extends Fragment implements
 			String section = FilterOptions.SECTION;
 			String subject_txt, body_txt;
 			year = FilterOptions.YEAR;
+			int for_faculty = FilterOptions.STUDENT ? Constants.FOR_FACULTY.NO
+					: Constants.FOR_FACULTY.YES;
 			// fid string pk of user
 			DbHelper db = new DbHelper(getActivity().getApplicationContext());
 			int pk_user = db.getUserPk(spf.getString(
@@ -202,8 +204,9 @@ public class FragmentNewNotification extends Fragment implements
 			long time = Calendar.getInstance().getTimeInMillis();
 			subject_txt = subject.getText().toString();
 			body_txt = body.getText().toString();
-			Notification new_noti = new Notification(subject_txt, body_txt,
-					time, pk_user, course, branch, section, year,file_list);
+			Notification new_noti = new Notification(for_faculty, subject_txt,
+					body_txt, time, pk_user, course, branch, section, year,
+					file_list);
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
 

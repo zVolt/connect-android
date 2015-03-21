@@ -174,7 +174,10 @@ public interface Constants {
 		int YES = 0;
 		int NO = 1;
 	}
-
+	public interface FOR_FACULTY {
+		int YES = 0;
+		int NO = 1;
+	}
 	public interface JSONKEYS {
 
 		String STUDENT = "Student";
@@ -229,10 +232,12 @@ public interface Constants {
 			String SENDER = "Sender";
 			String SECTION = "Section";
 			String ACK = "Noti_ack";
+			String FOR_FACULTY = "For_Faculty";
 		}
 	}
 
 	public static interface NOTIFICATION {
+		
 		String SUBJECT = "Subject";
 		String TEXT = "Text";
 		String TIME = "Time";

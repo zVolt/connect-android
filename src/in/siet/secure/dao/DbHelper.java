@@ -276,7 +276,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * insert a faculty with full detials
+	 * insert a faculty with full details
 	 * 
 	 * @param response
 	 */
