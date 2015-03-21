@@ -14,11 +14,12 @@ public class Attachment implements Parcelable {
 	public int state;
 	public int id;
 
-	public Attachment(int id_, String name_, int state_, String url_) {
+	public Attachment(int id_, String name_, int state_, String url_, long size_) {
 		id = id_;
 		name = name_;
 		state = state_;
 		url = url_;
+		size = size_;
 	}
 
 	/**

@@ -3,6 +3,7 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAttachmentAdapter;
+import in.siet.secure.adapters.NotificationAttachmentAdapter.ViewHolder;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
@@ -147,8 +148,12 @@ public class FragmentDetailNotification extends Fragment implements
 		if (adapter != null) {
 			adapter.notifyDataSetChanged();
 			listViewAtachments.removeAllViews();
+			View tmp_child;
 			for (int i = 0; i < adapter.getCount(); i++) {
-				listViewAtachments.addView(adapter.getView(i, null, null));// ;setAdapter(adapter);
+				tmp_child = adapter.getView(i, null, null);
+				((ViewHolder) tmp_child.getTag()).action_button
+						.setOnClickListener(this);
+				listViewAtachments.addView(tmp_child);
 			}
 		}
 
@@ -179,12 +184,13 @@ public class FragmentDetailNotification extends Fragment implements
 	}
 
 	@Override
-	public void onClick(View v) {
-		NotificationAttachmentAdapter.ViewHolder h = (NotificationAttachmentAdapter.ViewHolder) v
-				.getTag();
-		if (h.state == 1) {
+	public void onClick(View view) {
+		ViewHolder h = (ViewHolder) view.getTag();
+		if (h.state == Constants.STATE.DOWNLOADED
+				|| h.state == Constants.STATE.ACK_SEND) {
 			// open file
-			File file = new File(Constants.pathToApp + h.name);
+			Utility.log(TAG, "opening file");
+			File file = new File(h.url);
 			MimeTypeMap map = MimeTypeMap.getSingleton();
 			String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
 			String type = map.getMimeTypeFromExtension(ext);
@@ -203,6 +209,7 @@ public class FragmentDetailNotification extends Fragment implements
 			}
 		} else {
 			// download file
+			Utility.log(TAG, "downloading file");
 			Utility.log("Yaha", "clicked on " + h.name.getText());
 			new Utility.DownloadFile().execute(h.url,
 					(String) h.name.getText(), "" + h.id);

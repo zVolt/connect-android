@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,35 +41,41 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 					.findViewById(R.id.textViewNotiFileName);
 			holder.data = (TextView) convertView
 					.findViewById(R.id.textViewNotiFileDetail);
-			holder.image = (ImageView) convertView
+			holder.state_image = (ImageView) convertView
 					.findViewById(R.id.imageViewState);
+			holder.action_button = (ImageButton) convertView
+					.findViewById(R.id.imageButtonAttachmentAction);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
 		Attachment tmp = files.get(position);
-		if (tmp.state == Constants.STATE.ACK_SEND ||tmp.state == Constants.STATE.DOWNLOADED)
-			holder.image.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_action_saved));
+		if (tmp.state == Constants.STATE.ACK_SEND
+				|| tmp.state == Constants.STATE.DOWNLOADED)
+			holder.state_image.setImageDrawable(context.getResources()
+					.getDrawable(R.drawable.ic_file_done));
 		else
-			holder.image.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_action_download));
+			holder.state_image.setImageDrawable(context.getResources()
+					.getDrawable(R.drawable.ic_file_download));
 
 		holder.name.setText(tmp.name);
 		holder.data.setText(Utility.getSizeString(tmp.size));
+		holder.action_button.setImageResource(R.drawable.ic_cancel);
+		//holder.action_button.setOnClickListener();
 		holder.state = tmp.state;
 		holder.url = tmp.url;
 		holder.id = tmp.id;
-		
+
 		convertView.setTag(holder);
 		return convertView;
 	}
 
 	public static class ViewHolder {
-		public int state; // 1-downloaded 0-not downloaded
+		public int state; // refer to constants.STATE for info
 		public int id;
 		public String url;
-		ImageView image;
+		ImageView state_image;
+		public ImageButton action_button;
 		public TextView name;
 		TextView data;
 	}

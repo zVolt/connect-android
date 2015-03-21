@@ -163,8 +163,11 @@ public interface Constants {
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
-
-		int DOWNLOADED = 1;
+		
+		/**
+		 * file specific this means the file is present on local system
+		 */
+		int DOWNLOADED = 5;
 	}
 
 	public interface IS_GROUP_MSG {

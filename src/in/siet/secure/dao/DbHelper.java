@@ -719,7 +719,7 @@ public class DbHelper extends SQLiteOpenHelper {
 			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
 
 			// insert files into db here
-			
+
 			return null;
 		}
 	}
@@ -800,7 +800,9 @@ public class DbHelper extends SQLiteOpenHelper {
 			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 			String[] column = { DbStructure.FileTable.COLUMN_NAME,
 					DbStructure.FileTable.COLUMN_STATE,
-					DbStructure.FileTable.COLUMN_URL, DbStructure.FileTable._ID };
+					DbStructure.FileTable.COLUMN_URL,
+					DbStructure.FileTable._ID,
+					DbStructure.FileTable.COLUMN_SIZE };
 			StringBuilder query = new StringBuilder(
 					"select "
 							+ column[0]
@@ -810,6 +812,8 @@ public class DbHelper extends SQLiteOpenHelper {
 							+ column[2]
 							+ DbConstants.COMMA
 							+ column[3]
+							+ DbConstants.COMMA
+							+ column[4]
 							+ " from "
 							+ DbStructure.FileTable.TABLE_NAME
 							+ " join "
@@ -826,16 +830,16 @@ public class DbHelper extends SQLiteOpenHelper {
 			c.moveToFirst();
 			Attachment tmp;
 			while (!c.isAfterLast()) {
-				Utility.log(TAG, "got one file");
 				tmp = new Attachment(c.getInt(c
 						.getColumnIndexOrThrow(column[3])), c.getString(c
 						.getColumnIndexOrThrow(column[0])), c.getInt(c
 						.getColumnIndexOrThrow(column[1])), c.getString(c
-						.getColumnIndexOrThrow(column[2])));
+						.getColumnIndexOrThrow(column[2])), c.getLong(c
+						.getColumnIndexOrThrow(column[4])));
 				attachments.add(tmp);
 				c.moveToNext();
 			}
-			Utility.log(TAG, "size we get" + attachments.size());
+
 			return attachments;
 		}
 
