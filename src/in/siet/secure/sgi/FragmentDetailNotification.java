@@ -10,9 +10,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,11 +31,49 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public class FragmentDetailNotification extends Fragment implements
 		OnClickListener {
 	private int not_id;
-	public static LinearLayout listViewAtachments;
-	private static ArrayList<Attachment> attachments = new ArrayList<Attachment>();
-	private static NotificationAttachmentAdapter adapter;
-	public static View rootView;
+	public LinearLayout listViewAtachments;
+	private ArrayList<Attachment> attachments = new ArrayList<Attachment>();
+	private NotificationAttachmentAdapter adapter;
+	public View rootView;
 	public static final String TAG = "in.siet.secure.sgi.FragmentDetailNotification";
+	private BroadcastReceiver refresh_receiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			/**
+			 * check for the ID so that file list correctly corresponds to the
+			 * notification displayed
+			 **/
+
+			if (intent.getBooleanExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS,
+					false)) {
+				if (intent.getIntExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID,
+						-1) == not_id) {
+					ArrayList<Attachment> data = intent
+							.<Attachment> getParcelableArrayListExtra(Constants.INTENT_EXTRA.ATTACHMENTS_DATA);
+					if (data.size() > 0) {
+						setData(data);
+						haveAttachments();
+					} else {
+						/**
+						 * no data
+						 */
+						noAttachments();
+					}
+				} else {
+					/**
+					 * ID not matched
+					 */
+					noAttachments();
+				}
+			} else {
+				/**
+				 * no attachments associated with the notifications
+				 */
+				noAttachments();
+			}
+		}
+	};
 
 	public FragmentDetailNotification() {
 	}
@@ -43,21 +85,22 @@ public class FragmentDetailNotification extends Fragment implements
 		adapter = new NotificationAttachmentAdapter(getActivity(), attachments);
 		Bundle bundle = getArguments();
 		not_id = bundle.getInt(Constants.NOTIFICATION.ID);
-		new DbHelper(getActivity()).getFilesOfNotification(not_id);
+		new DbHelper(getActivity().getApplicationContext())
+				.getFilesOfNotification(not_id);
 
 		rootView = inflater.inflate(R.layout.fragment_detailed_notification,
 				container, false);
 
 		ImageView image = (ImageView) rootView
-				.findViewById(R.id.imageViewNotiImage);
+				.findViewById(R.id.imageViewNotificationSenderImage);
 		TextView subject = (TextView) rootView
-				.findViewById(R.id.notification_title);
+				.findViewById(R.id.textViewNotificationSubject);
 		TextView text = (TextView) rootView
-				.findViewById(R.id.notification_text);
+				.findViewById(R.id.textViewNotificationBody);
 		TextView time = (TextView) rootView
-				.findViewById(R.id.notification_time);
+				.findViewById(R.id.textViewNotificationTime);
 		listViewAtachments = (LinearLayout) rootView
-				.findViewById(R.id.notification_list_attachments);
+				.findViewById(R.id.linearLayoutNotificationAttachmentsList);
 
 		subject.setText(bundle.getString(Constants.NOTIFICATION.SUBJECT));
 		text.setText(bundle.getString(Constants.NOTIFICATION.TEXT));
@@ -70,7 +113,7 @@ public class FragmentDetailNotification extends Fragment implements
 				bundle.getString(Constants.NOTIFICATION.SENDER_IMAGE), image);
 		// adapter=new NotificationAttachmentAdapter(getActivity(),
 		// attachments);
-		hideAttachments();
+		processAttachments();
 		return rootView;
 	}
 
@@ -83,18 +126,27 @@ public class FragmentDetailNotification extends Fragment implements
 
 	@Override
 	public void onStart() {
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.registerReceiver(
+						refresh_receiver,
+						new IntentFilter(
+								Constants.LOCAL_INTENT_ACTION.RELOAD_ATTACHMENTS));
 		super.onStart();
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
-
+	public void onPause() {
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.unregisterReceiver(refresh_receiver);
+		super.onPause();
 	}
 
-	public static void refresh() {
+	public void refresh() {
 		if (adapter != null) {
 			adapter.notifyDataSetChanged();
+			listViewAtachments.removeAllViews();
 			for (int i = 0; i < adapter.getCount(); i++) {
 				listViewAtachments.addView(adapter.getView(i, null, null));// ;setAdapter(adapter);
 			}
@@ -102,22 +154,28 @@ public class FragmentDetailNotification extends Fragment implements
 
 	}
 
-	public static void setData(ArrayList<Attachment> data) {
+	public void setData(ArrayList<Attachment> data) {
 		adapter.clear();
 		adapter.addAll(data);
 		refresh();
 	}
 
-	public static void showAttachments() {
-		rootView.findViewById(R.id.loading_attachments)
+	public void haveAttachments() {
+		rootView.findViewById(R.id.progressBarLoadingAttachments)
 				.setVisibility(View.GONE);
 		listViewAtachments.setVisibility(View.VISIBLE);
 	}
 
-	public void hideAttachments() {
+	public void noAttachments() {
 		listViewAtachments.setVisibility(View.GONE);
-		rootView.findViewById(R.id.loading_attachments).setVisibility(
-				View.VISIBLE);
+		rootView.findViewById(R.id.progressBarLoadingAttachments)
+				.setVisibility(View.GONE);
+	}
+
+	public void processAttachments() {
+		listViewAtachments.setVisibility(View.GONE);
+		rootView.findViewById(R.id.progressBarLoadingAttachments)
+				.setVisibility(View.VISIBLE);
 	}
 
 	@Override

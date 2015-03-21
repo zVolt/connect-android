@@ -11,7 +11,7 @@ public interface Constants {
 	// dynamic server ip change
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
-	//public float INTERVAL_IN_HOUR = 1;
+	// public float INTERVAL_IN_HOUR = 1;
 	public int HOUR_TO_MILISEC = 360000;
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
@@ -28,7 +28,18 @@ public interface Constants {
 	}
 
 	public interface INTENT_EXTRA {
+		String NOTIFICATION_ID = "notification_id";
 		String BUNDLE_NAME = "extra_bundle";
+		String ATTACHMENTS_DATA = "attachments_data";
+		String HAS_ATTACHMENTS = "has_attachments";
+	}
+
+	public interface ATTACHMENTS {
+		String NAME = "Name";
+		String SIZE = "Size";
+		String TYPE = "Type";
+		String URL = "Url";
+		String ID = "id";
 	}
 
 	public interface DRAWER_IC_INACTIVE {
@@ -51,6 +62,7 @@ public interface Constants {
 		String RELOAD_NOTIFICATIONS = "reload_notifications";
 		String RELOAD_MESSAGES = "reload_messages";
 		String RELOAD_CONTACTS = "reload_contacts";
+		String RELOAD_ATTACHMENTS = "reload_attachments";
 	}
 
 	public interface PREF_KEYS {
@@ -102,23 +114,24 @@ public interface Constants {
 		int RECEIVED = 0;
 		/**
 		 * this means that the message or notification has been send to server
-		 * but no acknowledgment is received
+		 * but no acknowledgment is received (PENDING->SENT)
 		 */
 		int SENT = 1;
 		/**
 		 * this means the message or notification is not yet send to server
+		 * (PENDING->SENT)
 		 */
 		int PENDING = 2;
 		/**
 		 * this comes after RECEIVED state it means the notification or message
 		 * has been received from server and acknowledgment has been send to
-		 * server
+		 * server (RECEIVED->ACK_SEND)
 		 */
 		int ACK_SEND = 3;
 		/**
 		 * this comes after SENT state it means the pending message or
 		 * notification has been sent to server and the server send
-		 * acknowledgment about the same
+		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
 	}

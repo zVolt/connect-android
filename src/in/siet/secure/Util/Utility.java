@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -283,5 +284,23 @@ public class Utility {
 		return DateUtils.getRelativeDateTimeString(context, time_in_milisec,
 				DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0)
 				.toString();
+	}
+
+	public static String getSizeString(float bytes) {
+		String res = " Bytes";
+		if (bytes >= 1000) {
+			bytes /= 1000; // KB
+			res = " KB";
+			if (bytes >= 1000) {
+				bytes /= 1000; // MB
+				res = " MB";
+				if (bytes >= 1000) {
+					bytes /= 1000;// GB
+					res = " GB";
+				}
+			}
+		}
+		DecimalFormat format = new DecimalFormat(".##");
+		return String.valueOf(format.format(bytes)) + res;
 	}
 }

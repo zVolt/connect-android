@@ -7,7 +7,6 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
 
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -121,7 +120,7 @@ public class FragmentNewNotification extends Fragment implements
 					.setText(data.getData().getPath());
 
 			((TextView) child.findViewById(R.id.textViewNotiFileDetail))
-					.setText(getSize(file.length()));
+					.setText(Utility.getSizeString(file.length()));
 
 			((ImageView) child.findViewById(R.id.imageViewState))
 					.setImageResource(R.drawable.ic_file_upload);
@@ -146,23 +145,7 @@ public class FragmentNewNotification extends Fragment implements
 		}
 	}
 
-	private String getSize(float bytes) {
-		String res = " Bytes";
-		if (bytes >= 1000) {
-			bytes /= 1000; // KB
-			res = " KB";
-			if (bytes >= 1000) {
-				bytes /= 1000; // MB
-				res = " MB";
-				if (bytes >= 1000) {
-					bytes /= 1000;// GB
-					res = " GB";
-				}
-			}
-		}
-		DecimalFormat format = new DecimalFormat(".##");
-		return String.valueOf(format.format(bytes)) + res;
-	}
+	
 
 	private void removeFile(View view) {
 		ViewHolder holder = (ViewHolder) view.getTag();

@@ -8,7 +8,6 @@ import in.siet.secure.Util.Student;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
-import in.siet.secure.sgi.FragmentDetailNotification;
 
 import java.util.ArrayList;
 
@@ -19,11 +18,13 @@ import org.json.JSONObject;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -372,6 +373,9 @@ public class DbHelper extends SQLiteOpenHelper {
 
 							db.insert(DbStructure.UserInfoTable.TABLE_NAME,
 									null, values);
+							/**
+							 * inserted extra details of faculty
+							 */
 						}
 					}
 				}
@@ -548,7 +552,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONArray response) {
-						// TODO Auto-generated method stub
+
 						Utility.log(TAG,
 								"receving JSONArray responce from server requested was JSONObject");
 					}
@@ -556,7 +560,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					@Override
 					public void onFailure(int statusCode, Header[] headers,
 							Throwable throwable, JSONObject errorResponse) {
-						// TODO Auto-generated method stub
+
 						Utility.log(TAG, " fail to receving found JSONObject "
 								+ errorResponse.toString());
 					}
@@ -564,7 +568,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					@Override
 					public void onFailure(int statusCode, Header[] headers,
 							String responseString, Throwable throwable) {
-						// TODO Auto-generated method stub
+
 						Utility.log(TAG,
 								" fail to receving found String and a throwable "
 										+ responseString);
@@ -573,7 +577,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					@Override
 					public void onFailure(int statusCode, Header[] headers,
 							Throwable throwable, JSONArray errorResponse) {
-						// TODO Auto-generated method stub
+
 						Utility.log(TAG,
 								" fail to receving found JSONArray and a throwable "
 										+ errorResponse.toString());
@@ -789,58 +793,69 @@ public class DbHelper extends SQLiteOpenHelper {
 	 */
 	private class FetchFilesOfNotification extends
 			AsyncTask<Object, Integer, ArrayList<Attachment>> {
+		int noti_id;
 
 		@Override
 		protected ArrayList<Attachment> doInBackground(Object... params) {
-			DbHelper This = (DbHelper) params[0];
-			int noti_id = (Integer) params[1];
+			noti_id = (Integer) params[1];
 			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 			String[] column = { DbStructure.FileTable.COLUMN_NAME,
 					DbStructure.FileTable.COLUMN_STATE,
 					DbStructure.FileTable.COLUMN_URL, DbStructure.FileTable._ID };
-			Cursor c = This
-					.getReadableDatabase()
-					.rawQuery(
-							"select "
-									+ column[0]
-									+ DbConstants.COMMA
-									+ column[1]
-									+ DbConstants.COMMA
-									+ column[2]
-									+ DbConstants.COMMA
-									+ column[3]
-									+ " from "
-									+ DbStructure.FileTable.TABLE_NAME
-									+ " join "
-									+ DbStructure.FileNotificationMapTable.TABLE_NAME
-									+ " on "
-									+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
-									+ "="
-									+ DbStructure.FileTable._ID
-									+ " where "
-									+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
-									+ "=" + noti_id + DbConstants.SEMICOLON,
-							null);
-
+			StringBuilder query = new StringBuilder(
+					"select "
+							+ column[0]
+							+ DbConstants.COMMA
+							+ column[1]
+							+ DbConstants.COMMA
+							+ column[2]
+							+ DbConstants.COMMA
+							+ column[3]
+							+ " from "
+							+ DbStructure.FileTable.TABLE_NAME
+							+ " join "
+							+ DbStructure.FileNotificationMapTable.TABLE_NAME
+							+ " on "
+							+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
+							+ DbConstants.EQUALS
+							+ DbStructure.FileTable._ID
+							+ " where "
+							+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
+							+ DbConstants.EQUALS + noti_id);
+			Cursor c = db.rawQuery(query.toString(), null);
+			Utility.log(TAG, query.toString());
 			c.moveToFirst();
 			Attachment tmp;
-			while (c.isAfterLast() == false) {
-				tmp = new Attachment(
-						c.getInt(c.getColumnIndexOrThrow(column[3])),
-						c.getString(c.getColumnIndexOrThrow(column[0])),
-						c.getInt(c.getColumnIndexOrThrow(column[1])),
-						c.getString(c
-								.getColumnIndexOrThrow(DbStructure.FileTable.COLUMN_URL)));
+			while (!c.isAfterLast()) {
+				Utility.log(TAG, "got one file");
+				tmp = new Attachment(c.getInt(c
+						.getColumnIndexOrThrow(column[3])), c.getString(c
+						.getColumnIndexOrThrow(column[0])), c.getInt(c
+						.getColumnIndexOrThrow(column[1])), c.getString(c
+						.getColumnIndexOrThrow(column[2])));
 				attachments.add(tmp);
 				c.moveToNext();
 			}
+			Utility.log(TAG, "size we get" + attachments.size());
 			return attachments;
 		}
 
 		@Override
 		protected void onPostExecute(ArrayList<Attachment> result) {
-			FragmentDetailNotification.setData(result);
-			FragmentDetailNotification.showAttachments();
+			/**
+			 * send local broadcast to update list of notifications
+			 */
+			Intent intent = new Intent(
+					Constants.LOCAL_INTENT_ACTION.RELOAD_ATTACHMENTS);
+			intent.putExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID, noti_id);
+			if (result != null && result.size() > 0) {
+				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, true);
+				intent.putParcelableArrayListExtra(
+						Constants.INTENT_EXTRA.ATTACHMENTS_DATA, result);
+			} else {
+				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, false);
+			}
+			LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 		}
 	}
 
