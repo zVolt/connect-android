@@ -64,6 +64,7 @@ public final class DbStructure {
 		public static final String COLUMN_SENDER = "sender";
 		public static final String COLUMN_STATE = "state";
 		public static final String COLUMN_TARGET = "target";
+		public static final String COLUMN_FOR_FACULTY = "for_faculty";
 
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE
 				+ TABLE_NAME + DbConstants.BRACES_OPEN + _ID
@@ -74,7 +75,8 @@ public final class DbStructure {
 				+ DbConstants.COMMA + COLUMN_STATE + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_TARGET + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_TIME + DbConstants.TYPE_INT
-				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
+				+ DbConstants.COMMA + COLUMN_FOR_FACULTY + DbConstants.TYPE_INT
+				+ DbConstants.BRACES_CLOSE;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE
 				+ TABLE_NAME + DbConstants.SEMICOLON;
 	}

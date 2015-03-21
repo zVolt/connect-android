@@ -275,7 +275,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * insert a faculty with full detials
+	 * insert a faculty with full details
 	 * 
 	 * @param response
 	 */
@@ -640,7 +640,6 @@ public class DbHelper extends SQLiteOpenHelper {
 		protected Void doInBackground(Notification... params) {
 			long target_id;
 			ContentValues values = new ContentValues();
-			;
 			for (Notification n : params) {
 				// insert target
 				values.clear();
@@ -648,12 +647,15 @@ public class DbHelper extends SQLiteOpenHelper {
 				values.put(DbStructure.UserMapper.COLUMN_BRANCH, n.branch);
 				values.put(DbStructure.UserMapper.COLUMN_YEAR, n.year);
 				values.put(DbStructure.UserMapper.COLUMN_SECTION, n.section);
+				
 				target_id = db.insert(DbStructure.UserMapper.TABLE_NAME, null,
 						values);
 				// insert new notification and get its pk id
 				values.clear();
 				values.put(DbStructure.NotificationTable.COLUMN_SUBJECT,
 						n.subject);
+				values.put(DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+						n.for_faculty);
 				values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
 				values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
 				values.put(DbStructure.NotificationTable.COLUMN_STATE,

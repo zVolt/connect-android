@@ -9,7 +9,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -253,7 +252,7 @@ public class BackgroundService extends Service {
 		JSONArray notifications = new JSONArray();
 		JSONObject notification;
 
-		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
+		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String[] args = { String.valueOf(Constants.STATE.PENDING),
 				spref.getString(Constants.PREF_KEYS.user_id, null) };
@@ -278,6 +277,8 @@ public class BackgroundService extends Service {
 							c.getString(6));
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ID,
 							c.getInt(7));
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
+							c.getInt(8));
 					notifications.put(notification);
 				} catch (Exception e) {
 					Utility.DEBUG(e);

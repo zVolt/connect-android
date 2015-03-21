@@ -188,7 +188,8 @@ public class FragmentNotification extends Fragment {
 					DbStructure.UserTable.COLUMN_PROFILE_PIC,
 					DbStructure.NotificationTable.COLUMN_SUBJECT,
 					DbStructure.NotificationTable.COLUMN_TEXT,
-					DbStructure.NotificationTable.COLUMN_TIME };
+					DbStructure.NotificationTable.COLUMN_TIME,
+					DbStructure.NotificationTable.COLUMN_FOR_FACULTY };
 			SQLiteDatabase db = new DbHelper(getActivity()
 					.getApplicationContext()).getDb();
 			Cursor c = db.rawQuery("select "
@@ -196,24 +197,28 @@ public class FragmentNotification extends Fragment {
 					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
 					+ columns[1] + DbConstants.COMMA + columns[2]
 					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-					+ columns[4] + " from "
+					+ columns[4] + DbConstants.COMMA + columns[5] + " from "
 					+ DbStructure.NotificationTable.TABLE_NAME + " join "
 					+ DbStructure.UserTable.TABLE_NAME + " on "
 					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
 					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-					+ DbStructure.UserTable._ID + " order by "
-					+ DbStructure.NotificationTable.COLUMN_TIME, null);
+					+ DbStructure.UserTable._ID
+
+					+ " order by " + DbStructure.NotificationTable.COLUMN_TIME,
+					null);
 
 			ArrayList<Notification> notifications = new ArrayList<Notification>();
 			c.moveToFirst();
 			while (c.isAfterLast() == false) {
 				Utility.log(TAG, "processsing notification");
-				Notification tmpnot = new Notification(c.getInt(c
-						.getColumnIndexOrThrow(columns[0])), c.getString(c
-						.getColumnIndexOrThrow(columns[1])), c.getString(c
-						.getColumnIndexOrThrow(columns[2])), c.getString(c
-						.getColumnIndexOrThrow(columns[3])), c.getLong(c
-						.getColumnIndexOrThrow(columns[4])));
+				Notification tmpnot = new Notification(
+						c.getInt(c.getColumnIndexOrThrow(columns[5])) == Constants.FOR_FACULTY.YES ? true
+								: false, c.getInt(c
+								.getColumnIndexOrThrow(columns[0])),
+						c.getString(c.getColumnIndexOrThrow(columns[1])),
+						c.getString(c.getColumnIndexOrThrow(columns[2])),
+						c.getString(c.getColumnIndexOrThrow(columns[3])), c
+								.getLong(c.getColumnIndexOrThrow(columns[4])));
 				notifications.add(tmpnot);
 				Utility.log(TAG, tmpnot.subject);
 				c.moveToNext();

@@ -392,6 +392,7 @@ public class MainActivity extends ActionBarActivity {
 			String course = FilterOptions.COURSE;
 			String branch = FilterOptions.BRANCH;
 			String section = FilterOptions.SECTION;
+			boolean for_faculty=!FilterOptions.STUDENT;
 			String subject, body;
 			year = FilterOptions.YEAR;
 			// fid string pk of user
@@ -401,7 +402,7 @@ public class MainActivity extends ActionBarActivity {
 			long time = Calendar.getInstance().getTimeInMillis();
 			subject = holder.subject.getText().toString();
 			body = holder.body.getText().toString();
-			Notification new_noti = new Notification(subject, body, time,
+			Notification new_noti = new Notification(for_faculty,subject, body, time,
 					pk_user, course, branch, section, year);
 			// state if filled by db class
 			new DbHelper(getApplicationContext())
