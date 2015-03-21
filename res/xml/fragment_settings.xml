@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/action_settings"
     android:fragment="in.siet.secure.sgi.FragmentSettings"
-    
-    >
-    
-	<EditTextPreference 
-    android:key="server_ip"
-    android:title="Server"
-    android:summary="default value"
-    android:defaultValue="192.168.0.100"
-    />
+    android:title="@string/action_settings" >
+
+    <PreferenceCategory
+        android:key="pref_key_server_settings"
+        android:title="@string/pref_cat_server" >
+        <EditTextPreference
+            android:defaultValue="192.168.0.100"
+            android:digits="1234567890."
+            android:key="@string/pref_key_server_ip"
+            android:summary="@string/pref_desc_server_ip"
+            android:title="@string/pref_title_server_ip" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_key_general_settings"
+        android:title="@string/pref_cat_general" >
+        <EditTextPreference
+            android:defaultValue="1"
+            android:inputType="number"
+            android:key="@string/pref_key_update_interval"
+            android:summary="@string/pref_desc_update_interval"
+            android:title="@string/pref_title_update_interval" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

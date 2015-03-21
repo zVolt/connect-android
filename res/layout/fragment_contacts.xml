@@ -1,15 +1,17 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-    
-<ListView
-    android:id="@+id/listViewContacts"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/CardStyle"
-     >
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
 
-</ListView>
-    
-</LinearLayout>
+    <ListView
+        android:id="@+id/listViewContacts"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+    <include
+        android:id="@+id/contacts_empty_list_view"
+        layout="@layout/list_empty_item" >
+    </include>
+
+</RelativeLayout>

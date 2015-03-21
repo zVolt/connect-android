@@ -1,6 +1,13 @@
 package in.siet.secure.sgi;
 
+import java.util.Locale;
+
+import in.siet.secure.Util.Faculty;
+import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
+import in.siet.secure.Util.Student;
+import in.siet.secure.Util.StudentFull;
+import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
@@ -11,13 +18,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,293 +40,506 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 public class LoginActivity extends ActionBarActivity {
-	//ProgressDialog progDialog;
-	private static String TAG="in.siet.secure.sgi.LoginActivity"; 
-	private static String userid=null;
-	private static String pwd=null;
-	private static String f_name=null;
-	private static String l_name=null;
-	private static String profile_url=null;
-	private static String branch=null;
-	private static String section=null;
-	private static String year=null;
-	private static boolean back_pressed=false;
-	private static boolean in_settings=false;
-	private static boolean is_faculty=false;
+	private static String TAG = "in.siet.secure.sgi.LoginActivity";
+	private String user_id = null;
+	private String pwd = null;
+	// private static String f_name = null;
+	// private static String l_name = null;
+	// private static String profile_url = null;
+	// private static String branch = null;
+	// private static String section = null;
+	// private static String course = null;
+	// private static String year = null;
+	private User user = null;
+	private boolean back_pressed = false;
+	private boolean in_settings = false;
+	private boolean is_faculty = false;
 	private SharedPreferences spref;
+	Toolbar toolbar;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		spref=getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
 
-		if(spref.getBoolean(Constants.PreferenceKeys.logged_in, false)){
+		spref = getApplicationContext().getSharedPreferences(
+				Constants.pref_file_name, Context.MODE_PRIVATE);
+		/*
+		 * UPDATE THE SHARED PREF ABOUT THE CURRENT ACTIVITY
+		 * 
+		 * Utility.setCurrentActivity();
+		 */
+		if (spref.getBoolean(Constants.PREF_KEYS.logged_in, false)) {
 			startMainActivity();
 		}
 		setContentView(R.layout.activity_login);
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
-				.setTransitionStyle(R.anim.abc_fade_out)
-				.add(R.id.loginFrame, new FragmentSignin())
-				.commit();
+					.setTransitionStyle(R.anim.abc_fade_out)
+					.add(R.id.loginFrame, new FragmentSignin()).commit();
 		}
-		Log.d(TAG+" onCreate"," at End");
+		toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		Log.d(TAG + " onCreate", " at End");
 	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.login, menu);
-		//super.onCreateOptionsMenu(menu);
 		return true;
 	}
+
+	/**
+	 * Handle action bar item clicks here. The action bar will automatically
+	 * handle clicks on the Home/Up button, so long as you specify a parent
+	 * activity in AndroidManifest.xml.
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		
-		//handle drawer open/close clicks
-		back_pressed=false;
+		back_pressed = false;
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			Fragment fragment=new FragmentSettings();
-			getFragmentManager().beginTransaction()
-			.replace(R.id.loginFrame, fragment)
-			.addToBackStack(null)
-			.commit();
-			Utility.log(TAG,"changing frame");
-			in_settings=true;
+			Utility.startActivity(this, SettingActivity.class);
+			return true;
+		} else if (id == R.id.action_about) {
 			return true;
 		}
-		else if(id==R.id.action_about){
-			return true;
-		}
-		
+
 		return super.onOptionsItemSelected(item);
 	}
-	@Override
-	public void onBackPressed(){
-		if(in_settings){
-			getFragmentManager().popBackStack();
-			in_settings=false;
 
-		}
-		else{
-			if(!back_pressed){
-				back_pressed=true;
-				Utility.RaiseToast(getApplicationContext(), getString(R.string.exit_warning), true);
-			}
-			else{
+	@Override
+	public void onBackPressed() {
+		if (in_settings) {
+			getFragmentManager().popBackStack();
+			in_settings = false;
+
+		} else {
+			if (!back_pressed) {
+				back_pressed = true;
+				Utility.RaiseToast(getApplicationContext(),
+						getString(R.string.exit_warning), true);
+			} else {
 				super.onBackPressed();
 			}
 		}
 	}
+
 	@Override
-	public void onResume(){
+	public void onResume() {
 		super.onResume();
-		back_pressed=false;
+		back_pressed = false;
 	}
-	public void onClickButtonSignin(View view){
-		back_pressed=false;
-		if(Utility.isConnected(getApplicationContext())){
+
+	public void onClickButtonSignin(View view) {
+
+		back_pressed = false;
+		if (Utility.isConnected(getApplicationContext())) {
 			Utility.showProgressDialog(this);
 			InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS); 
-			Log.d(TAG+" onClick"," at start");
-			userid=((EditText)findViewById(R.id.editText_userid)).getText().toString().trim();
-			pwd=((EditText)findViewById(R.id.editText_userpassword)).getText().toString().trim();
-			if(verifyInput()){
+			inputMethodManager.hideSoftInputFromWindow(getCurrentFocus()
+					.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+			user_id = ((EditText) findViewById(R.id.editText_userid)).getText()
+					.toString().toUpperCase(Locale.US).trim();
+			pwd = ((EditText) findViewById(R.id.editText_userpassword))
+					.getText().toString().trim();
+			if (verifyInput()) {
+
+				is_faculty = ((RadioButton) findViewById(R.id.radioButton_faculty))
+						.isChecked();
+				String spwd = Utility.sha1(pwd);
+				RequestParams params = new RequestParams();
+				params.put(Constants.QueryParameters.USERNAME,
+						Utility.encode(user_id));
+				params.put(Constants.QueryParameters.PASSWORD,
+						Utility.encode(spwd));
+				params.put(Constants.QueryParameters.IS_FACULTY, is_faculty);
+
+				queryServer(params, true);
 				
-				if(((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked())
-					is_faculty=true;
-				else
-					is_faculty=false;
-				RequestParams params =new RequestParams();
-				params.put(Constants.QueryParameters.USERNAME,Utility.encode(userid));
-				params.put(Constants.QueryParameters.PASSWORD,Utility.encode(Utility.sha1(pwd)));
-				params.put(Constants.QueryParameters.IS_FACULTY,is_faculty);
-				
-				Log.d("username",Utility.encode(userid));
-				Log.d("Password",Utility.encode(Utility.sha1(pwd)));
-				queryServer(params,true);
-				Log.d(TAG+" onClick"," at end");
-			}
-			else{
+			} else {
 				clearInput();
 				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),"Input not correct! Retry",true);
+				Utility.RaiseToast(getApplicationContext(),
+						"Input not correct! Retry", true);
 			}
-		}else{
-			Utility.RaiseToast(getApplicationContext(), getString(R.string.no_internet), true);
+		} else {
+			Utility.RaiseToast(getApplicationContext(),
+					getString(R.string.no_internet), true);
 		}
 	}
 
-	public void startMainActivity(){
-		Intent intent=new Intent(this,MainActivity.class);
-		Utility.log(TAG,"stating new Activity");
-		intent.putExtra(Constants.PreferenceKeys.is_faculty,is_faculty);
+	public void startMainActivity() {
+		Intent intent = new Intent(this, MainActivity.class);
+		intent.putExtra(Constants.PREF_KEYS.is_faculty, is_faculty);
 		startActivity(intent);
 		finish();
 	}
-	public boolean verifyInput(){
-		if(userid!=null && userid.length()>0 && pwd!=null && pwd.length()>0 && (((RadioButton)findViewById(R.id.radioButton_student)).isChecked() || ((RadioButton)findViewById(R.id.radioButton_faculty)).isChecked()))
+
+	/**
+	 * verify that is the input is not null and at least one radio button is
+	 * checked
+	 * 
+	 * @return true or false depending on the validity of input data
+	 */
+	public boolean verifyInput() {
+		if (user_id != null
+				&& user_id.length() > 0
+				&& pwd != null
+				&& pwd.length() > 0
+				&& (((RadioButton) findViewById(R.id.radioButton_student))
+						.isChecked() || ((RadioButton) findViewById(R.id.radioButton_faculty))
+						.isChecked()))
 			return true;
 		return false;
 	}
-	public void clearInput(){
-		((TextView)findViewById(R.id.editText_userpassword)).setText(null);
+
+	/**
+	 * clears the input fields
+	 */
+	public void clearInput() {
+		((TextView) findViewById(R.id.editText_userpassword)).setText(null);
 	}
-	public void createdb(){
-		//get data from server
-		RequestParams params =new RequestParams();
-		params.put(Constants.QueryParameters.USERNAME, Utility.encode(spref.getString(Constants.PreferenceKeys.user_id, null)));
-		params.put(Constants.QueryParameters.TOKEN, Utility.encode(spref.getString(Constants.PreferenceKeys.token, null)));
+
+	public void createdb() {
+		// get data from server
+		RequestParams params = new RequestParams();
+		params.put(Constants.QueryParameters.USERNAME,
+				spref.getString(Constants.PREF_KEYS.encripted_user_id, null));
+		params.put(Constants.QueryParameters.TOKEN,
+				spref.getString(Constants.PREF_KEYS.token, null));
 		queryServer(params, false);
-	//	new DbHelper(getApplicationContext());
-	//	Utility.log(TAG,"donedb");
 	}
-	public void saveUser(String token){
-		SharedPreferences sharedPref= getApplicationContext().getSharedPreferences(Constants.pref_file_name,Context.MODE_PRIVATE);
-		String saved_user_id=sharedPref.getString(Constants.PreferenceKeys.user_id, null);
-		String saved_token=sharedPref.getString(Constants.PreferenceKeys.token, null);
-		if (saved_user_id==null || saved_token!=null){ // if detail doesnt exist
-			Editor editor=sharedPref.edit();
-			editor.putString(Constants.PreferenceKeys.user_id,userid);
-			editor.putString(Constants.PreferenceKeys.token,token);
-			editor.putString(Constants.PreferenceKeys.f_name,f_name);
-			editor.putString(Constants.PreferenceKeys.l_name,l_name);
-			editor.putString(Constants.PreferenceKeys.pic_url,profile_url);
-			if(is_faculty)
-				editor.putString(Constants.PreferenceKeys.branch,branch);
-			else {
-				editor.putString(Constants.PreferenceKeys.section,section);
-				editor.putString(Constants.PreferenceKeys.year,year);
+
+	/**
+	 * saving user details in preference file
+	 * 
+	 * @param token
+	 *            save token to query with server
+	 */
+	public void saveUser(String token) {
+
+		SharedPreferences sharedPref = getApplicationContext()
+				.getSharedPreferences(Constants.pref_file_name,
+						Context.MODE_PRIVATE);
+		String saved_user_id = sharedPref.getString(
+				Constants.PREF_KEYS.user_id, null);
+		String saved_token = sharedPref.getString(Constants.PREF_KEYS.token,
+				null);
+		// all data have been set in the calling function
+
+		if (saved_user_id == null || saved_token != null) { // if detail doesnt
+															// exist
+			Editor editor = sharedPref.edit();
+			editor.putString(Constants.PREF_KEYS.user_id, user.user_id);
+			editor.putString(Constants.PREF_KEYS.encripted_user_id,
+					Utility.encode(user.user_id));
+			editor.putString(Constants.PREF_KEYS.token, Utility.encode(token));
+			editor.putString(Constants.PREF_KEYS.f_name, user.f_name);
+			editor.putString(Constants.PREF_KEYS.l_name, user.l_name);
+			editor.putString(Constants.PREF_KEYS.pic_url, user.picUrl);
+			if (is_faculty) {
+				editor.putString(Constants.PREF_KEYS.branch,
+						((Faculty) user).branch);
+
+			} else {
+				Student s_user = (Student) user;
+				editor.putString(Constants.PREF_KEYS.section, s_user.section);
+				editor.putString(Constants.PREF_KEYS.year,
+						String.valueOf(s_user.year));
+
 			}
-			editor.putBoolean(Constants.PreferenceKeys.logged_in, true);
-			editor.putBoolean(Constants.PreferenceKeys.is_faculty,is_faculty);
+			editor.putBoolean(Constants.PREF_KEYS.logged_in, true);
+			editor.putBoolean(Constants.PREF_KEYS.is_faculty, is_faculty);
 			editor.commit();
 		}
 		createdb();
-	}
-	
-	public void queryServer(RequestParams params,boolean login){
-		Log.d(TAG+" queryServer"," at start");
-		AsyncHttpClient client = new AsyncHttpClient();
-		if(login){
-			client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/dologin",params ,new JsonHttpResponseHandler(){
-					@Override
-					public void onSuccess(int statusCode,Header[] headers,JSONObject response){ 
-						Log.d(TAG+" onSucess"," at start");
-						try {
-						//	Utility.hideProgressDialog();
-							
-							if(response.getString(Constants.JSONKeys.TAG).equalsIgnoreCase(Constants.JSONKeys.TAG_MSGS.LOGIN) && response.getBoolean(Constants.JSONKeys.STATUS)){
-							//	Toast.makeText(getApplicationContext(), "Login Sucessful", Toast.LENGTH_LONG).show();
-								f_name=response.getString(Constants.JSONKeys.FIRST_NAME);
-								l_name=response.getString(Constants.JSONKeys.LAST_NAME);
-								profile_url=response.getString(Constants.JSONKeys.PROFILE_IMAGE);
-								
-								if(is_faculty)
-									branch=response.getString(Constants.JSONKeys.BRANCH);
-								else{
-									section=response.getString(Constants.JSONKeys.SECTION);
-									year=response.getString(Constants.JSONKeys.YEAR);
-								}
-								saveUser(response.getString(Constants.JSONKeys.TOKEN));
-							//	startMainActivity(); //hide this line 
-							}
-							else{
-								Utility.hideProgressDialog();
-								Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_LONG).show();
-							}
-						} catch (JSONException e) {
-							Utility.log(TAG+" queryServer exception ",e.getLocalizedMessage());
-							
-						}
-					}
-					
-					@Override
-					public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONObject errorResponse){
-						
-						Utility.hideProgressDialog();
-						Utility.RaiseToast(getApplicationContext(), "Error Connectiong server", true);
-						Utility.log(TAG+" onFailure"," at start"+throwable.getMessage());
-					}
-					
-				
-				
-			});
-		}
-		else{
-			client.get("http://"+Constants.SERVER+Constants.COLON+Constants.PORT+"/SGI_webservice/login/getInitial",params ,new JsonHttpResponseHandler(){
-				@Override
-				public void onSuccess(int statusCode, Header[] headers,JSONArray response){
-					Utility.log(TAG,"in on Sucess");
-					try{
-						JSONArray tmparry=response.getJSONArray(0);
-						InitialData idata=new InitialData();
-						int x=tmparry.length();
-						InitialData.Courses c;
-						for(int i=0;i<x;i++){
-							c=new InitialData.Courses();
-							JSONObject obj=tmparry.getJSONObject(i);
-							c.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID);
-							c.duration=obj.getInt(DbStructure.COURSES.COLUMN_DURATION);
-							c.name=obj.getString(DbStructure.COURSES.COLUMN_NAME);
-							idata.courses.add(c);
-						}
-						tmparry=response.getJSONArray(1);
-						x=tmparry.length();
-						InitialData.Branches b;
-						for(int i=0;i<x;i++){
-							b=new InitialData.Branches();
-							JSONObject obj=tmparry.getJSONObject(i);
-							b.course_id=obj.getInt(DbStructure.BRANCHES.COLUMN_COURSE_ID);
-							b.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID);
-							b.name=obj.getString(DbStructure.BRANCHES.COLUMN_NAME);
-							idata.branches.add(b);
-						}
-						tmparry=response.getJSONArray(2);
-						x=tmparry.length();
-						InitialData.Sections s;
-						for(int i=0;i<x;i++){
-							s=new InitialData.Sections();
-							JSONObject obj=tmparry.getJSONObject(i);
-							s.year_id=obj.getInt(DbStructure.SECTIONS.COLUMN_YEAR_ID);
-							s.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID); 
-							s.name=obj.getString(DbStructure.SECTIONS.COLUMN_NAME);
-							idata.sections.add(s);
-						}
-						tmparry=response.getJSONArray(3);
-						x=tmparry.length();
-						InitialData.Year y;
-						for(int i=0;i<x;i++){
-							y=new InitialData.Year();
-							JSONObject obj=tmparry.getJSONObject(i);
-							y.branch_id=obj.getInt(DbStructure.YEAR.COLUMN_BRANCH_ID);
-							y.id=obj.getInt(DbStructure.COLUMN_INCOMMING_ID); 
-							y.year=obj.getInt(DbStructure.YEAR.COLUMN_YEAR);
-							idata.years.add(y);
-						}
-						Utility.log(TAG,"data building sucessfull");
-					(new DbHelper(getApplicationContext())).addInitialData(idata,userid);
-					startMainActivity();
-					}catch(Exception e){
-						Utility.log(TAG,e.getMessage());
-						Utility.RaiseToast(getApplicationContext(), "Fail to process data. Try Again!", false);
-					}
-					finally{
-						Utility.hideProgressDialog();
+		new DbHelper(getApplicationContext()).getAndAddUser(user, !is_faculty);
+		// save user in db also
 
-					}
-				}
-				
-				@Override
-				public void onFailure(int statusCode,Header[] headers,Throwable throwable,JSONArray errorResponse){
-					Utility.RaiseToast(getApplicationContext(), "Fail to receive data. Try Again!", false);
-					Utility.hideProgressDialog();
-				}
-			});
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param params
+	 * @param dologin
+	 *            either you want to login or you want to get initial data
+	 */
+	public void queryServer(RequestParams params, boolean dologin) {
+		
+		AsyncHttpClient client = new AsyncHttpClient();
+		if (dologin) {
+			client.get(Utility.getBaseURL() + "login/dologin", params,
+					new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								JSONObject response) {
+							
+							try {
+								// Utility.hideProgressDialog();
+
+								if (response
+										.getString(Constants.JSONKEYS.TAG)
+										.equalsIgnoreCase(
+												Constants.JSONKEYS.TAG_MSGS.LOGIN)
+										&& response
+												.getBoolean(Constants.JSONKEYS.STATUS)) {
+									// we can get course from branch
+									if (is_faculty) {
+										FacultyFull f_user = new FacultyFull();
+										user = f_user;
+
+										f_user.branch = response
+												.getString(Constants.JSONKEYS.BRANCH);
+										if (response
+												.has(Constants.JSONKEYS.STREET))
+											f_user.street = response
+													.getString(Constants.JSONKEYS.STREET);
+										if (response
+												.has(Constants.JSONKEYS.CITY))
+
+											f_user.city = response
+													.getString(Constants.JSONKEYS.CITY);
+										if (response
+												.has(Constants.JSONKEYS.STATE))
+
+											f_user.state = response
+													.getString(Constants.JSONKEYS.STATE);
+										if (response
+												.has(Constants.JSONKEYS.P_MOB))
+
+											f_user.p_mob = response
+													.getString(Constants.JSONKEYS.P_MOB);
+										if (response
+												.has(Constants.JSONKEYS.H_MOB))
+
+											f_user.h_mob = response
+													.getString(Constants.JSONKEYS.H_MOB);
+										if (response
+												.has(Constants.JSONKEYS.PIN))
+
+											f_user.pin = response
+													.getString(Constants.JSONKEYS.PIN);
+
+									} else {
+										StudentFull s_user = new StudentFull();
+										user = s_user;
+										s_user.section = response
+												.getString(Constants.JSONKEYS.SECTION);
+										s_user.year = Integer.parseInt(response
+												.getString(Constants.JSONKEYS.YEAR));
+										s_user.u_roll_no = response
+												.getString(Constants.JSONKEYS.ROLL_NO);
+									}
+									user.user_id = user_id;
+									user.f_name = response
+											.getString(Constants.JSONKEYS.FIRST_NAME);
+									user.l_name = response
+											.getString(Constants.JSONKEYS.LAST_NAME);
+									user.picUrl = response
+											.getString(Constants.JSONKEYS.PROFILE_IMAGE);
+
+									saveUser(response
+											.getString(Constants.JSONKEYS.TOKEN));
+									// startMainActivity(); //hide this line
+								} else {
+
+									Toast.makeText(getApplicationContext(),
+											"Login Failed", Toast.LENGTH_LONG)
+											.show();
+								}
+							} catch (JSONException e) {
+								Utility.log(TAG + " queryServer exception ",
+										e.getLocalizedMessage());
+							} finally {
+								Utility.hideProgressDialog();
+							}
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONObject errorResponse) {
+
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"Error Connectiong server", true);
+							Utility.log(TAG + " onFailure", " at start"
+									+ throwable.getMessage());
+						}
+
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								JSONArray response) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onSucess", " at start"
+									+ response);
+
+						}
+
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								String responseString) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onSucess", " at start"
+									+ responseString);
+
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onFailure", " at start"
+									+ throwable.getMessage());
+
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onFailure", " at start"
+									+ throwable.getMessage());
+						}
+
+					});
+		} else {
+			client.get(Utility.getBaseURL() + "login/getInitial", params,
+					new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								JSONArray response) {
+							Utility.log(TAG, "in on Sucess");
+							try {
+								JSONArray tmparry = response.getJSONArray(0);
+								InitialData idata = new InitialData();
+								int x = tmparry.length();
+								InitialData.Courses c;
+								for (int i = 0; i < x; i++) {
+									c = new InitialData.Courses();
+									JSONObject obj = tmparry.getJSONObject(i);
+									c.id = obj
+											.getInt(DbStructure.COLUMN_INCOMMING_ID);
+									c.duration = obj
+											.getInt(DbStructure.Courses.COLUMN_DURATION);
+									c.name = obj
+											.getString(DbStructure.Courses.COLUMN_NAME);
+									idata.courses.add(c);
+								}
+								tmparry = response.getJSONArray(1);
+								x = tmparry.length();
+								InitialData.Branches b;
+								for (int i = 0; i < x; i++) {
+									b = new InitialData.Branches();
+									JSONObject obj = tmparry.getJSONObject(i);
+									b.course_id = obj
+											.getInt(DbStructure.Branches.COLUMN_COURSE_ID);
+									b.id = obj
+											.getInt(DbStructure.COLUMN_INCOMMING_ID);
+									b.name = obj
+											.getString(DbStructure.Branches.COLUMN_NAME);
+									idata.branches.add(b);
+								}
+								tmparry = response.getJSONArray(2);
+								x = tmparry.length();
+								InitialData.Sections s;
+								for (int i = 0; i < x; i++) {
+									s = new InitialData.Sections();
+									JSONObject obj = tmparry.getJSONObject(i);
+									s.year_id = obj
+											.getInt(DbStructure.Sections.COLUMN_YEAR_ID);
+									s.id = obj
+											.getInt(DbStructure.COLUMN_INCOMMING_ID);
+									s.name = obj
+											.getString(DbStructure.Sections.COLUMN_NAME);
+									idata.sections.add(s);
+								}
+								tmparry = response.getJSONArray(3);
+								x = tmparry.length();
+								InitialData.Year y;
+								for (int i = 0; i < x; i++) {
+									y = new InitialData.Year();
+									JSONObject obj = tmparry.getJSONObject(i);
+									y.branch_id = obj
+											.getInt(DbStructure.Year.COLUMN_BRANCH_ID);
+									y.id = obj
+											.getInt(DbStructure.COLUMN_INCOMMING_ID);
+									y.year = obj
+											.getInt(DbStructure.Year.COLUMN_YEAR);
+									idata.years.add(y);
+								}
+								Utility.log(TAG, "data building sucessfull");
+								(new DbHelper(getApplicationContext()))
+										.addInitialData(idata, user.user_id);
+								startMainActivity();
+							} catch (Exception e) {
+								Utility.log(TAG, e.getMessage());
+								Utility.RaiseToast(getApplicationContext(),
+										"Fail to process data. Try Again!",
+										false);
+								// reset db
+							} finally {
+								Utility.hideProgressDialog();
+							}
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.RaiseToast(getApplicationContext(),
+									"Fail to receive data. Try Again!", false);
+							Utility.hideProgressDialog();
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onFailure", " at start"
+									+ throwable.getMessage());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONObject errorResponse) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onFailure", " at start"
+									+ throwable.getMessage());
+						}
+
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								JSONObject response) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onSucess", " at start"
+									+ response);
+						}
+
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								String responseString) {
+							Utility.hideProgressDialog();
+							Utility.RaiseToast(getApplicationContext(),
+									"server responce not as expected", true);
+							Utility.log(TAG + " onSucess", " at start"
+									+ responseString);
+						}
+					});
 		}
-		Utility.log(TAG+" queryServer"," at end");
 	}
 }

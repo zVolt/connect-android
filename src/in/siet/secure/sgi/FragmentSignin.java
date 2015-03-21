@@ -29,8 +29,7 @@ public class FragmentSignin extends Fragment {
 		@Override
 		public void onResume(){
 			super.onResume();
-			((ActionBarActivity)getActivity()).getActionBar().setTitle(R.string.app_name);
-			((ActionBarActivity)getActivity()).getActionBar().setLogo(getResources().getDrawable(R.drawable.ic_launcher__lite_white));
+			((ActionBarActivity)getActivity()).getSupportActionBar().setTitle(R.string.app_name);
 		}
 		
 		

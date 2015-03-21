@@ -2,27 +2,42 @@
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppBaseTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    <style name="AppTheme" parent="AppTheme.Base" />
+
+    <style name="MyActionBarTheme" parent="AppTheme.Base">
+        <item name="android:textColorPrimary">@color/abc_primary_text_material_dark</item>
+        <item name="actionMenuTextColor">@color/abc_primary_text_material_dark</item>
+        <item name="android:textColorSecondary">@color/abc_secondary_text_material_dark</item>
     </style>
 
     <style name="ActivityStyle" parent="AppBaseTheme">
         <item name="android:background">@color/gray13</item>
     </style>
+
     <style name="CardStyle" parent="AppBaseTheme">
         <item name="android:layout_margin">8dp</item>
         <item name="android:padding">5dp</item>
         <item name="android:background">@drawable/round_corners</item>
     </style>
+    <!-- Nav drawer style to set width specified by Material Design specification -->
+    <style name="NavDrawer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_marginRight">@dimen/nav_drawer_margin_offset</item>
+    </style>
+
 </resources>
