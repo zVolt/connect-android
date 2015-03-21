@@ -277,7 +277,8 @@ public class BackgroundService extends Service {
 							c.getString(6));
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ID,
 							c.getInt(7));
-					notification.put(Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
+					notification.put(
+							Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
 							c.getInt(8));
 					notifications.put(notification);
 				} catch (Exception e) {
@@ -447,42 +448,50 @@ public class BackgroundService extends Service {
 
 								JSONArray ids_to_get = getNewSenders(response);
 								// hit server synchronously :P
-								try {
-									HttpEntity entity = null;
-									StringBuilder strb = new StringBuilder();
-									Utility.putCredentials(strb, spref);
-									strb.append(ids_to_get);
-									entity = new StringEntity(strb.toString());
-									SyncHttpClient client = new SyncHttpClient();
-									client.addHeader("Content-Type",
-											"application/json");
-									client.post(
-											getApplicationContext(),
-											Utility.getBaseURL()
-													+ "query/get_full_user_info",
-											entity, null,
-											new JsonHttpResponseHandler() {
-												public void onSuccess(
-														int statusCode,
-														Header[] headers,
-														JSONObject response) {
-													Utility.log(TAG,
-															"sucess get ids of new user \n"
-																	+ response);
-													// got the data now insert
-													// it into database and you
-													// will be free
-													new DbHelper(
-															getApplicationContext())
-															.insertUser(response);
+								// hiting only if new senders are there
+								if (ids_to_get.length() > 0) {
+									try {
+										HttpEntity entity = null;
+										StringBuilder strb = new StringBuilder();
+										Utility.putCredentials(strb, spref);
+										strb.append(ids_to_get);
+										entity = new StringEntity(strb
+												.toString());
+										SyncHttpClient client = new SyncHttpClient();
+										client.addHeader("Content-Type",
+												"application/json");
+										client.post(
+												getApplicationContext(),
+												Utility.getBaseURL()
+														+ "query/get_full_user_info",
+												entity, null,
+												new JsonHttpResponseHandler() {
+													public void onSuccess(
+															int statusCode,
+															Header[] headers,
+															JSONObject response) {
+														Utility.log(
+																TAG,
+																"sucess get ids of new user \n"
+																		+ response);
+														// got the data now
+														// insert
+														// it into database and
+														// you
+														// will be free
+														new DbHelper(
+																getApplicationContext())
+																.insertUser(response);
 
-												};
-											});
+													};
+												});
 
-								} catch (UnsupportedEncodingException e) {
-									Utility.DEBUG(e);
+									} catch (UnsupportedEncodingException e) {
+										Utility.DEBUG(e);
+									}
+
+									Utility.log(TAG, "line afeter server hit");
 								}
-								Utility.log(TAG, "line afeter server hit");
 								DbHelper db = new DbHelper(
 										getApplicationContext());
 								if (response
@@ -520,7 +529,8 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers, responseString, throwable);
+							super.onFailure(statusCode, headers,
+									responseString, throwable);
 						}
 
 						@Override
@@ -530,7 +540,8 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers, throwable, errorResponse);
+							super.onFailure(statusCode, headers, throwable,
+									errorResponse);
 						}
 
 						@Override
@@ -540,7 +551,8 @@ public class BackgroundService extends Service {
 									TAG,
 									"on failure sync "
 											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers, throwable, errorResponse);
+							super.onFailure(statusCode, headers, throwable,
+									errorResponse);
 						}
 						// override all sucess and failure methods
 					});
