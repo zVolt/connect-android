@@ -64,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
 			ImageLoader.getInstance().init(config);
 			UNI_IMG_LOADER_SET = true;
 		}
-		
+
 		if (ACTIVE_FRAGMENT_TAG == null) {
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
 		}
@@ -372,8 +372,6 @@ public class MainActivity extends ActionBarActivity {
 
 	}
 
-	
-
 	@Override
 	protected void onDestroy() {
 		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
@@ -384,5 +382,4 @@ public class MainActivity extends ActionBarActivity {
 		super.onDestroy();
 	}
 
-	
 }
