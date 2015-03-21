@@ -1,13 +1,8 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.Util.FilterOptions;
-import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
-
-import java.util.Calendar;
-
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -377,94 +372,7 @@ public class MainActivity extends ActionBarActivity {
 
 	}
 
-	/**
-	 * Creates a new Notification from data provided, Insert it in database and
-	 * send it to server.
-	 * 
-	 * sending part should be moved to server
-	 * 
-	 * @param view
-	 *            View on which the action is performed (ImageButton in this
-	 *            case)
-	 */
-	public void sendNewNotification(View view) {
-		FragmentNewNotification.ViewHolder holder = (FragmentNewNotification.ViewHolder) (view
-				.getTag());
-		if (holder != null && verifyNewNotificationData(holder)) {
-
-			int year;
-			// data copied in case use change it suddenly
-			String course = FilterOptions.COURSE;
-			String branch = FilterOptions.BRANCH;
-			String section = FilterOptions.SECTION;
-			String subject, body;
-			year = FilterOptions.YEAR;
-			// fid string pk of user
-			int pk_user = new DbHelper(getApplicationContext()).getUserPk(spf
-					.getString(Constants.PREF_KEYS.user_id, null));
-
-			long time = Calendar.getInstance().getTimeInMillis();
-			subject = holder.subject.getText().toString();
-			body = holder.body.getText().toString();
-			Notification new_noti = new Notification(subject, body, time,
-					pk_user, course, branch, section, year);
-			// state if filled by db class
-			new DbHelper(getApplicationContext())
-					.insertNewNotification(new_noti);
-
-			holder.subject.getText().clear();
-			holder.body.getText().clear();
-			/*
-			 * // sending to server AsyncHttpClient client = new
-			 * AsyncHttpClient(); RequestParams params = new RequestParams();
-			 * Utility.putCredentials(params, spf);
-			 * params.put(Constants.QueryParameters.SECTION, section);
-			 * params.put(Constants.QueryParameters.COURSE, course);
-			 * params.put(Constants.QueryParameters.YEAR, year);
-			 * params.put(Constants.QueryParameters.BRANCH, branch);
-			 * params.put(Constants.QueryParameters.Notification.TIME, time);
-			 * params.put(Constants.QueryParameters.Notification.BODY, body);
-			 * params.put(Constants.QueryParameters.Notification.SUBJECT,
-			 * subject); client.get(Utility.getBaseURL() +
-			 * "query/set_new_notification", params, new
-			 * JsonHttpResponseHandler() {
-			 * 
-			 * @Override public void onSuccess(int statusCode, Header[] headers,
-			 * JSONArray response) { // TODO Auto-generated method stub
-			 * super.onSuccess(statusCode, headers, response); }
-			 * 
-			 * @Override public void onSuccess(int statusCode, Header[] headers,
-			 * JSONObject response) { Utility.log(TAG, "got responce " +
-			 * response);
-			 * 
-			 * }
-			 * 
-			 * @Override public void onSuccess(int statusCode, Header[] headers,
-			 * String responseString) { // TODO Auto-generated method stub
-			 * super.onSuccess(statusCode, headers, responseString); }
-			 * 
-			 * @Override public void onFailure(int statusCode, Header[] headers,
-			 * String responseString, Throwable throwable) { // TODO
-			 * Auto-generated method stub super.onFailure(statusCode, headers,
-			 * responseString, throwable); }
-			 * 
-			 * @Override public void onFailure(int statusCode, Header[] headers,
-			 * Throwable throwable, JSONArray errorResponse) { // TODO
-			 * Auto-generated method stub super.onFailure(statusCode, headers,
-			 * throwable, errorResponse); }
-			 * 
-			 * @Override public void onFailure(int statusCode, Header[] headers,
-			 * Throwable throwable, JSONObject errorResponse) { // TODO
-			 * Auto-generated method stub super.onFailure(statusCode, headers,
-			 * throwable, errorResponse); } });
-			 */
-			Utility.RaiseToast(getApplicationContext(), "send new message",
-					false);
-		} else {
-			Utility.RaiseToast(getApplicationContext(),
-					"cannot create notification", false);
-		}
-	}
+	
 
 	@Override
 	protected void onDestroy() {
@@ -472,17 +380,9 @@ public class MainActivity extends ActionBarActivity {
 		Intent intent = new Intent(this, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
 		alarmmanager.cancel(pi);
-
 		Utility.log(TAG, "destroyed");
 		super.onDestroy();
 	}
 
-	private boolean verifyNewNotificationData(
-			FragmentNewNotification.ViewHolder holder) {
-		String subject = holder.subject.getText().toString().trim();
-		String body = holder.body.getText().toString().trim();
-		return !(subject == null || body == null || subject.length() == 0 || body
-				.length() == 0);
-
-	}
+	
 }

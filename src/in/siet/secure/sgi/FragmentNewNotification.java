@@ -1,11 +1,21 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Utility;
+import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbHelper;
+
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -15,14 +25,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class FragmentNewNotification extends Fragment implements
 		OnClickListener {
 	public static final String TAG = "in.siet.secure.sgi.FragmentNewNotification";
-	private LinearLayout attachment_layout;
-	private ArrayList<String> file_list;
+	private LinearLayout container_layout;
+	private ArrayList<File> file_list;
+	private SharedPreferences spf;
+	private EditText subject, body;
 
 	public FragmentNewNotification() {
 	}
@@ -30,22 +43,24 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-
+		spf = getActivity().getSharedPreferences(Constants.pref_file_name,
+				Context.MODE_PRIVATE);
 		View rootView = inflater.inflate(R.layout.fragment_new_notification,
 				container, false);
-		ViewHolder holder = new ViewHolder();
-		holder.subject = (EditText) rootView
+		// ViewHolder holder = new ViewHolder();
+		subject = (EditText) rootView
 				.findViewById(R.id.editTextNewNoticeSubject);
-		holder.body = (EditText) rootView
-				.findViewById(R.id.editTextNewNoticeBody);
-		ImageButton send = (ImageButton) rootView
-				.findViewById(R.id.buttonSendNotice);
-		send.setTag(holder);
-		file_list = new ArrayList<String>();
-		attachment_layout = (LinearLayout) rootView
-				.findViewById(R.id.linearLayoutAttachmetns);
+		body = (EditText) rootView.findViewById(R.id.editTextNewNoticeBody);
+
+		// send.setTag(holder);
+		file_list = new ArrayList<File>();
+		container_layout = (LinearLayout) rootView
+				.findViewById(R.id.linearLayoutContainer);
 
 		((Button) rootView.findViewById(R.id.buttonFileSelector))
+				.setOnClickListener(this);
+
+		((ImageButton) rootView.findViewById(R.id.buttonSendNotice))
 				.setOnClickListener(this);
 		return rootView;
 	}
@@ -65,9 +80,9 @@ public class FragmentNewNotification extends Fragment implements
 		super.onResume();
 	}
 
-	public static class ViewHolder {
-		public EditText subject;
-		public EditText body;
+	private static class ViewHolder {
+		public int index;
+		public View rootView;
 	}
 
 	@Override
@@ -75,6 +90,13 @@ public class FragmentNewNotification extends Fragment implements
 		switch (v.getId()) {
 		case R.id.buttonFileSelector:
 			selectFiles();
+			break;
+		case R.id.buttonSendNotice:
+			sendNewNotification(v);
+			break;
+		case R.id.imageButtonAttachmentAction:
+			removeFile(v);
+			break;
 		}
 
 	}
@@ -88,14 +110,131 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public void onActivityResult(int request, int result, Intent data) {
 		if (request == 1 && result == Activity.RESULT_OK) {
+			File file = new File(data.getData().getPath());
+
 			LayoutInflater inflater = (LayoutInflater) getActivity()
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View child = inflater.inflate(R.layout.notification_attachements,
-					attachment_layout, false);
+					container_layout, false);
+
 			((TextView) child.findViewById(R.id.textViewNotiFileName))
 					.setText(data.getData().getPath());
-			attachment_layout.addView(child);
-			file_list.add(data.getData().getPath());
+
+			((TextView) child.findViewById(R.id.textViewNotiFileDetail))
+					.setText(getSize(file.length()));
+
+			((ImageView) child.findViewById(R.id.imageViewState))
+					.setImageResource(R.drawable.ic_file_upload);
+
+			ImageView action_button = ((ImageView) child
+					.findViewById(R.id.imageButtonAttachmentAction));
+			ViewHolder holder = new ViewHolder();
+			/**
+			 * new index of inserting child
+			 */
+			holder.index = file_list.size();
+			holder.rootView = child;
+			action_button.setImageResource(R.drawable.ic_cancel);
+			action_button.setTag(holder);
+			action_button.setOnClickListener(this);
+			/**
+			 * set state image and action image set view holder with each action
+			 * button so that actions can be performed upon clicking them
+			 */
+			container_layout.addView(child);
+			file_list.add(file);
 		}
+	}
+
+	private String getSize(float bytes) {
+		String res = " Bytes";
+		if (bytes >= 1000) {
+			bytes /= 1000; // KB
+			res = " KB";
+			if (bytes >= 1000) {
+				bytes /= 1000; // MB
+				res = " MB";
+				if (bytes >= 1000) {
+					bytes /= 1000;// GB
+					res = " GB";
+				}
+			}
+		}
+		DecimalFormat format = new DecimalFormat(".##");
+		return String.valueOf(format.format(bytes)) + res;
+	}
+
+	private void removeFile(View view) {
+		ViewHolder holder = (ViewHolder) view.getTag();
+
+		int indx = holder.index;
+		file_list.remove(indx);
+		/**
+		 * 3 view are fixed already in the linear layout see layout xml
+		 * 
+		 */
+		indx += 3;
+		container_layout.removeView(holder.rootView);
+		/**
+		 * modify all view holder index to match with new index after removing
+		 * the file_list item
+		 */
+		View tmp_child = container_layout.getChildAt(indx);
+		while (tmp_child != null) {
+			((ViewHolder) tmp_child.findViewById(
+					R.id.imageButtonAttachmentAction).getTag()).index -= 1;
+			indx += 1;
+			tmp_child = container_layout.getChildAt(indx);
+		}
+	}
+
+	/**
+	 * Creates a new Notification from data provided, Insert it in database and
+	 * send it to server.
+	 * 
+	 * sending part should be moved to server
+	 * 
+	 * @param view
+	 *            View on which the action is performed (ImageButton in this
+	 *            case)
+	 */
+	public void sendNewNotification(View view) {
+
+		if (verifyNewNotificationData()) {
+
+			int year;
+			// data copied in case use change it suddenly
+			String course = FilterOptions.COURSE;
+			String branch = FilterOptions.BRANCH;
+			String section = FilterOptions.SECTION;
+			String subject_txt, body_txt;
+			year = FilterOptions.YEAR;
+			// fid string pk of user
+			DbHelper db = new DbHelper(getActivity().getApplicationContext());
+			int pk_user = db.getUserPk(spf.getString(
+					Constants.PREF_KEYS.user_id, null));
+
+			long time = Calendar.getInstance().getTimeInMillis();
+			subject_txt = subject.getText().toString();
+			body_txt = body.getText().toString();
+			Notification new_noti = new Notification(subject_txt, body_txt,
+					time, pk_user, course, branch, section, year);
+			// state if filled by db class
+			db.insertNewNotification(new_noti);
+
+			subject.getText().clear();
+			body.getText().clear();
+			Utility.RaiseToast(getActivity(), "send new message", false);
+		} else {
+			Utility.RaiseToast(getActivity(), "cannot create notification",
+					false);
+		}
+	}
+
+	private boolean verifyNewNotificationData() {
+		String subject_txt = subject.getText().toString().trim();
+		String body_txt = body.getText().toString().trim();
+		return !(subject_txt.length() == 0 || body_txt.length() == 0);
+
 	}
 }
