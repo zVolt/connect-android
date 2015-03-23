@@ -37,6 +37,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static SQLiteDatabase db;
 	public static Context context;
 	public static SharedPreferences spf;
+	private Intent intent;
 
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
@@ -652,6 +653,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					Utility.log(TAG, query.toString());
 					db.update(DbStructure.MessageTable.TABLE_NAME, value,
 							query.toString(), args);
+					// send broadcast to update message list
 				}
 			}
 			// for notifications
@@ -676,6 +678,11 @@ public class DbHelper extends SQLiteOpenHelper {
 					Utility.log(TAG, query.toString());
 					db.update(DbStructure.NotificationTable.TABLE_NAME, value,
 							query.toString(), args);
+					// send broadcast to update notification list
+					intent = new Intent(
+							Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
+					LocalBroadcastManager.getInstance(context).sendBroadcast(
+							intent);
 				}
 			}
 			Utility.log(TAG, "done ack");
@@ -717,9 +724,10 @@ public class DbHelper extends SQLiteOpenHelper {
 					Constants.STATE.PENDING);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
+			values.put(DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+					n.for_faculty);
 			noti_id = db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
 					values);
-
 			// insert files into db here
 			/**
 			 * 1. pick pk from line above (notification_id for files) 2. insert
