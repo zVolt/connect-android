@@ -38,6 +38,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static Context context;
 	public static SharedPreferences spf;
 	private Intent intent;
+
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
 		context = contxt;
@@ -678,7 +679,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					db.update(DbStructure.NotificationTable.TABLE_NAME, value,
 							query.toString(), args);
 					// send broadcast to update notification list
-					intent= new Intent(
+					intent = new Intent(
 							Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 					LocalBroadcastManager.getInstance(context).sendBroadcast(
 							intent);
@@ -722,6 +723,8 @@ public class DbHelper extends SQLiteOpenHelper {
 					Constants.STATE.PENDING);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
+			values.put(DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+					n.for_faculty);
 			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
 
 			// insert files into db here
