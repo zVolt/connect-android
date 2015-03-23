@@ -112,7 +112,6 @@ public class FragmentNewNotification extends Fragment implements
 		if (request == 1 && result == Activity.RESULT_OK) {
 
 			File file = new File(data.getData().getPath());
-
 			Attachment tmp_atc = new Attachment(file.getName(),
 					file.getAbsolutePath(), file.length());
 			LayoutInflater inflater = (LayoutInflater) getActivity()
@@ -206,7 +205,7 @@ public class FragmentNewNotification extends Fragment implements
 			body_txt = body.getText().toString();
 			Notification new_noti = new Notification(for_faculty, subject_txt,
 					body_txt, time, pk_user, course, branch, section, year,
-					file_list);
+					file_list); 
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
 

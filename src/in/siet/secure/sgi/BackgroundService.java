@@ -5,6 +5,10 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.http.Header;
@@ -251,7 +255,12 @@ public class BackgroundService extends Service {
 	private JSONArray getPendingNotifications() {
 		JSONArray notifications = new JSONArray();
 		JSONObject notification;
-
+		JSONArray attachments = new JSONArray();
+		JSONObject attachment;
+		Cursor c_attachment;
+		File file;
+		
+		
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String[] args = { String.valueOf(Constants.STATE.PENDING),
@@ -260,7 +269,7 @@ public class BackgroundService extends Service {
 		if (c.moveToFirst()) {
 			while (!c.isAfterLast()) {
 				try {
-					notification = new JSONObject();
+					notification = new JSONObject(); // ye wala konsa hai
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.TEXT,
 							c.getString(0));
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.SUBJECT,
@@ -280,6 +289,36 @@ public class BackgroundService extends Service {
 					notification.put(
 							Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
 							c.getInt(8));
+
+					query = "select f.name,f.url,f.size from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
+							+ c.getInt(7) + "'";
+					Utility.log(TAG,query);
+					c_attachment = db.rawQuery(query, null);
+					if (c_attachment.moveToFirst()) {
+						while (!c_attachment.isAfterLast()) {
+							try{
+							attachment = new JSONObject();
+							attachment.put(Constants.JSONKEYS.FILES.NAME,
+									c_attachment.getString(0));							
+							attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME,
+									c.getLong(2));
+							/**
+							 * put some mechanism to retry sending file in case of failure
+							 */
+							Utility.log(TAG,c_attachment.getString(0));
+							sendfile(c_attachment.getString(0),
+									new FileInputStream(c_attachment.getString(1)));
+							attachments.put(attachment);
+							}catch (Exception e) {
+								Utility.DEBUG(e);
+							}
+							c_attachment.moveToNext();
+						}c_attachment.close();
+					}
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
+							attachments);
+					// yaha pe code karna sayad teko thik hmm..likha rhne do
+					// ye.. :P
 					notifications.put(notification);
 				} catch (Exception e) {
 					Utility.DEBUG(e);
@@ -288,11 +327,33 @@ public class BackgroundService extends Service {
 			}
 			c.close();
 		}
-
 		return notifications;
-
 	}
 
+	public void sendfile(String filename, InputStream inputstream) {
+		Utility.log(TAG,filename);
+		RequestParams params = new RequestParams();							
+		params.put(Constants.QueryParameters.INPUT_STREAM,inputstream);
+		params.put(Constants.QueryParameters.FILE_NAME, filename);
+		AsyncHttpClient client=new AsyncHttpClient();
+		client.addHeader("Content-Type", "application/json");
+		client.post(getApplicationContext(),Utility.getBaseURL()+"query/download_file", params,
+				new JsonHttpResponseHandler(){
+			@Override
+			public void onSuccess(int statusCode, Header[] headers,
+					JSONObject response){
+				Utility.log(TAG,"file uploaded successfully!");				
+			}
+			@Override
+			public void onFailure(int statusCode, Header[] headers,
+					Throwable throwable,JSONObject response){
+				Utility.log(TAG,"in failure");
+			}
+			// override all failure methods
+			
+		});
+	}
+	
 	private JSONArray getPendingMessages() {
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";

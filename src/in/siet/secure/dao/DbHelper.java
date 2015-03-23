@@ -695,10 +695,11 @@ public class DbHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected Void doInBackground(Notification... params) {
-			long target_id;
+			long target_id, noti_id, file_id;
 			ContentValues values = new ContentValues();
 			Notification n = params[0];
-
+			Attachment files;
+			int len;
 			// insert user mapper entry
 			values.clear();
 			values.put(DbStructure.UserMapper.COLUMN_COURSE, n.course);
@@ -716,10 +717,44 @@ public class DbHelper extends SQLiteOpenHelper {
 					Constants.STATE.PENDING);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
-			db.insert(DbStructure.NotificationTable.TABLE_NAME, null, values);
+			noti_id = db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
+					values);
 
 			// insert files into db here
+			/**
+			 * 1. pick pk from line above (notification_id for files) 2. insert
+			 * new files to files table arraylist of files can be obtained from
+			 * n.files :P ullu billui 3. insert name,url,state(check
+			 * Constants.STATE docs for refrence),size 4. exit from here :D
+			 */
 
+			values.clear();
+			len = n.files.size();
+			Utility.log(TAG,""+len);
+			
+			for (int i = 0; i < len; i++) {
+				files = n.files.get(i);
+				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
+				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
+				values.put(DbStructure.FileTable.COLUMN_STATE, files.state);
+				values.put(DbStructure.FileTable.COLUMN_SENDER, n.sid);
+				values.put(DbStructure.FileTable.COLUMN_SIZE, files.size);
+				Utility.log(TAG, files.url);
+				Utility.log(TAG, files.name);
+				Utility.log(TAG, ""+n.sid);
+				Utility.log(TAG, ""+files.size);
+				file_id = db.insert(DbStructure.FileTable.TABLE_NAME, null,
+						values);
+
+				values.clear();
+				values.put(
+						DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID,
+						noti_id);
+				values.put(DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
+						file_id);
+				db.insert(DbStructure.FileNotificationMapTable.TABLE_NAME,
+						null, values);
+			}
 			return null;
 		}
 	}

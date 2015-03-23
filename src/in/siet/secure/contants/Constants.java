@@ -98,12 +98,17 @@ public interface Constants {
 		String MSGIDS = "message_ids";
 		String MESSAGES = "messages";
 		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
-
+		String FILE_NAME = "file_name";
+		String INPUT_STREAM = "input_stream";
+		
 		public interface Notification {
 			String SUBJECT = "subject";
 			String BODY = "body";
 			String TIME = "time";
 		}
+		
+		
+		
 
 	}
 
@@ -233,6 +238,11 @@ public interface Constants {
 			String SECTION = "Section";
 			String ACK = "Noti_ack";
 			String FOR_FACULTY = "For_Faculty";
+			String ATTACHMENTS = "attachments";
+		}
+		public static interface FILES {
+			String NAME = "name";
+		 
 		}
 	}
 
