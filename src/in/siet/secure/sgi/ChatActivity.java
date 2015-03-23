@@ -181,41 +181,6 @@ public class ChatActivity extends ActionBarActivity {
 			msg_id = db.insert(DbStructure.MessageTable.TABLE_NAME, null,
 					values);
 			updateCursor();
-
-			/*
-			 * // send to server RequestParams params = new RequestParams();
-			 * Utility.putCredentials(params, spref); JSONObject mobj = new
-			 * JSONObject(); try { mobj.put(Constants.JSONMEssageKeys.SENDER,
-			 * sender_lid); mobj.put(Constants.JSONMEssageKeys.TEXT, msgtxt);
-			 * mobj.put(Constants.JSONMEssageKeys.TIME, Calendar.getInstance()
-			 * .getTimeInMillis()); mobj.put(Constants.JSONMEssageKeys.RECEIVER,
-			 * receiver_lid); } catch (JSONException e) { Utility.log(TAG, "" +
-			 * e.getMessage()); } params.put(Constants.QueryParameters.MESSAGES,
-			 * mobj);
-			 * 
-			 * AsyncHttpClient client = new AsyncHttpClient();
-			 * client.get(Utility.getBaseURL() + "query/upload_message", params,
-			 * new JsonHttpResponseHandler() {
-			 * 
-			 * @Override public void onSuccess(int statusCode, Header[] headers,
-			 * JSONObject response) { Utility.log(TAG, response.toString()); //
-			 * if status is false then reset message state to // send again id
-			 * in msg_id // update messages try { if (response
-			 * .getBoolean(Constants.JSONKeys.STATUS)) { ContentValues values =
-			 * new ContentValues(); values.put(
-			 * DbStructure.MessageTable.COLUMN_STATE,
-			 * Constants.MsgState.SENT_SUCESSFULLY); new
-			 * DbHelper(getApplicationContext()) .getWritableDatabase()
-			 * .update(DbStructure.MessageTable.TABLE_NAME, values, "_id=?", new
-			 * String[] { msg_id + "" }); } } catch (Exception e) {
-			 * Utility.log(TAG, "" + e.getMessage()); } }
-			 * 
-			 * @Override public void onFailure(int statusCode, Header[] headers,
-			 * Throwable throwable, JSONObject errorResponse) { // set status of
-			 * message to not sent or to be send }
-			 * 
-			 * });
-			 */
 		}
 	}
 
@@ -224,7 +189,6 @@ public class ChatActivity extends ActionBarActivity {
 		if (c != null)
 			c.close();
 		Utility.log(TAG, "closed cursor");
-
 		super.onDestroy();
 	}
 }

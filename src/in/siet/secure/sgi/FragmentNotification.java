@@ -169,13 +169,14 @@ public class FragmentNotification extends Fragment {
 			bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
 			bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
 			bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
+			
 			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
 			startActivity(intent);
 		}
 	}
 
 	/**
-	 * get the data for notification list from database
+	 * get the data for notification list from database move it to DbHelper
 	 * 
 	 * @author Zeeshan Khan
 	 * 
@@ -202,7 +203,8 @@ public class FragmentNotification extends Fragment {
 						DbStructure.NotificationTable.COLUMN_SUBJECT,
 						DbStructure.NotificationTable.COLUMN_TEXT,
 						DbStructure.NotificationTable.COLUMN_TIME,
-						DbStructure.NotificationTable.COLUMN_FOR_FACULTY };
+						DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+						DbStructure.NotificationTable.COLUMN_STATE };
 				SQLiteDatabase db = new DbHelper(context).getDb();
 				Cursor c = db.rawQuery("select "
 						+ DbStructure.NotificationTable.TABLE_NAME
@@ -210,13 +212,12 @@ public class FragmentNotification extends Fragment {
 						+ columns[1] + DbConstants.COMMA + columns[2]
 						+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
 						+ columns[4] + DbConstants.COMMA + columns[5]
-						+ " from " + DbStructure.NotificationTable.TABLE_NAME
-						+ " join " + DbStructure.UserTable.TABLE_NAME + " on "
+						+ DbConstants.COMMA + columns[6] + " from "
+						+ DbStructure.NotificationTable.TABLE_NAME + " join "
+						+ DbStructure.UserTable.TABLE_NAME + " on "
 						+ DbStructure.NotificationTable.COLUMN_SENDER + "="
 						+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-						+ DbStructure.UserTable._ID
-
-						+ " order by "
+						+ DbStructure.UserTable._ID + " order by "
 						+ DbStructure.NotificationTable.COLUMN_TIME, null);
 
 				ArrayList<Notification> notifications = new ArrayList<Notification>();
@@ -229,7 +230,8 @@ public class FragmentNotification extends Fragment {
 							.getColumnIndexOrThrow(columns[1])), c.getString(c
 							.getColumnIndexOrThrow(columns[2])), c.getString(c
 							.getColumnIndexOrThrow(columns[3])), c.getLong(c
-							.getColumnIndexOrThrow(columns[4])));
+							.getColumnIndexOrThrow(columns[4])), c.getInt(c
+							.getColumnIndexOrThrow(columns[6])));
 					notifications.add(tmpnot);
 					Utility.log(TAG, tmpnot.subject);
 					c.moveToNext();

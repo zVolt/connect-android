@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -61,9 +62,9 @@ public class FragmentUsers extends Fragment {
 		listview = (ListView) rootView.findViewById(R.id.listViewUsers);
 
 		listview.setAdapter(adapter);
-		listview.setEmptyView(rootView.findViewById(R.id.users_empty_list_view));
+		listview.setEmptyView((TextView) rootView
+				.findViewById(R.id.users_empty_list_view));
 		listview.setOnItemClickListener(new ItemClickListener());
-
 		return rootView;
 	}
 
@@ -107,7 +108,6 @@ public class FragmentUsers extends Fragment {
 
 	public void load() {
 		Utility.log(TAG, "load");
-		listview.setVisibility(View.GONE);
 		Utility.showProgressDialog(getActivity());
 		fetch_all();
 	}
@@ -242,8 +242,6 @@ public class FragmentUsers extends Fragment {
 		@Override
 		protected void onPostExecute(ArrayList<User> data) {
 			setData(data);
-			// refresh();
-			listview.setVisibility(View.VISIBLE);
 			Utility.hideProgressDialog();
 		}
 	}

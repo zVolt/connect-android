@@ -22,8 +22,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 public class UsersAdapter extends ArrayAdapter<User> {
 	private static ArrayList<User> values;
 	private static Context context;
-	private static final String TAG = "in.siet.secure.adapters.UsersAdapter";
-
+	public static final String TAG = "in.siet.secure.adapters.UsersAdapter";
+	private User tmpuser;
 	ViewHolder holder;
 
 	public UsersAdapter(Context contxt, ArrayList<User> value) {
@@ -57,7 +57,7 @@ public class UsersAdapter extends ArrayAdapter<User> {
 		}
 		// String[]
 		// year=context.getResources().getStringArray(R.array.array_year_4);
-		User tmpuser = values.get(position);
+		tmpuser = values.get(position);
 
 		holder.name.setText(tmpuser.f_name + Constants.SPACE + tmpuser.l_name);
 		holder.profile_image.setImageDrawable(context.getResources()

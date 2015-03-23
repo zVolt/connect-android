@@ -86,6 +86,12 @@
     <string name="type_message">Remaining body here</string>
     <string name="type_subject">Subject here</string>
 
+    <!-- Image Desc Acssesiblity -->
+    <string name="desc_noti_state">State of Notification</string>
+    <string name="desc_noti_sender_image">Photo of Sender</string>
+    <string name="desc_noti_file_state">State of attachment</string>
+    <string name="desc_noti_file_action_button">Action on Attachment</string>
+
     <!-- Arrays -->
     <string-array name="array_panel_options">
         <item>Notifications</item>

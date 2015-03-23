@@ -37,7 +37,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static SQLiteDatabase db;
 	public static Context context;
 	public static SharedPreferences spf;
-
+	private Intent intent;
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
 		context = contxt;
@@ -652,6 +652,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					Utility.log(TAG, query.toString());
 					db.update(DbStructure.MessageTable.TABLE_NAME, value,
 							query.toString(), args);
+					// send broadcast to update message list
 				}
 			}
 			// for notifications
@@ -676,6 +677,11 @@ public class DbHelper extends SQLiteOpenHelper {
 					Utility.log(TAG, query.toString());
 					db.update(DbStructure.NotificationTable.TABLE_NAME, value,
 							query.toString(), args);
+					// send broadcast to update notification list
+					intent= new Intent(
+							Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
+					LocalBroadcastManager.getInstance(context).sendBroadcast(
+							intent);
 				}
 			}
 			Utility.log(TAG, "done ack");

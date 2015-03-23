@@ -20,6 +20,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 	private static ArrayList<Attachment> files;
 	ViewHolder holder;
 	Context context;
+	private Attachment tmp;
 
 	public NotificationAttachmentAdapter(Context contxt,
 			ArrayList<Attachment> objects) {
@@ -49,7 +50,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		Attachment tmp = files.get(position);
+		tmp = files.get(position);
 		if (tmp.state == Constants.STATE.ACK_SEND
 				|| tmp.state == Constants.STATE.DOWNLOADED)
 			holder.state_image.setImageDrawable(context.getResources()
@@ -61,7 +62,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 		holder.name.setText(tmp.name);
 		holder.data.setText(Utility.getSizeString(tmp.size));
 		holder.action_button.setImageResource(R.drawable.ic_cancel);
-		//holder.action_button.setOnClickListener();
+		// holder.action_button.setOnClickListener();
 		holder.state = tmp.state;
 		holder.url = tmp.url;
 		holder.id = tmp.id;
