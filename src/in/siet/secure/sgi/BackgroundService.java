@@ -5,10 +5,10 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.http.Header;
@@ -29,6 +29,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Base64;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -260,7 +261,6 @@ public class BackgroundService extends Service {
 		Cursor c_attachment;
 		File file;
 		
-		
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String[] args = { String.valueOf(Constants.STATE.PENDING),
@@ -307,7 +307,7 @@ public class BackgroundService extends Service {
 							 */
 							Utility.log(TAG,c_attachment.getString(0));
 							sendfile(c_attachment.getString(0),
-									new FileInputStream(c_attachment.getString(1)));
+									new File(c_attachment.getString(1)));
 							attachments.put(attachment);
 							}catch (Exception e) {
 								Utility.DEBUG(e);
@@ -330,13 +330,23 @@ public class BackgroundService extends Service {
 		return notifications;
 	}
 
-	public void sendfile(String filename, InputStream inputstream) {
-		Utility.log(TAG,filename);
-		RequestParams params = new RequestParams();							
-		params.put(Constants.QueryParameters.INPUT_STREAM,inputstream);
+	public void sendfile(String filename, File file) {
+		Utility.log(TAG,"filename: "+filename);
+		RequestParams params = new RequestParams();
+		int size = (int) file.length();
+	    byte[] bytes = new byte[size];	    
+	    try {
+	    	BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+	    
+			params.put(Constants.QueryParameters.INPUT_STREAM,Base64.encode(buf.read(bytes, 0, bytes.length),0));
+			buf.close();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
 		params.put(Constants.QueryParameters.FILE_NAME, filename);
 		AsyncHttpClient client=new AsyncHttpClient();
-		client.addHeader("Content-Type", "application/json");
+		client.addHeader("Content-Type", "MultiPart/");
 		client.post(getApplicationContext(),Utility.getBaseURL()+"query/download_file", params,
 				new JsonHttpResponseHandler(){
 			@Override
@@ -349,8 +359,6 @@ public class BackgroundService extends Service {
 					Throwable throwable,JSONObject response){
 				Utility.log(TAG,"in failure");
 			}
-			// override all failure methods
-			
 		});
 	}
 	
