@@ -98,8 +98,8 @@ public interface Constants {
 		String MSGIDS = "message_ids";
 		String MESSAGES = "messages";
 		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
-		String FILE_NAME = "file_name";
-		String INPUT_STREAM = "input_stream";
+		String FILE = "file";
+		String INPUT_STREAM = "file_input_stream";
 		
 		public interface Notification {
 			String SUBJECT = "subject";
