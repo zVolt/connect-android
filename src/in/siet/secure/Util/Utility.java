@@ -39,7 +39,7 @@ import com.loopj.android.http.RequestParams;
 
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	public static String SERVER = "192.168.0.100";
+	public static String SERVER = "192.168.43.231";
 	private static ProgressDialog progress_dialog;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
