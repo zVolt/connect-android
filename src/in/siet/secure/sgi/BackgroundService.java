@@ -5,10 +5,11 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.http.Header;
@@ -259,8 +260,8 @@ public class BackgroundService extends Service {
 		JSONArray attachments = new JSONArray();
 		JSONObject attachment;
 		Cursor c_attachment;
-		File file;
-		
+//		File file;
+
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String[] args = { String.valueOf(Constants.STATE.PENDING),
@@ -292,30 +293,34 @@ public class BackgroundService extends Service {
 
 					query = "select f.name,f.url,f.size from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
 							+ c.getInt(7) + "'";
-					Utility.log(TAG,query);
+					Utility.log(TAG, query);
 					c_attachment = db.rawQuery(query, null);
 					if (c_attachment.moveToFirst()) {
 						while (!c_attachment.isAfterLast()) {
-							try{
-							attachment = new JSONObject();
-							attachment.put(Constants.JSONKEYS.FILES.NAME,
-									c_attachment.getString(0));							
-							attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME,
-									c.getLong(2));
-							/**
-							 * put some mechanism to retry sending file in case of failure
-							 */
-							Utility.log(TAG,c_attachment.getString(0));
-							sendfile(c_attachment.getString(0),
-									new File(c_attachment.getString(1)));
-							attachments.put(attachment);
-							}catch (Exception e) {
+							try {
+								attachment = new JSONObject();
+								attachment.put(Constants.JSONKEYS.FILES.NAME,
+										c_attachment.getString(0));
+								attachment.put(
+										Constants.JSONKEYS.NOTIFICATIONS.TIME,
+										c.getLong(2));
+								/**
+								 * put some mechanism to retry sending file in
+								 * case of failure
+								 */
+								Utility.log(TAG, c_attachment.getString(0));
+								sendfile(c_attachment.getString(0), new File(
+										c_attachment.getString(1)));
+								attachments.put(attachment);
+							} catch (Exception e) {
 								Utility.DEBUG(e);
 							}
 							c_attachment.moveToNext();
-						}c_attachment.close();
+						}
+						c_attachment.close();
 					}
-					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
+					notification.put(
+							Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
 							attachments);
 					// yaha pe code karna sayad teko thik hmm..likha rhne do
 					// ye.. :P
@@ -331,37 +336,60 @@ public class BackgroundService extends Service {
 	}
 
 	public void sendfile(String filename, File file) {
-		Utility.log(TAG,"filename: "+filename);
+		Utility.log(TAG, "filename: " + filename);
 		RequestParams params = new RequestParams();
-		int size = (int) file.length();
-	    byte[] bytes = new byte[size];	    
-	    try {
-	    	BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-	    
-			params.put(Constants.QueryParameters.INPUT_STREAM,Base64.encode(buf.read(bytes, 0, bytes.length),0));
-			buf.close();
+		JSONObject jsonob = new JSONObject();
+		byte[] byteArray = null;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+			InputStream inputStream = new FileInputStream(file);
+			byte[] b = new byte[1024 * 8];
+			int bytesRead = 0;
+			while ((bytesRead = inputStream.read(b)) != -1) {
+				bos.write(b, 0, bytesRead);
+			}
+			byteArray = bos.toByteArray();
+			inputStream.close();
 		} catch (IOException e) {
-			
 			e.printStackTrace();
 		}
-		params.put(Constants.QueryParameters.FILE_NAME, filename);
-		AsyncHttpClient client=new AsyncHttpClient();
-		client.addHeader("Content-Type", "MultiPart/");
-		client.post(getApplicationContext(),Utility.getBaseURL()+"query/download_file", params,
-				new JsonHttpResponseHandler(){
+		// int size = (int) file.length();
+		// byte[] bytes = new byte[size];
+		try {
+			// BufferedInputStream buf = new BufferedInputStream(new
+			// FileInputStream(file));
+			// buf.close();
+			jsonob.put(Constants.QueryParameters.INPUT_STREAM, new String(
+					Utility.encode(byteArray.toString())));
+			jsonob.put(Constants.QueryParameters.FILE_NAME, filename);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		HttpEntity httpen=null;
+		try {
+			httpen = new StringEntity(jsonob.toString());
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		AsyncHttpClient client = new AsyncHttpClient();
+	client.addHeader("Content-Type", "application/json");
+		client.post(getApplicationContext(), Utility.getBaseURL()
+				+ "query/download_file", httpen,null, new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int statusCode, Header[] headers,
-					JSONObject response){
-				Utility.log(TAG,"file uploaded successfully!");				
+					JSONObject response) {
+				Utility.log(TAG, "file uploaded successfully!");
 			}
+
 			@Override
 			public void onFailure(int statusCode, Header[] headers,
-					Throwable throwable,JSONObject response){
-				Utility.log(TAG,"in failure");
+					Throwable throwable, JSONObject response) {
+				Utility.log(TAG, "in failure");
 			}
 		});
 	}
-	
+
 	private JSONArray getPendingMessages() {
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
