@@ -744,13 +744,10 @@ public class DbHelper extends SQLiteOpenHelper {
 				files = n.files.get(i);
 				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
 				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
-				values.put(DbStructure.FileTable.COLUMN_STATE, files.state);
+				values.put(DbStructure.FileTable.COLUMN_STATE, Constants.STATE.PENDING); //insert files with pending status and update after sending to server
 				values.put(DbStructure.FileTable.COLUMN_SENDER, n.sid);
 				values.put(DbStructure.FileTable.COLUMN_SIZE, files.size);
-				Utility.log(TAG, files.url);
-				Utility.log(TAG, files.name);
-				Utility.log(TAG, ""+n.sid);
-				Utility.log(TAG, ""+files.size);
+				
 				file_id = db.insert(DbStructure.FileTable.TABLE_NAME, null,
 						values);
 

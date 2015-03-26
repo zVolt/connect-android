@@ -185,34 +185,41 @@ public class FragmentDetailNotification extends Fragment implements
 
 	@Override
 	public void onClick(View view) {
-		ViewHolder h = (ViewHolder) view.getTag();
-		if (h.state == Constants.STATE.DOWNLOADED
-				|| h.state == Constants.STATE.ACK_SEND) {
-			// open file
-			Utility.log(TAG, "opening file");
-			File file = new File(h.url);
-			MimeTypeMap map = MimeTypeMap.getSingleton();
-			String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
-			String type = map.getMimeTypeFromExtension(ext);
 
-			if (type == null)
-				type = "*/*";
+		switch (view.getId()) {
+		case R.id.imageButtonAttachmentAction:
 
-			Intent intent = new Intent(Intent.ACTION_VIEW);
-			Uri data = Uri.fromFile(file);
+			ViewHolder h = (ViewHolder) ((View) view.getParent()).getTag();
+			if (h.state != Constants.STATE.RECEIVED) {
+				// open file
+				Utility.log(TAG, "opening file");
+				File file = new File(h.url);
+				MimeTypeMap map = MimeTypeMap.getSingleton();
+				String ext = MimeTypeMap
+						.getFileExtensionFromUrl(file.getName());
+				String type = map.getMimeTypeFromExtension(ext);
 
-			intent.setDataAndType(data, type);
-			try {
-				startActivity(intent);
-			} catch (Exception e) {
-				Utility.RaiseToast(getActivity(), "cannot open file", false);
+				if (type == null)
+					type = "*/*";
+
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				Uri data = Uri.fromFile(file);
+
+				intent.setDataAndType(data, type);
+				try {
+					startActivity(intent);
+				} catch (Exception e) {
+					Utility.RaiseToast(getActivity(), "cannot open file", false);
+				}
+			} else {
+				// download file
+				Utility.log(TAG, "downloading file state " + h.state);
+				Utility.log("Yaha", "clicked on " + h.name.getText());
+				new Utility.DownloadFile().execute(h.url,
+						(String) h.name.getText(), "" + h.id);
 			}
-		} else {
-			// download file
-			Utility.log(TAG, "downloading file");
-			Utility.log("Yaha", "clicked on " + h.name.getText());
-			new Utility.DownloadFile().execute(h.url,
-					(String) h.name.getText(), "" + h.id);
+			break;
 		}
+
 	}
 }

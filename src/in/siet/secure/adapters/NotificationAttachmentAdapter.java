@@ -27,6 +27,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 		super(contxt, R.layout.notification_attachements, objects);
 		context = contxt;
 		files = objects;
+
 	}
 
 	@Override
@@ -61,7 +62,8 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 
 		holder.name.setText(tmp.name);
 		holder.data.setText(Utility.getSizeString(tmp.size));
-		holder.action_button.setImageResource(R.drawable.ic_cancel);
+		holder.action_button.setImageResource(R.drawable.ic_action_done);
+
 		// holder.action_button.setOnClickListener();
 		holder.state = tmp.state;
 		holder.url = tmp.url;
