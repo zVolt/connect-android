@@ -39,7 +39,7 @@ import com.loopj.android.http.RequestParams;
 
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	public static String SERVER = "192.168.0.101";
+	public static String SERVER = "192.168.0.102";
 	private static ProgressDialog progress_dialog;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
@@ -303,4 +303,5 @@ public class Utility {
 		DecimalFormat format = new DecimalFormat(".##");
 		return String.valueOf(format.format(bytes)) + res;
 	}
+
 }

@@ -103,7 +103,10 @@ public class ChatActivity extends ActionBarActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
-		Utility.setAlarm(getApplication(), 5000);
+		/**
+		 * set service to run every 5 sec, so that chatting feels real time :P
+		 */
+		//Utility.setAlarm(getApplication(), 5000);
 	}
 
 	@Override
@@ -174,7 +177,7 @@ public class ChatActivity extends ActionBarActivity {
 			values.put(DbStructure.MessageTable.COLUMN_SENDER, sender_id);
 			values.put(DbStructure.MessageTable.COLUMN_RECEIVER, receiver_id);
 			values.put(DbStructure.MessageTable.COLUMN_STATE,
-					Constants.STATE.PENDING);
+					Constants.MSG_STATE.PENDING);
 			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG,
 					Constants.IS_GROUP_MSG.NO);
 

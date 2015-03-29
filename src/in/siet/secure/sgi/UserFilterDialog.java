@@ -195,10 +195,10 @@ public class UserFilterDialog extends DialogFragment {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				Utility.log(TAG, "click ok");
-				FilterOptions.STUDENT = ((RadioButton) holder.radio_group
-						.findViewById(R.id.dialogFilterRadioStudent))
+				FilterOptions.FACULTY = ((RadioButton) holder.radio_group
+						.findViewById(R.id.dialogFilterRadioFaculty))
 						.isChecked();
-				if (FilterOptions.STUDENT) {
+				if (!FilterOptions.FACULTY) {
 					FilterOptions.YEAR = holder.years.getSelectedItemPosition();
 					FilterOptions.SECTION = section.get(holder.sections
 							.getSelectedItemPosition());
@@ -226,7 +226,7 @@ public class UserFilterDialog extends DialogFragment {
 				}
 				Utility.RaiseToast(getActivity(), FilterOptions.COURSE
 						+ " "
-						+ (FilterOptions.STUDENT ? "Students of "
+						+ (!FilterOptions.FACULTY ? "Students of "
 								+ FilterOptions.SECTION
 								+ " section "
 								+ (FilterOptions.YEAR == 0 ? "All"

@@ -81,6 +81,9 @@ public interface Constants {
 		String year = "Year";
 		String db_id = "DbId";
 		String UPDATE_INTERVAL = "update_interval";
+		String PROPERTY_REG_ID = "RegId";
+		String PROPERTY_APP_VERSION = "AppVersion";
+
 	}
 
 	public interface QueryParameters {
@@ -101,14 +104,12 @@ public interface Constants {
 		String FILE = "file";
 		String INPUT_STREAM = "file_input_stream";
 		
+
 		public interface Notification {
 			String SUBJECT = "subject";
 			String BODY = "body";
 			String TIME = "time";
 		}
-		
-		
-		
 
 	}
 
@@ -133,7 +134,7 @@ public interface Constants {
 	 * @author Zeeshan Khan
 	 * 
 	 */
-	public interface STATE {
+	public interface STATES {
 
 		/**
 		 * this means that the message or notification is received from server
@@ -168,7 +169,18 @@ public interface Constants {
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
-		
+
+	}
+
+	public interface MSG_STATE extends STATES {
+
+	}
+
+	public interface NOTI_STATE extends STATES {
+
+	}
+
+	public interface FILE_STATE extends STATES {
 		/**
 		 * file specific this means the file is present on local system
 		 */
@@ -179,10 +191,12 @@ public interface Constants {
 		int YES = 0;
 		int NO = 1;
 	}
+
 	public interface FOR_FACULTY {
 		int YES = 0;
 		int NO = 1;
 	}
+
 	public interface JSONKEYS {
 
 		String STUDENT = "Student";
@@ -206,9 +220,18 @@ public interface Constants {
 		String Error = "Error";
 		String STREET = "Street";
 		String TOKEN = "Token";
-
+		String INITIAL_DATA="initial_data";
+		String USER_DATA="user_data";
+		
+		String COURSES = "Courses";
+		String BRANCHES = "Branches";
+		String YEARS = "Years";
+		String SECTIONS = "Sections";
+		
 		String STATUS = "Status";
 		String TAG = "Tag";
+		String PSWD = "pswd";
+		String REG_ID = "reg_id";
 
 		public interface TAG_MSGS {
 			String LOGIN = "Login";
@@ -240,14 +263,15 @@ public interface Constants {
 			String FOR_FACULTY = "For_Faculty";
 			String ATTACHMENTS = "attachments";
 		}
+
 		public static interface FILES {
 			String NAME = "name";
-		 
+
 		}
 	}
 
 	public static interface NOTIFICATION {
-		
+
 		String SUBJECT = "Subject";
 		String TEXT = "Text";
 		String TIME = "Time";
@@ -255,4 +279,16 @@ public interface Constants {
 		String ID = "ID";
 		String ATTACHMENT = "Attachments";
 	}
+
+	/**
+	 * GCM Specific contants
+	 */
+	String EXTRA_MESSAGE = "message";
+	String PROPERTY_REG_ID = "registration_id";
+	/**
+	 * Substitute you own sender ID here. This is the project number you got
+	 * from the API Console, as described in "Getting Started."
+	 */
+	String SENDER_ID = "381177836120";
+
 }

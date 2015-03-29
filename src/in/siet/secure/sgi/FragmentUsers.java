@@ -137,8 +137,8 @@ public class FragmentUsers extends Fragment {
 			// (view.findViewById(R.id.ListItemUsersTextViewName)).toString();
 			UsersAdapter.ViewHolder holder = (UsersAdapter.ViewHolder) view
 					.getTag();
-			new DbHelper(getActivity()).getAndAddUser(holder.user,
-					FilterOptions.STUDENT);
+			new DbHelper(getActivity()).getAndInsertUser(holder.user,
+					FilterOptions.FACULTY);
 			// Utility.RaiseToast(getActivity(),
 			// ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts",
 			// false);
@@ -157,7 +157,7 @@ public class FragmentUsers extends Fragment {
 
 		RequestParams params = new RequestParams();
 		Utility.putCredentials(params, sharedPreferences);
-		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.STUDENT);
+		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.FACULTY);
 		params.put(Constants.QueryParameters.COURSE, FilterOptions.COURSE);
 		params.put(Constants.QueryParameters.BRANCH, FilterOptions.BRANCH);
 		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);

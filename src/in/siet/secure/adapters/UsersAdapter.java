@@ -62,7 +62,7 @@ public class UsersAdapter extends ArrayAdapter<User> {
 		holder.name.setText(tmpuser.f_name + Constants.SPACE + tmpuser.l_name);
 		holder.profile_image.setImageDrawable(context.getResources()
 				.getDrawable(R.drawable.ic_action_person));
-		if (FilterOptions.STUDENT) {
+		if (!FilterOptions.FACULTY) {
 			Student s_user = (Student) tmpuser;
 			holder.data.setText(s_user.year + " Year (" + s_user.section + ")");
 		} else {

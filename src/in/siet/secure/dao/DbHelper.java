@@ -2,12 +2,14 @@ package in.siet.secure.dao;
 
 import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Faculty;
+import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
 import in.siet.secure.Util.Notification;
-import in.siet.secure.Util.Student;
+import in.siet.secure.Util.StudentFull;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
+import in.siet.secure.sgi.BackgroundService;
 
 import java.util.ArrayList;
 
@@ -257,7 +259,7 @@ public class DbHelper extends SQLiteOpenHelper {
 							notification
 									.getString(Constants.JSONKEYS.NOTIFICATIONS.TIME));
 					values.put(DbStructure.NotificationTable.COLUMN_STATE,
-							Constants.STATE.RECEIVED);
+							Constants.NOTI_STATE.RECEIVED);
 					values.put(
 							DbStructure.NotificationTable.COLUMN_SENDER,
 							getUserPk(notification
@@ -277,11 +279,11 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * insert a faculty with full details
+	 * insert a users with full details
 	 * 
 	 * @param response
 	 */
-	public void insertUser(JSONObject response) {
+	public void insertUsers(JSONObject response) {
 		setDb();
 		int len;
 		try {
@@ -394,19 +396,117 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
+	 * user is either FacultyFull or StudentFull
+	 * 
+	 * @param user
+	 * @param is_faculty
+	 */
+	public void insertUser(User user, boolean is_faculty) {
+		setDb();
+		ContentValues values = new ContentValues();
+		values.put(DbStructure.UserTable.COLUMN_FNAME, user.f_name);
+		values.put(DbStructure.UserTable.COLUMN_LNAME, user.l_name);
+		values.put(DbStructure.UserTable.COLUMN_PROFILE_PIC, user.picUrl);
+		values.put(DbStructure.UserTable.COLUMN_LOGIN_ID, user.user_id);
+
+		long user_pk = db.insertWithOnConflict(
+				DbStructure.UserTable.TABLE_NAME, null, values,
+				SQLiteDatabase.CONFLICT_REPLACE);
+
+		if (user_pk != -1) {
+			if (!is_faculty) {
+				StudentFull s_user = (StudentFull) user;
+				String[] args = { s_user.section, String.valueOf(s_user.year) };
+				Cursor c = db
+						.rawQuery(
+								"select sections._id from sections join year on year_id=year._id where sections.name=? and year.year=?",
+								args);
+				c.moveToFirst();
+				int section_id = 0;
+				if (!c.isAfterLast())
+					section_id = c.getInt(0);
+				c.close();
+				values.clear();
+				values.put(DbStructure.StudentContactsTable.COLUMN_USER_ID,
+						user_pk);
+				values.put(DbStructure.StudentContactsTable.COLUMN_SECTION_ID,
+						section_id);
+				values.put(DbStructure.StudentContactsTable.COLUMN_ROLL_NO,
+						s_user.u_roll_no);
+				db.insert(DbStructure.StudentContactsTable.TABLE_NAME, null,
+						values);
+				// db.rawQuery(query,args);
+			} else {
+				// query =
+				// "insert into faculty(user_id,branch_id) values(?,(select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?))";
+				Faculty f_user = (Faculty) user;
+				String[] args = { f_user.branch };
+				Cursor c = db
+						.rawQuery(
+								"select branches._id from branches  where branches.name=?",
+								args);
+				long branch_id = 0;
+				c.moveToFirst();
+				if (!c.isAfterLast())
+					branch_id = c.getLong(0);
+				c.close();
+				values.clear();
+				values.put(DbStructure.FcultyContactsTable.COLUMN_BRANCH_ID,
+						branch_id);
+				values.put(DbStructure.FcultyContactsTable.COLUMN_USER_ID,
+						user_pk);
+
+				long facut_id = db.insert(
+						DbStructure.FcultyContactsTable.TABLE_NAME, null,
+						values);
+				// adding additional details
+				if (facut_id != -1) {
+					FacultyFull f_usr = (FacultyFull) user;
+					values.clear();
+					values.put(DbStructure.UserInfoTable.COLUMN_USER_ID,
+							facut_id);
+
+					values.put(DbStructure.UserInfoTable.COLUMN_STATE,
+							f_usr.state);
+
+					values.put(DbStructure.UserInfoTable.COLUMN_CITY,
+							f_usr.city);
+
+					values.put(DbStructure.UserInfoTable.COLUMN_STREET,
+							f_usr.street);
+
+					values.put(DbStructure.UserInfoTable.COLUMN_P_MOB,
+							f_usr.p_mob);
+					values.put(DbStructure.UserInfoTable.COLUMN_H_MOB,
+							f_usr.h_mob);
+					values.put(DbStructure.UserInfoTable.COLUMN_PIN, f_usr.pin);
+					db.insert(DbStructure.UserInfoTable.TABLE_NAME, null,
+							values);
+				}
+			}
+			Utility.RaiseToast(context, user.f_name + " " + user.l_name
+					+ " added Sucessfully", false);
+		} else {
+			Utility.log(TAG, "Error inserting user");
+			Utility.RaiseToast(context, user.f_name + " " + user.l_name
+					+ " cannot be inserted", false);
+		}
+	}
+
+	/**
 	 * get user info from server asynchronously add it to database show toast
 	 * getting data from server should be moved to service
 	 * 
 	 * @param user
 	 * @param is_student
 	 */
-	public void getAndAddUser(final User user, final boolean is_student) {
+	public void getAndInsertUser(final User user, final boolean is_faculty) {
 		setDb();
 		RequestParams params = new RequestParams();
 		Utility.putCredentials(params, spf);
 		params.put(Constants.QueryParameters.GET_DETAILS_OF_USER_ID,
 				user.user_id);
-		params.put(Constants.QueryParameters.USER_TYPE, is_student);
+		params.put(Constants.QueryParameters.USER_TYPE, is_faculty);
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get(Utility.getBaseURL() + "query/get_user_info", params,
 				new JsonHttpResponseHandler() {
@@ -414,130 +514,33 @@ public class DbHelper extends SQLiteOpenHelper {
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONObject response) {
 						try {
-							// String query =
-							// "insert or ignore into user(f_name,l_name,pic_url,login_id) values(?,?,?,?)";
-
-							ContentValues values = new ContentValues();
-							values.put(DbStructure.UserTable.COLUMN_FNAME,
-									user.f_name);
-							values.put(DbStructure.UserTable.COLUMN_LNAME,
-									user.l_name);
-							values.put(
-									DbStructure.UserTable.COLUMN_PROFILE_PIC,
-									user.picUrl);
-							values.put(DbStructure.UserTable.COLUMN_LOGIN_ID,
-									user.user_id);
-
-							Utility.log(TAG, response.toString()); // use it
-
-							long user_pk = db.insertWithOnConflict(
-									DbStructure.UserTable.TABLE_NAME, null,
-									values, SQLiteDatabase.CONFLICT_REPLACE);
-
-							if (user_pk != -1) {
-								if (is_student) {
-									Student s_user = (Student) user;
-									String[] args = { s_user.section,
-											String.valueOf(s_user.year) };
-									Cursor c = db
-											.rawQuery(
-													"select sections._id from sections join year on year_id=year._id where sections.name=? and year.year=?",
-													args);
-									c.moveToFirst();
-									int section_id = 0;
-									if (!c.isAfterLast())
-										section_id = c.getInt(0);
-									c.close();
-									values.clear();
-									values.put(
-											DbStructure.StudentContactsTable.COLUMN_USER_ID,
-											user_pk);
-									values.put(
-											DbStructure.StudentContactsTable.COLUMN_SECTION_ID,
-											section_id);
-									values.put(
-											DbStructure.StudentContactsTable.COLUMN_ROLL_NO,
-											response.getString(Constants.JSONKEYS.ROLL_NO));
-									db.insert(
-											DbStructure.StudentContactsTable.TABLE_NAME,
-											null, values);
-									// db.rawQuery(query,args);
-								} else {
-									// query =
-									// "insert into faculty(user_id,branch_id) values(?,(select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?))";
-									Faculty f_user = (Faculty) user;
-									String[] args = { f_user.branch };
-									Cursor c = db
-											.rawQuery(
-													"select branches._id from branches  where branches.name=?",
-													args);
-									long branch_id = 0;
-									c.moveToFirst();
-									if (!c.isAfterLast())
-										branch_id = c.getLong(0);
-									c.close();
-									values.clear();
-									values.put(
-											DbStructure.FcultyContactsTable.COLUMN_BRANCH_ID,
-											branch_id);
-									values.put(
-											DbStructure.FcultyContactsTable.COLUMN_USER_ID,
-											user_pk);
-
-									long facut_id = db
-											.insert(DbStructure.FcultyContactsTable.TABLE_NAME,
-													null, values);
-									// adding additional details
-									if (facut_id != -1) {
-										values.clear();
-										values.put(
-												DbStructure.UserInfoTable.COLUMN_USER_ID,
-												facut_id);
-										if (response
-												.has(Constants.JSONKEYS.STATE))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_STATE,
-													response.getString(Constants.JSONKEYS.STATE));
-										if (response
-												.has(Constants.JSONKEYS.CITY))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_CITY,
-													response.getString(Constants.JSONKEYS.CITY));
-										if (response
-												.has(Constants.JSONKEYS.STREET))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_STREET,
-													response.getString(Constants.JSONKEYS.STREET));
-										if (response
-												.has(Constants.JSONKEYS.P_MOB))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_P_MOB,
-													response.getString(Constants.JSONKEYS.P_MOB));
-										if (response
-												.has(Constants.JSONKEYS.H_MOB))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_H_MOB,
-													response.getString(Constants.JSONKEYS.H_MOB));
-										if (response
-												.has(Constants.JSONKEYS.PIN))
-											values.put(
-													DbStructure.UserInfoTable.COLUMN_PIN,
-													response.getString(Constants.JSONKEYS.PIN));
-										db.insert(
-												DbStructure.UserInfoTable.TABLE_NAME,
-												null, values);
-									}
-								}
-								Utility.RaiseToast(context, user.f_name + " "
-										+ user.l_name + " added Sucessfully",
-										false);
+							if (!is_faculty) {
+								StudentFull s_user = (StudentFull) user;
+								s_user.u_roll_no = response
+										.getString(Constants.JSONKEYS.ROLL_NO);
 							} else {
-								Utility.log(TAG, "Error inserting user");
-								Utility.RaiseToast(context, user.f_name + " "
-										+ user.l_name
-										+ " already exist in contacts", false);
-							}
+								FacultyFull f_user = (FacultyFull) user;
 
+								if (response.has(Constants.JSONKEYS.STATE))
+									f_user.state = response
+											.getString(Constants.JSONKEYS.STATE);
+								if (response.has(Constants.JSONKEYS.CITY))
+									f_user.city = response
+											.getString(Constants.JSONKEYS.CITY);
+								if (response.has(Constants.JSONKEYS.STREET))
+									f_user.street = response
+											.getString(Constants.JSONKEYS.STREET);
+								if (response.has(Constants.JSONKEYS.P_MOB))
+									f_user.p_mob = response
+											.getString(Constants.JSONKEYS.P_MOB);
+								if (response.has(Constants.JSONKEYS.H_MOB))
+									f_user.h_mob = response
+											.getString(Constants.JSONKEYS.H_MOB);
+								if (response.has(Constants.JSONKEYS.PIN))
+									f_user.pin = response
+											.getString(Constants.JSONKEYS.PIN);
+							}
+							insertUser(user, is_faculty);
 						} catch (Exception e) {
 							Utility.DEBUG(e);
 						}
@@ -587,10 +590,57 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	}
 
-	public void addInitialData(InitialData idata, String userid) {
+	/**
+	 * Inserts courses, branches, year and section data passed, and fill
+	 * user_mapper table accordingly will be called from non UI thread
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	public void addInitialData(InitialData idata) {
 		setDb();
-		new insertInitialData().execute(idata);
+		db.execSQL(DbStructure.Branches.COMMAND_DROP);
+		db.execSQL(DbStructure.Courses.COMMAND_DROP);
+		db.execSQL(DbStructure.Sections.COMMAND_DROP);
+		db.execSQL(DbStructure.Year.COMMAND_DROP);
 
+		db.execSQL(DbStructure.Branches.COMMAND_CREATE);
+		db.execSQL(DbStructure.Courses.COMMAND_CREATE);
+		db.execSQL(DbStructure.Sections.COMMAND_CREATE);
+		db.execSQL(DbStructure.Year.COMMAND_CREATE);
+		// adding branches and
+		ContentValues values;
+		for (InitialData.Courses c : idata.courses) {
+			values = new ContentValues();
+			values.put(DbStructure.Courses._ID, c.id);
+			values.put(DbStructure.Courses.COLUMN_NAME, c.name);
+			values.put(DbStructure.Courses.COLUMN_DURATION, c.duration);
+			db.insert(DbStructure.Courses.TABLE_NAME, null, values);
+		}
+
+		for (InitialData.Branches b : idata.branches) {
+			values = new ContentValues();
+			values.put(DbStructure.Branches._ID, b.id);
+			values.put(DbStructure.Branches.COLUMN_NAME, b.name);
+			values.put(DbStructure.Branches.COLUMN_COURSE_ID, b.course_id);
+			db.insert(DbStructure.Branches.TABLE_NAME, null, values);
+		}
+
+		for (InitialData.Sections s : idata.sections) {
+			values = new ContentValues();
+			values.put(DbStructure.Sections._ID, s.id);
+			values.put(DbStructure.Sections.COLUMN_NAME, s.name);
+			values.put(DbStructure.Sections.COLUMN_YEAR_ID, s.year_id);
+			db.insert(DbStructure.Sections.TABLE_NAME, null, values);
+		}
+
+		for (InitialData.Year y : idata.years) {
+			values = new ContentValues();
+			values.put(DbStructure.Year._ID, y.id);
+			values.put(DbStructure.Year.COLUMN_BRANCH_ID, y.branch_id);
+			values.put(DbStructure.Year.COLUMN_YEAR, y.year);
+			db.insert(DbStructure.Year.TABLE_NAME, null, values);
+		}
 	}
 
 	private void setDb() {
@@ -638,7 +688,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					StringBuilder query = new StringBuilder();
 					ContentValues value = new ContentValues();
 					value.put(DbStructure.MessageTable.COLUMN_STATE,
-							Constants.STATE.ACK_RECEIVED);
+							Constants.MSG_STATE.ACK_RECEIVED);
 					query.append("_id IN (");
 					String[] args = new String[len];
 					for (int i = 0; i < len; i++) {
@@ -664,7 +714,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					StringBuilder query = new StringBuilder();
 					ContentValues value = new ContentValues();
 					value.put(DbStructure.MessageTable.COLUMN_STATE,
-							Constants.STATE.ACK_RECEIVED);
+							Constants.MSG_STATE.ACK_RECEIVED);
 					query.append(" _id IN (");
 					String[] args = new String[len];
 					for (int i = 0; i < len; i++) {
@@ -721,7 +771,7 @@ public class DbHelper extends SQLiteOpenHelper {
 			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
 			values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
 			values.put(DbStructure.NotificationTable.COLUMN_STATE,
-					Constants.STATE.PENDING);
+					Constants.NOTI_STATE.PENDING);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
 			values.put(DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
@@ -738,16 +788,20 @@ public class DbHelper extends SQLiteOpenHelper {
 
 			values.clear();
 			len = n.files.size();
-			Utility.log(TAG,""+len);
-			
+			Utility.log(TAG, "" + len);
+
 			for (int i = 0; i < len; i++) {
 				files = n.files.get(i);
 				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
 				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
-				values.put(DbStructure.FileTable.COLUMN_STATE, Constants.STATE.PENDING); //insert files with pending status and update after sending to server
+				values.put(DbStructure.FileTable.COLUMN_STATE,
+						Constants.FILE_STATE.PENDING); // insert files with
+														// pending status and
+														// update after sending
+														// to server
 				values.put(DbStructure.FileTable.COLUMN_SENDER, n.sid);
 				values.put(DbStructure.FileTable.COLUMN_SIZE, files.size);
-				
+
 				file_id = db.insert(DbStructure.FileTable.TABLE_NAME, null,
 						values);
 
@@ -762,65 +816,11 @@ public class DbHelper extends SQLiteOpenHelper {
 			}
 			return null;
 		}
-	}
-
-	/**
-	 * Inserts courses, branches, year and section data passed, and fill
-	 * user_mapper table accordingly
-	 * 
-	 * @author Zeeshan Khan
-	 * 
-	 */
-	private static class insertInitialData extends
-			AsyncTask<InitialData, Void, Boolean> {
 
 		@Override
-		protected Boolean doInBackground(InitialData... params) {
-			InitialData idata = params[0];
-			// drop tables not safe yet
-			db.execSQL(DbStructure.Branches.COMMAND_DROP);
-			db.execSQL(DbStructure.Courses.COMMAND_DROP);
-			db.execSQL(DbStructure.Sections.COMMAND_DROP);
-			db.execSQL(DbStructure.Year.COMMAND_DROP);
-
-			db.execSQL(DbStructure.Branches.COMMAND_CREATE);
-			db.execSQL(DbStructure.Courses.COMMAND_CREATE);
-			db.execSQL(DbStructure.Sections.COMMAND_CREATE);
-			db.execSQL(DbStructure.Year.COMMAND_CREATE);
-			// adding branches and
-			ContentValues values;
-			for (InitialData.Courses c : idata.courses) {
-				values = new ContentValues();
-				values.put(DbStructure.Courses._ID, c.id);
-				values.put(DbStructure.Courses.COLUMN_NAME, c.name);
-				values.put(DbStructure.Courses.COLUMN_DURATION, c.duration);
-				db.insert(DbStructure.Courses.TABLE_NAME, null, values);
-			}
-
-			for (InitialData.Branches b : idata.branches) {
-				values = new ContentValues();
-				values.put(DbStructure.Branches._ID, b.id);
-				values.put(DbStructure.Branches.COLUMN_NAME, b.name);
-				values.put(DbStructure.Branches.COLUMN_COURSE_ID, b.course_id);
-				db.insert(DbStructure.Branches.TABLE_NAME, null, values);
-			}
-
-			for (InitialData.Sections s : idata.sections) {
-				values = new ContentValues();
-				values.put(DbStructure.Sections._ID, s.id);
-				values.put(DbStructure.Sections.COLUMN_NAME, s.name);
-				values.put(DbStructure.Sections.COLUMN_YEAR_ID, s.year_id);
-				db.insert(DbStructure.Sections.TABLE_NAME, null, values);
-			}
-
-			for (InitialData.Year y : idata.years) {
-				values = new ContentValues();
-				values.put(DbStructure.Year._ID, y.id);
-				values.put(DbStructure.Year.COLUMN_BRANCH_ID, y.branch_id);
-				values.put(DbStructure.Year.COLUMN_YEAR, y.year);
-				db.insert(DbStructure.Year.TABLE_NAME, null, values);
-			}
-			return null;
+		protected void onPostExecute(Void result) {
+			Intent intent = new Intent(context, BackgroundService.class);
+			context.startService(intent);
 		}
 	}
 

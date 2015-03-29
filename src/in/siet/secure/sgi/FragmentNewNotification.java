@@ -173,11 +173,7 @@ public class FragmentNewNotification extends Fragment implements
 	}
 
 	/**
-	 * Creates a new Notification from data provided, Insert it in database and
-	 * send it to server.
-	 * 
-	 * sending part should be moved to server
-	 * 
+	 * Creates a new Notification from data provided, Insert it in local database.
 	 * @param view
 	 *            View on which the action is performed (ImageButton in this
 	 *            case)
@@ -185,7 +181,6 @@ public class FragmentNewNotification extends Fragment implements
 	public void sendNewNotification(View view) {
 
 		if (verifyNewNotificationData()) {
-
 			int year;
 			// data copied in case use change it suddenly
 			String course = FilterOptions.COURSE;
@@ -193,8 +188,8 @@ public class FragmentNewNotification extends Fragment implements
 			String section = FilterOptions.SECTION;
 			String subject_txt, body_txt;
 			year = FilterOptions.YEAR;
-			int for_faculty = FilterOptions.STUDENT ? Constants.FOR_FACULTY.NO
-					: Constants.FOR_FACULTY.YES;
+			int for_faculty = FilterOptions.FACULTY ? Constants.FOR_FACULTY.YES
+					: Constants.FOR_FACULTY.NO;
 			// fid string pk of user
 			DbHelper db = new DbHelper(getActivity().getApplicationContext());
 			int pk_user = db.getUserPk(spf.getString(
@@ -211,7 +206,7 @@ public class FragmentNewNotification extends Fragment implements
 
 			subject.getText().clear();
 			body.getText().clear();
-			Utility.RaiseToast(getActivity(), "send new message", false);
+			Utility.RaiseToast(getActivity(), "send new notification", false);
 		} else {
 			Utility.RaiseToast(getActivity(), "cannot create notification",
 					false);

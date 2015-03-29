@@ -187,6 +187,9 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
+		/**
+		 * I don't know why I wrote this
+		 */
 		Intent intent = new Intent(this, BackgroundService.class);
 		stopService(intent);
 	}
@@ -194,8 +197,10 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		// Retrieve a PendingIntent that will perform a broadcast
-		Utility.setAlarm(getApplication(), 15000);
+		/**
+		 * set service to run every 15 sec
+		 */
+		// Utility.setAlarm(getApplication(), 15000);
 		back_pressed = false;
 	}
 
@@ -264,12 +269,15 @@ public class MainActivity extends ActionBarActivity {
 			Utility.RaiseToast(getApplicationContext(),
 					getString(R.string.exit_warning), true);
 		} else {
-			Utility.setAlarm(
-					getApplication(),
-					Integer.parseInt(spf.getString(
-							Constants.PREF_KEYS.UPDATE_INTERVAL,
-							String.valueOf(1)))
-							* Constants.HOUR_TO_MILISEC);
+			/**
+			 * set service to run as per user pref stored min 1hr
+			 */
+			/*
+			 * Utility.setAlarm( getApplication(),
+			 * Integer.parseInt(spf.getString(
+			 * Constants.PREF_KEYS.UPDATE_INTERVAL, String.valueOf(1)))
+			 * Constants.HOUR_TO_MILISEC);
+			 */
 			super.onBackPressed();
 		}
 	}
@@ -374,10 +382,16 @@ public class MainActivity extends ActionBarActivity {
 
 	@Override
 	protected void onDestroy() {
+		/**
+		 * cancel the alarm (never start)
+		 * 
+		 * maybe I have done this to save my mobile battery while testing :D
+		 */
 		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(this, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
 		alarmmanager.cancel(pi);
+
 		Utility.log(TAG, "destroyed");
 		super.onDestroy();
 	}

@@ -190,7 +190,7 @@ public class FragmentDetailNotification extends Fragment implements
 		case R.id.imageButtonAttachmentAction:
 
 			ViewHolder h = (ViewHolder) ((View) view.getParent()).getTag();
-			if (h.state != Constants.STATE.RECEIVED) {
+			if (h.state != Constants.NOTI_STATE.RECEIVED) {
 				// open file
 				Utility.log(TAG, "opening file");
 				File file = new File(h.url);

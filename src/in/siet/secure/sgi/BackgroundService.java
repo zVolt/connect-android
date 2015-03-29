@@ -15,7 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,29 +35,39 @@ import com.loopj.android.http.SyncHttpClient;
 /**
  * SENDER IS ONE WHO IS SENDING US MESSAGE
  * 
- * @author swati
+ * related to wake locks the GCM broadcast receiver starts the service holding
+ * the wake-lock but if we start the service manually then the wake-lock should
+ * be managed by the service itself(BackgroundService)
+ * 
+ * @author Zeeshan Khan
  * 
  */
-public class BackgroundService extends Service {
+public class BackgroundService extends IntentService {
+
+	public BackgroundService() {
+		super("BackgroundService");
+		// TODO Auto-generated constructor stub
+	}
 
 	private SharedPreferences spref;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
 	private WakeLock wake;
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		spref = getApplicationContext().getSharedPreferences(
-				Constants.pref_file_name, Context.MODE_PRIVATE);
-		if (spref != null) {
-			if ((sender_lid = spref
-					.getString(Constants.PREF_KEYS.user_id, null)) != null)
-				handleIntent(intent); // if logged in
-		} else {
-			Utility.log(TAG, "pref is null");
-		}
-		return START_STICKY;
-	}
+	/**
+	 * no need to check that whether the user is logged in or not thanks to GCM
+	 */
+	/*
+	 * @Override public int onStartCommand(Intent intent, int flags, int
+	 * startId) { spref = getApplicationContext().getSharedPreferences(
+	 * Constants.pref_file_name, Context.MODE_PRIVATE); if (spref != null) { if
+	 * ((sender_lid = spref .getString(Constants.PREF_KEYS.user_id, null)) !=
+	 * null) handleIntent(intent); // if logged in } else { Utility.log(TAG,
+	 * "pref is null"); }
+	 * 
+	 * Utility.log(TAG, "back service started"); return
+	 * super.onStartCommand(intent, flags, startId); }
+	 */
 
 	/**
 	 * Hold a partial wake lock so that you don't get killed ;)
@@ -76,14 +86,6 @@ public class BackgroundService extends Service {
 	private void releaseLock() {
 		if (wake != null && wake.isHeld())
 			wake.release();
-	}
-
-	public void handleIntent(Intent intent) {
-
-		holdWakeLock();
-		// sendToServer();
-		// getMessagesFromServer();
-		sync();
 	}
 
 	public void getMessagesFromServer() {
@@ -194,6 +196,10 @@ public class BackgroundService extends Service {
 	 * credentials out of data collected above 4. send to server 5. receive data
 	 * from server (messages and notification) 6. fill database accordingly 7.
 	 * trigger notification action
+	 * 
+	 * 
+	 * break it into 2 parts 1 messages 2 notifications call both of them from
+	 * here or specific as per requirement
 	 */
 	public void sync() {
 		JSONObject data_to_send = new JSONObject();
@@ -257,7 +263,7 @@ public class BackgroundService extends Service {
 		Cursor c_attachment;
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
-		String[] args = { String.valueOf(Constants.STATE.PENDING),
+		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
 				spref.getString(Constants.PREF_KEYS.user_id, null) };
 		Cursor c = db.rawQuery(query, args);
 		if (c.moveToFirst()) {
@@ -336,7 +342,7 @@ public class BackgroundService extends Service {
 			params.put(Constants.QueryParameters.FILE, file);
 			AsyncHttpClient client = new AsyncHttpClient();
 			// client.addHeader("Content-Type", "multipart/form-data");
-			//client.setTimeout(500000);
+			// client.setTimeout(500000);
 			client.post(getApplicationContext(), Utility.getBaseURL()
 					+ "query/upload_file", params,
 					new JsonHttpResponseHandler() {
@@ -361,7 +367,7 @@ public class BackgroundService extends Service {
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
 		String[] args = { spref.getString(Constants.PREF_KEYS.user_id, null),
-				String.valueOf(Constants.STATE.PENDING) };
+				String.valueOf(Constants.MSG_STATE.PENDING) };
 		Cursor c = db.rawQuery(query, args);
 		JSONArray messages = new JSONArray();
 		JSONObject message;
@@ -536,7 +542,7 @@ public class BackgroundService extends Service {
 															JSONObject response) {
 														Utility.log(
 																TAG,
-																"sucess get ids of new user \n"
+																"sucess get full detials of new user \n"
 																		+ response);
 														// got the data now
 														// insert
@@ -545,7 +551,7 @@ public class BackgroundService extends Service {
 														// will be free
 														new DbHelper(
 																getApplicationContext())
-																.insertUser(response);
+																.insertUsers(response);
 
 													};
 												});
@@ -737,5 +743,19 @@ public class BackgroundService extends Service {
 		Intent intent = new Intent(action);
 		LocalBroadcastManager.getInstance(getApplicationContext())
 				.sendBroadcast(intent);
+	}
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		/**
+		 * find ehat to do from intent and perform task accordingly
+		 */
+		spref = getApplicationContext().getSharedPreferences(
+				  Constants.pref_file_name, Context.MODE_PRIVATE);
+		Utility.log(TAG, "m a service and I am called to handle Intent");
+		holdWakeLock();
+		// sendToServer();
+		// getMessagesFromServer();
+		sync();
 	}
 }

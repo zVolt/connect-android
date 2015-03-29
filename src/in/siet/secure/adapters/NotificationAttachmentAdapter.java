@@ -52,8 +52,8 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 		}
 
 		tmp = files.get(position);
-		if (tmp.state == Constants.STATE.ACK_SEND
-				|| tmp.state == Constants.STATE.DOWNLOADED)
+		if (tmp.state == Constants.FILE_STATE.ACK_SEND
+				|| tmp.state == Constants.FILE_STATE.DOWNLOADED)
 			holder.state_image.setImageDrawable(context.getResources()
 					.getDrawable(R.drawable.ic_file_done));
 		else
