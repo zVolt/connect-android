@@ -43,8 +43,7 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		spf = getActivity().getSharedPreferences(Constants.pref_file_name,
-				Context.MODE_PRIVATE);
+
 		View rootView = inflater.inflate(R.layout.fragment_new_notification,
 				container, false);
 		// ViewHolder holder = new ViewHolder();
@@ -173,7 +172,9 @@ public class FragmentNewNotification extends Fragment implements
 	}
 
 	/**
-	 * Creates a new Notification from data provided, Insert it in local database.
+	 * Creates a new Notification from data provided, Insert it in local
+	 * database.
+	 * 
 	 * @param view
 	 *            View on which the action is performed (ImageButton in this
 	 *            case)
@@ -192,7 +193,7 @@ public class FragmentNewNotification extends Fragment implements
 					: Constants.FOR_FACULTY.NO;
 			// fid string pk of user
 			DbHelper db = new DbHelper(getActivity().getApplicationContext());
-			int pk_user = db.getUserPk(spf.getString(
+			int pk_user = db.getUserPk(getSPreferences().getString(
 					Constants.PREF_KEYS.user_id, null));
 
 			long time = Calendar.getInstance().getTimeInMillis();
@@ -200,7 +201,7 @@ public class FragmentNewNotification extends Fragment implements
 			body_txt = body.getText().toString();
 			Notification new_noti = new Notification(for_faculty, subject_txt,
 					body_txt, time, pk_user, course, branch, section, year,
-					file_list); 
+					file_list);
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
 
@@ -218,5 +219,12 @@ public class FragmentNewNotification extends Fragment implements
 		String body_txt = body.getText().toString().trim();
 		return !(subject_txt.length() == 0 || body_txt.length() == 0);
 
+	}
+
+	private SharedPreferences getSPreferences() {
+		if (spf == null)
+			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
 	}
 }

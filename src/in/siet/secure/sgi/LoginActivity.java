@@ -3,6 +3,7 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Student;
 import in.siet.secure.Util.StudentFull;
 import in.siet.secure.Util.User;
@@ -45,7 +46,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class LoginActivity extends ActionBarActivity {
 	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -70,8 +70,8 @@ public class LoginActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (checkPlayServices()) {
-			spref = getApplicationContext().getSharedPreferences(
-					Constants.pref_file_name, Context.MODE_PRIVATE);
+			// spref = getApplicationContext().getSharedPreferences(
+			// Constants.pref_file_name, Context.MODE_PRIVATE);
 			context = getApplicationContext();
 			/**
 			 * register for gcm if not already registered
@@ -82,7 +82,8 @@ public class LoginActivity extends ActionBarActivity {
 			 * (regid.isEmpty()) { registerInBackground(); }
 			 */
 
-			if (spref.getBoolean(Constants.PREF_KEYS.logged_in, false)) {
+			if (getSPreferences().getBoolean(Constants.PREF_KEYS.logged_in,
+					false)) {
 				startMainActivity();
 			}
 			setContentView(R.layout.activity_login);
@@ -176,18 +177,15 @@ public class LoginActivity extends ActionBarActivity {
 					try {
 						tmpobj.put(Constants.JSONKEYS.USER_ID,
 								Utility.encode(user_id));
-						// strb.append(Constants.NEW_LINE);
 						tmpobj.put(Constants.JSONKEYS.PSWD,
 								Utility.encode(Utility.sha1(pwd)));
-						// strb.append(Constants.NEW_LINE);
 						tmpobj.put(Constants.JSONKEYS.FACULTY, is_faculty);
-						// strb.append(Constants.NEW_LINE);
 						tmpobj.put(Constants.JSONKEYS.REG_ID, regid);
 					} catch (JSONException e) {
 						Utility.DEBUG(e);
 					}
 
-					queryServer(tmpobj.toString());
+					login(tmpobj.toString());
 				}
 
 			} else {
@@ -233,15 +231,7 @@ public class LoginActivity extends ActionBarActivity {
 	public void clearInput() {
 		((TextView) findViewById(R.id.editText_userpassword)).setText(null);
 	}
-
-	/*
-	 * public void createdb() { // get data from server StringBuilder strb = new
-	 * StringBuilder();
-	 * strb.append(spref.getString(Constants.PREF_KEYS.encripted_user_id, ""));
-	 * strb.append(Constants.NEW_LINE);
-	 * strb.append(spref.getString(Constants.PREF_KEYS.token, ""));
-	 * strb.append(Constants.NEW_LINE); queryServer(strb.toString(), false); }
-	 */
+	
 	/**
 	 * saving user details in preference file
 	 * 
@@ -249,56 +239,48 @@ public class LoginActivity extends ActionBarActivity {
 	 *            save token to query with server
 	 */
 	public void saveUser(String token) {
-
-		SharedPreferences sharedPref = getApplicationContext()
-				.getSharedPreferences(Constants.pref_file_name,
-						Context.MODE_PRIVATE);
-		String saved_user_id = sharedPref.getString(
+		String saved_user_id = getSPreferences().getString(
 				Constants.PREF_KEYS.user_id, null);
-		String saved_token = sharedPref.getString(Constants.PREF_KEYS.token,
-				null);
-		// all data have been set in the calling function
-
-		if (saved_user_id == null || saved_token != null) { // if detail doesnt
-															// exist
-			Editor editor = sharedPref.edit();
-			editor.putString(Constants.PREF_KEYS.user_id, user.user_id);
-			editor.putString(Constants.PREF_KEYS.encripted_user_id,
-					Utility.encode(user.user_id));
-			editor.putString(Constants.PREF_KEYS.token, Utility.encode(token));
-			editor.putString(Constants.PREF_KEYS.f_name, user.f_name);
-			editor.putString(Constants.PREF_KEYS.l_name, user.l_name);
-			editor.putString(Constants.PREF_KEYS.pic_url, user.picUrl);
-			if (is_faculty) {
-				editor.putString(Constants.PREF_KEYS.branch,
-						((Faculty) user).branch);
-
-			} else {
-				Student s_user = (Student) user;
-				editor.putString(Constants.PREF_KEYS.section, s_user.section);
-				editor.putString(Constants.PREF_KEYS.year,
-						String.valueOf(s_user.year));
-
-			}
-			editor.putBoolean(Constants.PREF_KEYS.logged_in, true);
-			editor.putBoolean(Constants.PREF_KEYS.is_faculty, is_faculty);
-			editor.commit();
+		Utility.log(TAG, "previously user logged in was " + saved_user_id);
+		if (saved_user_id != null && user_id.equalsIgnoreCase(saved_user_id)) {
+			new DbHelper(getApplicationContext()).clearCourseData();
+		} else {
+			new DbHelper(getApplicationContext()).hardReset();
 		}
+		Editor editor = getSPreferences().edit();
+		editor.remove(Constants.PREF_KEYS.user_id)
+				.putString(Constants.PREF_KEYS.user_id, user.user_id)
+				.putString(Constants.PREF_KEYS.encripted_user_id,
+						Utility.encode(user.user_id))
+				.putString(Constants.PREF_KEYS.token, Utility.encode(token))
+				.putString(Constants.PREF_KEYS.f_name, user.f_name)
+				.putString(Constants.PREF_KEYS.l_name, user.l_name)
+				.putString(Constants.PREF_KEYS.pic_url, user.picUrl);
+		if (is_faculty) {
+			editor.putString(Constants.PREF_KEYS.branch,
+					((Faculty) user).branch);
 
-		// new DbHelper(getApplicationContext()).getAndAddUser(user,
-		// !is_faculty);
-		// save user in db also
+		} else {
+			Student s_user = (Student) user;
+			editor.putString(Constants.PREF_KEYS.section, s_user.section)
+					.putString(Constants.PREF_KEYS.year,
+							String.valueOf(s_user.year));
 
+		}
+		editor.putBoolean(Constants.PREF_KEYS.logged_in, true)
+				.putBoolean(Constants.PREF_KEYS.is_faculty, is_faculty)
+				.commit();
 	}
 
 	/**
-	 * 
+	 * hit the server with some post data to perform login(authenticate user
+	 * details)
 	 * 
 	 * @param data
-	 * @param dologin
-	 *            either you want to login or you want to get initial data
+	 *            data to send to server for login
+	 * 
 	 */
-	public void queryServer(String data) {
+	public void login(String data) {
 
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.addHeader("Content-Type", "application/json");
@@ -310,300 +292,116 @@ public class LoginActivity extends ActionBarActivity {
 		}
 
 		client.post(getApplicationContext(), Utility.getBaseURL()
-				+ "login/dologin", entity, null, new JsonHttpResponseHandler() {
-			@Override
-			public void onSuccess(int statusCode, Header[] headers,
-					JSONObject response) {
+				+ "login/dologin", entity, null,
+				new MyJsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							JSONObject response) {
+						try {
+							/**
+							 * if the tag in response JSOObject is about login
+							 * and the status is true
+							 */
+							if (response.getString(Constants.JSONKEYS.TAG)
+									.equalsIgnoreCase(
+											Constants.JSONKEYS.TAG_MSGS.LOGIN)
+									&& response
+											.getBoolean(Constants.JSONKEYS.STATUS)) {
+								// get the details of user who just logged in
+								JSONObject userobj = response
+										.getJSONObject(Constants.JSONKEYS.USER_DATA);
+								// parse the data according to whether he is a
+								// faculty or a student and create a user object
+								// (Common superclass of FacultyFull and
+								// SrudentFull)
+								if (is_faculty) {
+									FacultyFull f_user = new FacultyFull();
 
-				try {
-					// Utility.hideProgressDialog();
+									f_user.branch = userobj
+											.getString(Constants.JSONKEYS.BRANCH);
+									if (response.has(Constants.JSONKEYS.STREET))
+										f_user.street = userobj
+												.getString(Constants.JSONKEYS.STREET);
+									if (response.has(Constants.JSONKEYS.CITY))
 
-					if (response
-							.getString(Constants.JSONKEYS.TAG)
-							.equalsIgnoreCase(Constants.JSONKEYS.TAG_MSGS.LOGIN)
-							&& response.getBoolean(Constants.JSONKEYS.STATUS)) {
-						// we can get course from branch
-						JSONObject userobj = response
-								.getJSONObject(Constants.JSONKEYS.USER_DATA);
-						if (is_faculty) {
-							FacultyFull f_user = new FacultyFull();
-							user = f_user;
+										f_user.city = userobj
+												.getString(Constants.JSONKEYS.CITY);
+									if (response.has(Constants.JSONKEYS.STATE))
 
-							f_user.branch = userobj
-									.getString(Constants.JSONKEYS.BRANCH);
-							if (response.has(Constants.JSONKEYS.STREET))
-								f_user.street = userobj
-										.getString(Constants.JSONKEYS.STREET);
-							if (response.has(Constants.JSONKEYS.CITY))
+										f_user.state = userobj
+												.getString(Constants.JSONKEYS.STATE);
+									if (response.has(Constants.JSONKEYS.P_MOB))
 
-								f_user.city = userobj
-										.getString(Constants.JSONKEYS.CITY);
-							if (response.has(Constants.JSONKEYS.STATE))
+										f_user.p_mob = userobj
+												.getString(Constants.JSONKEYS.P_MOB);
+									if (response.has(Constants.JSONKEYS.H_MOB))
 
-								f_user.state = userobj
-										.getString(Constants.JSONKEYS.STATE);
-							if (response.has(Constants.JSONKEYS.P_MOB))
+										f_user.h_mob = userobj
+												.getString(Constants.JSONKEYS.H_MOB);
+									if (response.has(Constants.JSONKEYS.PIN))
 
-								f_user.p_mob = userobj
-										.getString(Constants.JSONKEYS.P_MOB);
-							if (response.has(Constants.JSONKEYS.H_MOB))
+										f_user.pin = userobj
+												.getString(Constants.JSONKEYS.PIN);
+									user = f_user;
+								} else {
+									StudentFull s_user = new StudentFull();
+									s_user.section = userobj
+											.getString(Constants.JSONKEYS.SECTION);
+									s_user.year = Integer.parseInt(userobj
+											.getString(Constants.JSONKEYS.YEAR));
+									s_user.u_roll_no = userobj
+											.getString(Constants.JSONKEYS.ROLL_NO);
+									user = s_user;
+								}
+								user.user_id = user_id;
+								user.f_name = userobj
+										.getString(Constants.JSONKEYS.FIRST_NAME);
+								user.l_name = userobj
+										.getString(Constants.JSONKEYS.LAST_NAME);
+								user.picUrl = userobj
+										.getString(Constants.JSONKEYS.PROFILE_IMAGE);
 
-								f_user.h_mob = userobj
-										.getString(Constants.JSONKEYS.H_MOB);
-							if (response.has(Constants.JSONKEYS.PIN))
+								saveUser(response
+										.getString(Constants.JSONKEYS.TOKEN));
 
-								f_user.pin = userobj
-										.getString(Constants.JSONKEYS.PIN);
+								InitialData idata = parseInitialData(response
+										.getJSONObject(Constants.JSONKEYS.INITIAL_DATA));
 
-						} else {
-							StudentFull s_user = new StudentFull();
-							user = s_user;
-							s_user.section = userobj
-									.getString(Constants.JSONKEYS.SECTION);
-							s_user.year = Integer.parseInt(userobj
-									.getString(Constants.JSONKEYS.YEAR));
-							s_user.u_roll_no = userobj
-									.getString(Constants.JSONKEYS.ROLL_NO);
+								DbHelper db = new DbHelper(
+										getApplicationContext());
+								db.addInitialData(idata);
+								db.insertUser(user, is_faculty);
+								startMainActivity();
+							} else {
+
+								Toast.makeText(getApplicationContext(),
+										"Login Failed", Toast.LENGTH_LONG)
+										.show();
+							}
+						} catch (JSONException e) {
+							Utility.log(TAG + " queryServer exception ",
+									e.getLocalizedMessage());
+						} finally {
+							Utility.hideProgressDialog();
 						}
-						user.user_id = user_id;
-						user.f_name = userobj
-								.getString(Constants.JSONKEYS.FIRST_NAME);
-						user.l_name = userobj
-								.getString(Constants.JSONKEYS.LAST_NAME);
-						user.picUrl = userobj
-								.getString(Constants.JSONKEYS.PROFILE_IMAGE);
-						// create db
-						saveUser(response.getString(Constants.JSONKEYS.TOKEN));
-						// startMainActivity(); //hide this line
-
-						InitialData idata = parseInitialData(response
-								.getJSONObject(Constants.JSONKEYS.INITIAL_DATA));
-
-						DbHelper db = new DbHelper(getApplicationContext());
-						db.addInitialData(idata);
-						db.insertUser(user, is_faculty);
-						startMainActivity();
-					} else {
-
-						Toast.makeText(getApplicationContext(), "Login Failed",
-								Toast.LENGTH_LONG).show();
 					}
-				} catch (JSONException e) {
-					Utility.log(TAG + " queryServer exception ",
-							e.getLocalizedMessage());
-				} finally {
-					Utility.hideProgressDialog();
-				}
-			}
 
-			@Override
-			public void onFailure(int statusCode, Header[] headers,
-					Throwable throwable, JSONObject errorResponse) {
-
-				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),
-						"Error Connectiong server", true);
-				Utility.log(TAG + " onFailure",
-						" at start" + throwable.getMessage());
-			}
-
-			@Override
-			public void onSuccess(int statusCode, Header[] headers,
-					JSONArray response) {
-				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),
-						"server responce not as expected", true);
-				Utility.log(TAG + " onSucess", " at start" + response);
-
-			}
-
-			@Override
-			public void onSuccess(int statusCode, Header[] headers,
-					String responseString) {
-				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),
-						"server responce not as expected", true);
-				Utility.log(TAG + " onSucess", " at start" + responseString);
-
-			}
-
-			@Override
-			public void onFailure(int statusCode, Header[] headers,
-					String responseString, Throwable throwable) {
-				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),
-						"server responce not as expected", true);
-				Utility.log(TAG + " onFailure",
-						" at start" + throwable.getMessage());
-
-			}
-
-			@Override
-			public void onFailure(int statusCode, Header[] headers,
-					Throwable throwable, JSONArray errorResponse) {
-				Utility.hideProgressDialog();
-				Utility.RaiseToast(getApplicationContext(),
-						"server responce not as expected", true);
-				Utility.log(TAG + " onFailure",
-						" at start" + throwable.getMessage());
-			}
-
-		});
-
-	}
-
-	/**
-	 * for GCM
-	 * 
-	 */
-
-	/**
-	 * check google play service is installed and working
-	 * 
-	 * @return
-	 */
-	private boolean checkPlayServices() {
-		Utility.log(TAG, "getting play service status");
-		int resultCode = GooglePlayServicesUtil
-				.isGooglePlayServicesAvailable(this);
-		if (resultCode != ConnectionResult.SUCCESS) {
-			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-				GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-						PLAY_SERVICES_RESOLUTION_REQUEST).show();
-			} else {
-				Utility.log(TAG, "This device is not supported.");
-				finish();
-			}
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Gets the current registration ID for application on GCM service.
-	 * <p>
-	 * If result is empty, the app needs to register.
-	 * 
-	 * @return registration ID, or empty string if there is no existing
-	 *         registration ID.
-	 */
-	private String getRegistrationId(Context context) {
-		Utility.log(TAG, "getting GCM registration ID from preferences");
-		String registrationId = spref.getString(
-				Constants.PREF_KEYS.PROPERTY_REG_ID, "");
-		if (registrationId.equalsIgnoreCase("")) {
-			Utility.log(TAG, "Registration not found.");
-			return "";
-		}
-		// Check if app was updated; if so, it must clear the registration ID
-		// since the existing registration ID is not guaranteed to work with
-		// the new app version.
-		int registeredVersion = spref.getInt(
-				Constants.PREF_KEYS.PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-		int currentVersion = getAppVersion(context);
-		if (registeredVersion != currentVersion) {
-			Utility.log(TAG, "App version changed.");
-			return "";
-		}
-		return registrationId;
-	}
-
-	/**
-	 * @return Application's version code from the {@code PackageManager}.
-	 */
-	private static int getAppVersion(Context context) {
-		Utility.log(TAG, "getting app version");
-		try {
-			PackageInfo packageInfo = context.getPackageManager()
-					.getPackageInfo(context.getPackageName(), 0);
-			return packageInfo.versionCode;
-		} catch (NameNotFoundException e) {
-			// should never happen
-			throw new RuntimeException("Could not get package name: " + e);
-		}
-	}
-
-	/**
-	 * Registers the application with GCM servers asynchronously.
-	 * <p>
-	 * Stores the registration ID and app versionCode in the application's
-	 * shared preferences.
-	 */
-	private void registerInBackground() {
-		Utility.log(TAG, "getting GCM registration ID from google gcm server");
-		new AsyncTask<Void, Void, Boolean>() {
-			@Override
-			protected Boolean doInBackground(Void... params) {
-				boolean res = true;
-				try {
-					if (gcm == null) {
-						gcm = GoogleCloudMessaging.getInstance(context);
+					@Override
+					public void commonTask() {
+						Utility.hideProgressDialog();
+						Utility.RaiseToast(getApplicationContext(),
+								"Error Connectiong server", true);
 					}
-					regid = gcm.register(Constants.SENDER_ID);
-					// Persist the registration ID - no need to register again.
-					storeRegistrationId(context, regid);
-				} catch (IOException ex) {
-					Utility.log(TAG, "Error :" + ex.getMessage());
-					// If there is an error, don't just keep trying to register.
-					// Require the user to click a button again, or perform
-					// exponential back-off.
-					res = false;
-				}
-				return res;
-			}
 
-			@Override
-			protected void onPostExecute(Boolean result) {
-				// Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-				if (result) {
-					JSONObject tmpobj = new JSONObject();
-					try {
-						tmpobj.put(Constants.JSONKEYS.USER_ID,
-								Utility.encode(user_id));
-						// strb.append(Constants.NEW_LINE);
-						tmpobj.put(Constants.JSONKEYS.PSWD,
-								Utility.encode(Utility.sha1(pwd)));
-						// strb.append(Constants.NEW_LINE);
-						tmpobj.put(Constants.JSONKEYS.FACULTY, is_faculty);
-						// strb.append(Constants.NEW_LINE);
-						tmpobj.put(Constants.JSONKEYS.REG_ID, regid);
-					} catch (JSONException e) {
-						Utility.DEBUG(e);
-					}
-					queryServer(tmpobj.toString());
+				});
 
-				} else {
-					Utility.log(TAG, "gcm registration failed aborting");
-					Utility.hideProgressDialog();
-					Utility.RaiseToast(getApplicationContext(),
-							"gcm registration failed ", false);
-				}
-
-			}
-		}.execute(null, null, null);
 	}
 
 	/**
-	 * Stores the registration ID and app versionCode in the application's
-	 * {@code SharedPreferences}.
+	 * parse the initial data i.e., the list of course branches sections years
+	 * we received as a set of initial data and return the intialData object
 	 * 
-	 * @param context
-	 *            application's context.
-	 * @param regId
-	 *            registration ID
-	 */
-	private void storeRegistrationId(Context context, String regId) {
-		Utility.log(TAG, "saving reg id and app veriosn in pref");
-		int appVersion = getAppVersion(context);
-		Utility.log(TAG, "Saving regId on app version " + appVersion);
-		SharedPreferences.Editor editor = spref.edit();
-		editor.putString(Constants.PREF_KEYS.PROPERTY_REG_ID, regId);
-		editor.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION, appVersion);
-		editor.commit();
-	}
-
-	/**
-	 * parse the initial data
+	 * we can skip this and pass the JSONObject to databse Helper class
 	 * 
 	 * @param response
 	 * @throws JSONException
@@ -660,4 +458,162 @@ public class LoginActivity extends ActionBarActivity {
 		return idata;
 
 	}
+
+	private SharedPreferences getSPreferences() {
+		if (spref == null)
+			spref = getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spref;
+	}
+
+	/**
+	 * for GCM
+	 * 
+	 */
+
+	/**
+	 * check google play service is installed and working
+	 * 
+	 * @return
+	 */
+	private boolean checkPlayServices() {
+		Utility.log(TAG, "getting play service status");
+		int resultCode = GooglePlayServicesUtil
+				.isGooglePlayServicesAvailable(this);
+		if (resultCode != ConnectionResult.SUCCESS) {
+			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+				GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+						PLAY_SERVICES_RESOLUTION_REQUEST).show();
+			} else {
+				Utility.log(TAG, "This device is not supported.");
+				finish();
+			}
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Gets the current registration ID for application on GCM service.
+	 * <p>
+	 * If result is empty, the app needs to register.
+	 * 
+	 * @return registration ID, or empty string if there is no existing
+	 *         registration ID.
+	 */
+	private String getRegistrationId(Context context) {
+		Utility.log(TAG, "getting GCM registration ID from preferences");
+		String registrationId = getSPreferences().getString(
+				Constants.PREF_KEYS.PROPERTY_REG_ID, "");
+		if (registrationId.equalsIgnoreCase("")) {
+			Utility.log(TAG, "Registration not found.");
+			return "";
+		}
+		// Check if app was updated; if so, it must clear the registration ID
+		// since the existing registration ID is not guaranteed to work with
+		// the new app version.
+		int registeredVersion = getSPreferences().getInt(
+				Constants.PREF_KEYS.PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+		int currentVersion = getAppVersion(context);
+		if (registeredVersion != currentVersion) {
+			Utility.log(TAG, "App version changed.");
+			return "";
+		}
+		return registrationId;
+	}
+
+	/**
+	 * @return Application's version code from the {@code PackageManager}.
+	 */
+	private static int getAppVersion(Context context) {
+		Utility.log(TAG, "getting app version");
+		try {
+			PackageInfo packageInfo = context.getPackageManager()
+					.getPackageInfo(context.getPackageName(), 0);
+			return packageInfo.versionCode;
+		} catch (NameNotFoundException e) {
+			// should never happen
+			throw new RuntimeException("Could not get package name: " + e);
+		}
+	}
+
+	/**
+	 * Registers the application with GCM servers asynchronously.
+	 * <p>
+	 * Stores the registration ID and app versionCode in the application's
+	 * shared preferences.
+	 */
+	private void registerInBackground() {
+		Utility.log(TAG, "getting GCM registration ID from google gcm server");
+		new AsyncTask<Void, Void, Boolean>() {
+			@Override
+			protected Boolean doInBackground(Void... params) {
+				boolean res = true;
+				try {
+					if (gcm == null) {
+						gcm = GoogleCloudMessaging.getInstance(context);
+					}
+					regid = gcm.register(Constants.SENDER_ID);
+					// Persist the registration ID - no need to register again.
+					storeRegistrationId(context, regid);
+				} catch (IOException ex) {
+					Utility.log(TAG, "Error :" + ex.getMessage());
+					// If there is an error, don't just keep trying to register.
+					// Require the user to click a button again, or perform
+					// exponential back-off.
+					res = false;
+				}
+				return res;
+			}
+
+			/**
+			 * if GCM registration was successful then hit the server with login
+			 * details else show error toast
+			 */
+			@Override
+			protected void onPostExecute(Boolean result) {
+				if (result) {
+					JSONObject tmpobj = new JSONObject();
+					try {
+						tmpobj.put(Constants.JSONKEYS.USER_ID,
+								Utility.encode(user_id));
+						tmpobj.put(Constants.JSONKEYS.PSWD,
+								Utility.encode(Utility.sha1(pwd)));
+						tmpobj.put(Constants.JSONKEYS.FACULTY, is_faculty);
+						tmpobj.put(Constants.JSONKEYS.REG_ID, regid);
+					} catch (JSONException e) {
+						Utility.DEBUG(e);
+					}
+					login(tmpobj.toString());
+
+				} else {
+					Utility.log(TAG, "gcm registration failed aborting");
+					Utility.hideProgressDialog();
+					Utility.RaiseToast(getApplicationContext(),
+							"registration failed try again", false);
+				}
+
+			}
+		}.execute();
+	}
+
+	/**
+	 * Stores the registration ID and app versionCode in the application's
+	 * {@code SharedPreferences}.
+	 * 
+	 * @param context
+	 *            application's context.
+	 * @param regId
+	 *            registration ID
+	 */
+	private void storeRegistrationId(Context context, String regId) {
+		Utility.log(TAG, "saving reg id and app veriosn in pref");
+		int appVersion = getAppVersion(context);
+		Utility.log(TAG, "Saving regId on app version " + appVersion);
+		SharedPreferences.Editor editor = getSPreferences().edit();
+		editor.putString(Constants.PREF_KEYS.PROPERTY_REG_ID, regId);
+		editor.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION, appVersion);
+		editor.commit();
+	}
+
 }

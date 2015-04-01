@@ -103,15 +103,8 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		/**
-		 * updates notifications only from local db is probably useless need to
-		 * delete this or implement the server hit method real refresh
+		 * we can use this to implement special menu options for notificaion
 		 */
-		if (item.getItemId() == R.id.action_refresh_notifications) {
-			Utility.log(TAG, "refresh notification");
-
-			updateList();
-			return true;
-		}
 		return false;
 	}
 
@@ -169,7 +162,7 @@ public class FragmentNotification extends Fragment {
 			bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
 			bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
 			bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
-			
+
 			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
 			startActivity(intent);
 		}

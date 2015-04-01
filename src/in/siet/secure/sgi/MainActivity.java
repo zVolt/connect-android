@@ -3,11 +3,9 @@ package in.siet.secure.sgi;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
-import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,18 +35,17 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 public class MainActivity extends ActionBarActivity {
 	public static final String TAG = "in.siet.secure.sgi.MainActivity";
 	public static boolean UNI_IMG_LOADER_SET = false;
+
 	private DrawerLayout drawerlayout;
 	private ScrollView fullDrawerLayout;
 	private boolean back_pressed = false;
 	private ActionBarDrawerToggle drawerToggle;
-	static final UserFilterDialog show = new UserFilterDialog();
+	UserFilterDialog show = new UserFilterDialog();
 	private SharedPreferences spf;
-	public final String EXTRA_MESSAGE = "message";
-	public static String ACTIVE_FRAGMENT_TAG;
-	Toolbar toolbar;
+	private static String ACTIVE_FRAGMENT_TAG;
+	private Toolbar toolbar;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
-	private AlarmManager alarmmanager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,12 +80,10 @@ public class MainActivity extends ActionBarActivity {
 		/**
 		 * CANCEL THE NOTIFICATION PRESENT IN THE NOTIFICATION DRAWER ONCE THE
 		 * USER HAS VIEWED IT
+		 * 
+		 * if (Utility.notification_msg_active == true)
+		 * Utility.CancelMessageNotification(this);
 		 */
-		if (Utility.notification_msg_active == true)
-			Utility.CancelMessageNotification(this);
-		spf = getSharedPreferences(Constants.pref_file_name,
-				Context.MODE_PRIVATE);
-
 		initDrawerItems();
 		drawerlayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -104,15 +99,10 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void initDrawerItems() {
-		// drawerListView = (ListView) findViewById(R.id.drawer_listview);
-		// drawerListView.setAdapter(new DrawerListAdapter(this, panelOption));
-		// drawerListView.setOnItemClickListener(new DrawerClickListner());
 		// setting user name and pic
 		TextView user_name = (TextView) findViewById(R.id.textViewUserName);
 		TextView user_id = (TextView) findViewById(R.id.textViewUserExtra);
 		ImageView user_pic = (ImageView) findViewById(R.id.imageViewUser);
-		SharedPreferences spf = getSharedPreferences(Constants.pref_file_name,
-				Context.MODE_PRIVATE);
 		DisplayImageOptions round_options = new DisplayImageOptions.Builder()
 				.cacheInMemory(true)
 				.cacheOnDisk(true)
@@ -122,18 +112,23 @@ public class MainActivity extends ActionBarActivity {
 										R.dimen.drawer_user_image_radius)))
 				.build();
 		ImageLoader.getInstance().displayImage(
-				spf.getString(Constants.PREF_KEYS.pic_url, null), user_pic,
-				round_options);
-		user_name.setText(spf.getString(Constants.PREF_KEYS.f_name, null) + " "
-				+ spf.getString(Constants.PREF_KEYS.l_name, null));
-		user_id.setText(spf.getString(Constants.PREF_KEYS.user_id, null));
+				getSPreferences().getString(Constants.PREF_KEYS.pic_url, null),
+				user_pic, round_options);
+		user_name
+				.setText(getSPreferences().getString(
+						Constants.PREF_KEYS.f_name, null)
+						+ Constants.SPACE
+						+ getSPreferences().getString(
+								Constants.PREF_KEYS.l_name, null));
+		user_id.setText(getSPreferences().getString(
+				Constants.PREF_KEYS.user_id, null));
 		// end setting user details drawer header
 
 		fullDrawerLayout = (ScrollView) findViewById(R.id.drawer);
 		LinearLayout parent = (LinearLayout) findViewById(R.id.drawer_item_parent);
 		// options defined by users
 		String[] panelOption;
-		if (spf.getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
+		if (getSPreferences().getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
 			panelOption = getResources().getStringArray(
 					R.array.array_panel_options_fact);
 		} else {
@@ -180,11 +175,6 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
-	@Override
 	public void onPause() {
 		super.onPause();
 		/**
@@ -197,10 +187,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		/**
-		 * set service to run every 15 sec
-		 */
-		// Utility.setAlarm(getApplication(), 15000);
 		back_pressed = false;
 	}
 
@@ -242,22 +228,32 @@ public class MainActivity extends ActionBarActivity {
 			Utility.startActivity(this, SettingActivity.class);
 			return true;
 		} else if (id == R.id.action_logout) {
-			// clear pref
-			spf.edit().clear().commit();
+			// clear pref but retain gcm registration ID and version number of
+			// application
+			String user_id=getSPreferences().getString(
+					Constants.PREF_KEYS.user_id, "");
+			String reg_id = getSPreferences().getString(
+					Constants.PREF_KEYS.PROPERTY_REG_ID, "");
+			int app_version = getSPreferences()
+					.getInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
+							Integer.MIN_VALUE);
+			getSPreferences()
+					.edit()
+					.clear()
+					.putString(Constants.PREF_KEYS.user_id, user_id)
+					.putString(Constants.PREF_KEYS.PROPERTY_REG_ID, reg_id)
+					.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
+							app_version).commit();
 
-			// clear db
-			DbHelper db = new DbHelper(getApplicationContext());
-			db.ClearDb(db.getWritableDatabase());
+			//new DbHelper(getApplicationContext()).softReset();
 
 			Log.d(TAG, "pref cleared");
 			Utility.startActivity(this, LoginActivity.class);
 			finish();
 			return true;
 		} else if (id == R.id.action_reset) {
-
-			DbHelper db = new DbHelper(getApplicationContext());
-			db.ClearDb(db.getWritableDatabase());
-
+			new DbHelper(getApplicationContext()).clearUserData();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -380,20 +376,10 @@ public class MainActivity extends ActionBarActivity {
 
 	}
 
-	@Override
-	protected void onDestroy() {
-		/**
-		 * cancel the alarm (never start)
-		 * 
-		 * maybe I have done this to save my mobile battery while testing :D
-		 */
-		alarmmanager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		Intent intent = new Intent(this, BackgroundService.class);
-		PendingIntent pi = PendingIntent.getService(this, 0, intent, 0);
-		alarmmanager.cancel(pi);
-
-		Utility.log(TAG, "destroyed");
-		super.onDestroy();
+	private SharedPreferences getSPreferences() {
+		if (spf == null)
+			spf = getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
 	}
-
 }

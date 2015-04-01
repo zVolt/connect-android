@@ -4,12 +4,14 @@ import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.FacultyFull;
 import in.siet.secure.Util.InitialData;
+import in.siet.secure.Util.Message;
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Notification;
+import in.siet.secure.Util.Student;
 import in.siet.secure.Util.StudentFull;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
-import in.siet.secure.sgi.BackgroundService;
 
 import java.util.ArrayList;
 
@@ -29,7 +31,6 @@ import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -37,14 +38,14 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static final String DATABASE_NAME = "sgi_app.db";
 	public static int DATABASE_VERSION = 1;
 	public static SQLiteDatabase db;
-	public static Context context;
+	private Context context;
 	public static SharedPreferences spf;
 	private Intent intent;
 
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
 		context = contxt;
-		spf = context.getSharedPreferences(Constants.pref_file_name,
+		spf = context.getSharedPreferences(Constants.PREF_FILE_NAME,
 				Context.MODE_PRIVATE);
 	}
 
@@ -90,8 +91,32 @@ public class DbHelper extends SQLiteOpenHelper {
 		DATABASE_VERSION = newVersion;
 	}
 
-	public void ClearDb(SQLiteDatabase db) {
+	/**
+	 * clear all data including course details
+	 */
+	public void hardReset() {
+		setDb();
+		onUpgrade(db, DATABASE_VERSION, DATABASE_VERSION);
+	}
 
+	public void clearCourseData() {
+		setDb();
+		db.execSQL(DbStructure.Branches.COMMAND_DROP);
+		db.execSQL(DbStructure.Courses.COMMAND_DROP);
+		db.execSQL(DbStructure.Sections.COMMAND_DROP);
+		db.execSQL(DbStructure.Year.COMMAND_DROP);
+
+		db.execSQL(DbStructure.Branches.COMMAND_CREATE);
+		db.execSQL(DbStructure.Courses.COMMAND_CREATE);
+		db.execSQL(DbStructure.Sections.COMMAND_CREATE);
+		db.execSQL(DbStructure.Year.COMMAND_CREATE);
+	}
+
+	/**
+	 * clear only user data courses details will be stored
+	 */
+	public void clearUserData() {
+		setDb();
 		db.execSQL(DbStructure.UserTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FileMessageMapTable.COMMAND_DROP);
 		db.execSQL(DbStructure.FileNotificationMapTable.COMMAND_DROP);
@@ -282,6 +307,8 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * insert a users with full details
 	 * 
 	 * @param response
+	 *            {@link JSONObject} having 2 {@link JSONArray} one with Student
+	 *            details and other with faculty details
 	 */
 	public void insertUsers(JSONObject response) {
 		setDb();
@@ -385,9 +412,14 @@ public class DbHelper extends SQLiteOpenHelper {
 			}
 			if (response.has(Constants.JSONKEYS.STUDENT)) {
 				/**
-				 * don't insert users for now give an option to user
+				 * don't insert Student users for now give an option to user
 				 */
-				Utility.log(TAG, "ignoring new student senders :P");
+				Utility.log(
+						TAG,
+						"ignoring "
+								+ response.getJSONArray(
+										Constants.JSONKEYS.STUDENT).length()
+								+ " new student senders :P");
 			}
 		} catch (Exception e) {
 			Utility.DEBUG(e);
@@ -435,7 +467,6 @@ public class DbHelper extends SQLiteOpenHelper {
 						s_user.u_roll_no);
 				db.insert(DbStructure.StudentContactsTable.TABLE_NAME, null,
 						values);
-				// db.rawQuery(query,args);
 			} else {
 				// query =
 				// "insert into faculty(user_id,branch_id) values(?,(select branches._id from branches join courses on course_id=courses._id where branches.name=? and courses.name=?))";
@@ -509,17 +540,22 @@ public class DbHelper extends SQLiteOpenHelper {
 		params.put(Constants.QueryParameters.USER_TYPE, is_faculty);
 		AsyncHttpClient client = new AsyncHttpClient();
 		client.get(Utility.getBaseURL() + "query/get_user_info", params,
-				new JsonHttpResponseHandler() {
+				new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONObject response) {
+						User n_user;
 						try {
 							if (!is_faculty) {
-								StudentFull s_user = (StudentFull) user;
-								s_user.u_roll_no = response
+								StudentFull s_full = new StudentFull(
+										(Student) user);
+								s_full.u_roll_no = response
 										.getString(Constants.JSONKEYS.ROLL_NO);
+								n_user = s_full;
+
 							} else {
-								FacultyFull f_user = (FacultyFull) user;
+								FacultyFull f_user = new FacultyFull(
+										(Faculty) user);
 
 								if (response.has(Constants.JSONKEYS.STATE))
 									f_user.state = response
@@ -539,52 +575,12 @@ public class DbHelper extends SQLiteOpenHelper {
 								if (response.has(Constants.JSONKEYS.PIN))
 									f_user.pin = response
 											.getString(Constants.JSONKEYS.PIN);
+								n_user = f_user;
 							}
-							insertUser(user, is_faculty);
+							insertUser(n_user, is_faculty);
 						} catch (Exception e) {
 							Utility.DEBUG(e);
 						}
-					}
-
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							String responseString) {
-						Utility.log(TAG,
-								"receving string responce from server requested was JSONObject");
-					}
-
-					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONArray response) {
-
-						Utility.log(TAG,
-								"receving JSONArray responce from server requested was JSONObject");
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-
-						Utility.log(TAG, " fail to receving found JSONObject "
-								+ errorResponse.toString());
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							String responseString, Throwable throwable) {
-
-						Utility.log(TAG,
-								" fail to receving found String and a throwable "
-										+ responseString);
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONArray errorResponse) {
-
-						Utility.log(TAG,
-								" fail to receving found JSONArray and a throwable "
-										+ errorResponse.toString());
 					}
 				});
 
@@ -592,7 +588,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	/**
 	 * Inserts courses, branches, year and section data passed, and fill
-	 * user_mapper table accordingly will be called from non UI thread
+	 * user_mapper table accordingly
 	 * 
 	 * @author Zeeshan Khan
 	 * 
@@ -653,19 +649,21 @@ public class DbHelper extends SQLiteOpenHelper {
 		return db;
 	}
 
-	/**
-	 * Insert new notification to database fetches the target from
-	 * FilterOptionsStatic class members
-	 * 
-	 * @param sub
-	 *            Subject of the notification
-	 * @param body
-	 *            Content of the notification
-	 */
-	public void insertNewNotification(Notification new_noti) {
-		setDb();
-		new InsertNotification().execute(new_noti);
-		// create new notification
+	public long insertNewMessage(Message msg) {
+		ContentValues values = new ContentValues();
+		values.put(DbStructure.MessageTable.COLUMN_TEXT, msg.text);
+		values.put(DbStructure.MessageTable.COLUMN_TIME, msg.time);
+		values.put(DbStructure.MessageTable.COLUMN_SENDER, msg.sender);
+		values.put(DbStructure.MessageTable.COLUMN_RECEIVER, msg.receiver);
+		values.put(DbStructure.MessageTable.COLUMN_STATE,
+				Constants.MSG_STATE.PENDING);
+		values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG,
+				Constants.IS_GROUP_MSG.NO);
+
+		long msg_id = db.insert(DbStructure.MessageTable.TABLE_NAME, null,
+				values);
+		Utility.startBackgroundService(context);
+		return msg_id;
 	}
 
 	/**
@@ -742,12 +740,27 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
+	 * Insert new notification to database fetches the target from
+	 * FilterOptionsStatic class members
+	 * 
+	 * @param sub
+	 *            Subject of the notification
+	 * @param body
+	 *            Content of the notification
+	 */
+	public void insertNewNotification(Notification new_noti) {
+		setDb();
+		new InsertNotification().execute(new_noti);
+		// create new notification
+	}
+
+	/**
 	 * Insert notification into database
 	 * 
 	 * @author Zeeshan Khan
 	 * 
 	 */
-	private static class InsertNotification extends
+	private class InsertNotification extends
 			AsyncTask<Notification, Void, Void> {
 
 		@Override
@@ -786,12 +799,12 @@ public class DbHelper extends SQLiteOpenHelper {
 			 * Constants.STATE docs for refrence),size 4. exit from here :D
 			 */
 
-			values.clear();
 			len = n.files.size();
 			Utility.log(TAG, "" + len);
 
 			for (int i = 0; i < len; i++) {
 				files = n.files.get(i);
+				values.clear();
 				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
 				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
 				values.put(DbStructure.FileTable.COLUMN_STATE,
@@ -819,8 +832,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			Intent intent = new Intent(context, BackgroundService.class);
-			context.startService(intent);
+			Utility.startBackgroundService(context);
 		}
 	}
 

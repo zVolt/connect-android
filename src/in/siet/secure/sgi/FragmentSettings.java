@@ -4,6 +4,7 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
@@ -13,6 +14,7 @@ import android.support.v7.app.ActionBarActivity;
 public class FragmentSettings extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 	public static final String TAG = "in.siet.secure.sgi.FragmentSettings";
+	private SharedPreferences spf;
 
 	public FragmentSettings() {
 	}
@@ -54,9 +56,8 @@ public class FragmentSettings extends PreferenceFragment implements
 					.setSummary(ip);
 			Utility.RaiseToast(getActivity(), Utility.SERVER, false);
 		} else if (key.equals(getString(R.string.pref_key_update_interval))) {
-			SharedPreferences spf = getActivity().getSharedPreferences(
-					Constants.pref_file_name, Context.MODE_PRIVATE);
-			spf.edit()
+			//useless preference now as we implemented GCM
+			getSPreferences().edit()
 					.putString(Constants.PREF_KEYS.UPDATE_INTERVAL,
 							sharedPref.getString(key, String.valueOf(1)))
 					.commit();
@@ -64,4 +65,10 @@ public class FragmentSettings extends PreferenceFragment implements
 		}
 	}
 
+	private SharedPreferences getSPreferences() {
+		if (spf == null)
+			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
+	}
 }

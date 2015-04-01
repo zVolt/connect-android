@@ -19,7 +19,7 @@
     <string name="action_about">About</string>
     <string name="action_contacts">Contacts</string>
     <string name="action_users">All Users</string>
-    <string name="action_reset">Reset</string>
+    <string name="action_reset">Reset DB</string>
     <string name="action_refresh_notifications">Refresh Notifications</string>
 
     <!-- Form texts -->

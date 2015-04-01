@@ -67,6 +67,12 @@
             android:name=".BackgroundService"
             android:exported="false" >
         </service>
+
+        <receiver android:name=".NewtorkBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
         <!-- GCM Specific components -->
 
         <meta-data
@@ -82,8 +88,6 @@
                 <category android:name="in.siet.secure.sgi" />
             </intent-filter>
         </receiver>
-
-        <service android:name=".GcmIntentService" />
     </application>
 
 </manifest>

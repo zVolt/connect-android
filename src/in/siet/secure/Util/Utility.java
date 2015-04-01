@@ -199,9 +199,9 @@ public class Utility {
 			SharedPreferences sharedPreferences) {
 
 		params.put(Constants.QueryParameters.USERNAME, sharedPreferences
-				.getString(Constants.PREF_KEYS.encripted_user_id, null).trim());
+				.getString(Constants.PREF_KEYS.encripted_user_id, "").trim());
 		params.put(Constants.QueryParameters.TOKEN, sharedPreferences
-				.getString(Constants.PREF_KEYS.token, null).trim());
+				.getString(Constants.PREF_KEYS.token, "").trim());
 		return params;
 	}
 
@@ -209,10 +209,10 @@ public class Utility {
 			SharedPreferences sharedPreferences) {
 
 		strb.append(sharedPreferences.getString(
-				Constants.PREF_KEYS.encripted_user_id, null).trim());
+				Constants.PREF_KEYS.encripted_user_id, "").trim());
 		strb.append(Constants.NEW_LINE);
-		strb.append(sharedPreferences
-				.getString(Constants.PREF_KEYS.token, null).trim());
+		strb.append(sharedPreferences.getString(Constants.PREF_KEYS.token, "")
+				.trim());
 		strb.append(Constants.NEW_LINE);
 		return strb;
 	}
@@ -220,6 +220,11 @@ public class Utility {
 	public static class DownloadFile extends
 			AsyncTask<String, Integer, Boolean> {
 		int id;
+		Context context;
+
+		public DownloadFile(Context context_) {
+			context = context_;
+		}
 
 		@Override
 		protected Boolean doInBackground(String... arg0) {
@@ -231,7 +236,7 @@ public class Utility {
 				conection.connect();
 				InputStream inputStream = new BufferedInputStream(
 						url.openStream(), 1024);
-				File file = new File(Constants.pathToApp);
+				File file = new File(Constants.PATH_TO_APP);
 				file.mkdirs();
 				OutputStream fileOutput = new FileOutputStream(new File(file,
 						filename));
@@ -253,7 +258,7 @@ public class Utility {
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				Utility.log(TAG, "download done");
-				SQLiteDatabase db = new DbHelper(DbHelper.context)
+				SQLiteDatabase db = new DbHelper(context)
 						.getWritableDatabase();
 				db.execSQL("update files set state=1 where _id=" + id);
 				db.close();
@@ -274,9 +279,8 @@ public class Utility {
 		Intent intent = new Intent(context, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(context, 0, intent, 0);
 		alarmmanager.cancel(pi);
-		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-				SystemClock.elapsedRealtime() + time_in_milisec,
-				time_in_milisec, pi);
+		alarmmanager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime() + time_in_milisec, pi);
 		Utility.log(TAG, "alarm reset on " + time_in_milisec / 1000 + " sec");
 	}
 
@@ -304,4 +308,8 @@ public class Utility {
 		return String.valueOf(format.format(bytes)) + res;
 	}
 
+	public static void startBackgroundService(Context context) {
+		Intent intent = new Intent(context, BackgroundService.class);
+		context.startService(intent);
+	}
 }

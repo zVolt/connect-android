@@ -4,26 +4,50 @@ import in.siet.secure.sgi.R;
 import android.os.Environment;
 
 public interface Constants {
-
+	/**
+	 * breaking the url so that the user(developer) can change the ip address of
+	 * the server
+	 */
 	public String PORT = "8080";
 	public String COLON = ":";
-	// public static final String SOCKET=SERVER+COLON+PORT; //to allow user
-	// dynamic server ip change
+
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
-	// public float INTERVAL_IN_HOUR = 1;
-	public int HOUR_TO_MILISEC = 360000;
+	public int HOUR_TO_MILISEC_FACTOR = 360000;
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
 	 */
 	public int notification_msg_id = 1;
-	public String pathToApp = Environment.getExternalStorageDirectory()
+	public String PATH_TO_APP = Environment.getExternalStorageDirectory()
 			.getPath() + "/in.secure.siet.sgi/download/";
+	public String PREF_FILE_NAME = "in.siet.secure.preference_file";
 
+	/**
+	 * Constant IDs for notification drawer
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
 	public interface DRAWER_ID {
+
+		/**
+		 * Constant value for notification drawer
+		 */
 		int NOTIFICATION = 0;
+
+		/**
+		 * Constant value for interaction drawer
+		 */
 		int INTERACTION = 1;
+
+		/**
+		 * Constant value for users drawer
+		 */
 		int ADD_USER = 2;
+
+		/**
+		 * Constant value for new notification drawer
+		 */
 		int CREATE_NOTICE = 3;
 	}
 
@@ -32,6 +56,9 @@ public interface Constants {
 		String BUNDLE_NAME = "extra_bundle";
 		String ATTACHMENTS_DATA = "attachments_data";
 		String HAS_ATTACHMENTS = "has_attachments";
+		
+		String CHAT_NAME = "name";
+		String CHAT_USER_PK = "user_pk";
 	}
 
 	public interface ATTACHMENTS {
@@ -56,8 +83,7 @@ public interface Constants {
 		int CREATE_NOTICE = R.drawable.ic_newnotice_active;
 	}
 
-	public String pref_file_name = "in.siet.secure.preference_file";
-
+	
 	public interface LOCAL_INTENT_ACTION {
 		String RELOAD_NOTIFICATIONS = "reload_notifications";
 		String RELOAD_MESSAGES = "reload_messages";
@@ -74,7 +100,6 @@ public interface Constants {
 		String f_name = "FirstName";
 		String l_name = "LastName";
 		String pic_url = "PicUrl";
-		String is_student = "IsStudent";
 		String branch = "Branch";
 		String course = "Course";
 		String section = "Section";
@@ -103,7 +128,6 @@ public interface Constants {
 		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
 		String FILE = "file";
 		String INPUT_STREAM = "file_input_stream";
-		
 
 		public interface Notification {
 			String SUBJECT = "subject";
@@ -220,14 +244,14 @@ public interface Constants {
 		String Error = "Error";
 		String STREET = "Street";
 		String TOKEN = "Token";
-		String INITIAL_DATA="initial_data";
-		String USER_DATA="user_data";
-		
+		String INITIAL_DATA = "initial_data";
+		String USER_DATA = "user_data";
+
 		String COURSES = "Courses";
 		String BRANCHES = "Branches";
 		String YEARS = "Years";
 		String SECTIONS = "Sections";
-		
+
 		String STATUS = "Status";
 		String TAG = "Tag";
 		String PSWD = "pswd";
@@ -266,7 +290,8 @@ public interface Constants {
 
 		public static interface FILES {
 			String NAME = "name";
-
+			String URL = "url";
+			String SIZE = "size";
 		}
 	}
 

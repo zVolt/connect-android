@@ -11,13 +11,18 @@ public class FacultyFull extends Faculty {
 	public FacultyFull(String f_name_, String l_name_, String branch_,
 			String picUrl_, String user_id_, String street_, String city_,
 			String state_, String pin_, String p_mob_, String h_mob_) {
-		super(f_name_, l_name_, branch_, picUrl_, user_id_);
+		super(f_name_, l_name_, picUrl_,branch_, user_id_);
 		street = street_;
 		city = city_;
 		state = state_;
 		pin = pin_;
 		p_mob = p_mob_;
 		h_mob = h_mob_;
+	}
+
+	public FacultyFull(Faculty faculty) {
+		this(faculty.f_name, faculty.l_name, faculty.branch,
+				faculty.picUrl, faculty.user_id,null,null,null,null,null,null);
 	}
 
 	public FacultyFull() {

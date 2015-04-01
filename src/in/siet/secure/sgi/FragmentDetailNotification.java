@@ -215,7 +215,7 @@ public class FragmentDetailNotification extends Fragment implements
 				// download file
 				Utility.log(TAG, "downloading file state " + h.state);
 				Utility.log("Yaha", "clicked on " + h.name.getText());
-				new Utility.DownloadFile().execute(h.url,
+				new Utility.DownloadFile(getActivity().getApplicationContext()).execute(h.url,
 						(String) h.name.getText(), "" + h.id);
 			}
 			break;
