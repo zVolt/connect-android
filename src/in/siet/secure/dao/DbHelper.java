@@ -257,7 +257,7 @@ public class DbHelper extends SQLiteOpenHelper {
 							notification
 									.getString(Constants.JSONKEYS.NOTIFICATIONS.TIME));
 					values.put(DbStructure.NotificationTable.COLUMN_STATE,
-							Constants.STATE.RECEIVED);
+							Constants.NOTI_STATE.RECEIVED);
 					values.put(
 							DbStructure.NotificationTable.COLUMN_SENDER,
 							getUserPk(notification
@@ -638,7 +638,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					StringBuilder query = new StringBuilder();
 					ContentValues value = new ContentValues();
 					value.put(DbStructure.MessageTable.COLUMN_STATE,
-							Constants.STATE.ACK_RECEIVED);
+							Constants.MSG_STATE.ACK_RECEIVED);
 					query.append("_id IN (");
 					String[] args = new String[len];
 					for (int i = 0; i < len; i++) {
@@ -664,7 +664,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					StringBuilder query = new StringBuilder();
 					ContentValues value = new ContentValues();
 					value.put(DbStructure.MessageTable.COLUMN_STATE,
-							Constants.STATE.ACK_RECEIVED);
+							Constants.NOTI_STATE.ACK_RECEIVED);
 					query.append(" _id IN (");
 					String[] args = new String[len];
 					for (int i = 0; i < len; i++) {
@@ -704,6 +704,7 @@ public class DbHelper extends SQLiteOpenHelper {
 		protected Void doInBackground(Notification... params) {
 			long target_id, noti_id, file_id;
 			ContentValues values = new ContentValues();
+			ContentValues values_map = new ContentValues();
 			Notification n = params[0];
 			Attachment files;
 			int len;
@@ -721,7 +722,7 @@ public class DbHelper extends SQLiteOpenHelper {
 			values.put(DbStructure.NotificationTable.COLUMN_TEXT, n.text);
 			values.put(DbStructure.NotificationTable.COLUMN_TIME, n.time);
 			values.put(DbStructure.NotificationTable.COLUMN_STATE,
-					Constants.STATE.PENDING);
+					Constants.NOTI_STATE.PENDING);
 			values.put(DbStructure.NotificationTable.COLUMN_SENDER, n.sid);
 			values.put(DbStructure.NotificationTable.COLUMN_TARGET, target_id);
 			values.put(DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
@@ -738,15 +739,15 @@ public class DbHelper extends SQLiteOpenHelper {
 
 			values.clear();
 			len = n.files.size();
-			Utility.log(TAG,""+len);
+			Utility.log(TAG,"lenght :"+len);
 			
 			for (int i = 0; i < len; i++) {
 				files = n.files.get(i);
 				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
 				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
-				values.put(DbStructure.FileTable.COLUMN_STATE, files.state);
 				values.put(DbStructure.FileTable.COLUMN_SENDER, n.sid);
 				values.put(DbStructure.FileTable.COLUMN_SIZE, files.size);
+				values.put(DbStructure.FileTable.COLUMN_STATE, Constants.FILE_STATE.PENDING);
 				Utility.log(TAG, files.url);
 				Utility.log(TAG, files.name);
 				Utility.log(TAG, ""+n.sid);
@@ -755,13 +756,15 @@ public class DbHelper extends SQLiteOpenHelper {
 						values);
 
 				values.clear();
-				values.put(
+				values_map.clear();
+				values_map.put(
 						DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID,
 						noti_id);
-				values.put(DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
+				values_map.put(DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
 						file_id);
 				db.insert(DbStructure.FileNotificationMapTable.TABLE_NAME,
-						null, values);
+						null, values_map);
+				values_map.clear();
 			}
 			return null;
 		}

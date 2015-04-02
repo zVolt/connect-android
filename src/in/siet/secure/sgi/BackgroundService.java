@@ -44,7 +44,8 @@ public class BackgroundService extends Service {
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
 	private WakeLock wake;
-
+	private int upload_success= Constants.UPLOAD_STATUS.UPLOAD_DEFAULT;
+	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		spref = getApplicationContext().getSharedPreferences(
@@ -83,7 +84,7 @@ public class BackgroundService extends Service {
 		holdWakeLock();
 		// sendToServer();
 		// getMessagesFromServer();
-		sync();
+		new StartSync().execute();
 	}
 
 	public void getMessagesFromServer() {
@@ -195,6 +196,21 @@ public class BackgroundService extends Service {
 	 * from server (messages and notification) 6. fill database accordingly 7.
 	 * trigger notification action
 	 */
+	// StartS
+	public class StartSync extends AsyncTask<Void, Void, Void>{
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			//sync ko break karna 2 part me
+			//1 only message syncronize
+			//2 onlt notification syncronize
+			//thik ?:/
+			// thik mat karna kuch sync aysy ka aysa copy paste ok hmm :/ :D chor :/
+			sync();
+			return null;
+		}
+		
+	}
 	public void sync() {
 		JSONObject data_to_send = new JSONObject();
 		StringBuilder strb = new StringBuilder();
@@ -220,6 +236,36 @@ public class BackgroundService extends Service {
 			 */
 			if (spref.getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
 				JSONArray pending_notifications = getPendingNotifications();
+				//mtlb not on main thread yes
+				//thik to yaha sync ka use kr skte yo but...
+				//hamko 2 parts me divide karna hoga kam
+				//suppose 3 notifications hai hamary pas 1st having files 2nd third have nofiles 
+				// so 2nd 3rd should be uploaded immediately irrespectivie of the 1st notifications state ? ok :/v ok
+				// ni samjhee to bol clea karu dunara
+				// ni hamko 2 set banay notifications k 
+				//1 jismy files hai 2nd having no files 
+				// loop karegi each notification and checD:k for files entry thi kh a?Nnnhaannn thannn thikkk haiii :D :D
+				// ab jinmy file ni hai unko simple process se bhej de jaisy abhi tak jary thik ? hmm
+				// aur jinmy file hai unko AsyncHttpClient se upload karny k liye laga de
+				// abhi bhi to waise hi bhej rae na.. ni abhi getPending me hora kam 
+				// han thik us function ko call kar le na yaha second case k lie.. han hmmmm phlen  uucassek y moen
+				// usky on sucess me fir se server pe kuch notifications jayngi ok :O kya kfyilaes  wali notificaion isly to alag ki na
+				// send file me jo bhej ri notification ki list
+				// teko bola tha multiple files kaisy bhejty dekhna
+				// aur usky onSucess pe  okknkotifcation bhi bhej dena
+				// bas ? :D
+				// chor bhul jaygi kya sab meko fm bolti :P backup rkhna chaiye hamesha :/
+				// to samaj gai sara kam ? han server pe multiple files receive karna dekh pehly hmm dekh lungi
+				
+				
+				// 1. receive multiple files on server
+				// 2. shift sync() function code to StartSync's doInBackground()
+				// 3. seperate notifications with files(call send files on each notification that will send its files to server and on sucess the notification itself) and without files(Process normally)
+				// 4. send all files of one notification and onSucess pe notification ko khud bhi send karna hai (seperate function)
+				// bas itta kar k bata
+				// 5. clean getPendingNotifications
+				// send files ko JSONObject dede na notification ho jismy aur notification k andar files ho
+				
 				if (pending_notifications.length() > 0)
 					data_to_send.put(
 							Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS,
@@ -248,16 +294,24 @@ public class BackgroundService extends Service {
 		new SendDataToServer().execute(body);
 
 	}
-
+/**
+ * ye bas notification aur usky sath attachments ki list de
+ * ok >? hmm irrespective of uploading..ryt?han idont know kya soach ri tu
+ * local db me notifications hongi kuch jinky sath files hongi maybe?hmm
+ * wo nikaly db se JSAONArray banaye aur return kary bas no uploding n all hmm ok
+ * uploading upar handle karengy ok hmm
+ * @return
+ */
 	private JSONArray getPendingNotifications() {
 		JSONArray notifications = new JSONArray();
 		JSONObject notification;
 		JSONArray attachments = new JSONArray();
 		JSONObject attachment;
 		Cursor c_attachment;
+		int status;
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
-		String[] args = { String.valueOf(Constants.STATE.PENDING),
+		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
 				spref.getString(Constants.PREF_KEYS.user_id, null) };
 		Cursor c = db.rawQuery(query, args);
 		if (c.moveToFirst()) {
@@ -280,41 +334,21 @@ public class BackgroundService extends Service {
 							c.getString(6));
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ID,
 							c.getInt(7));
-					notification.put(
-							Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
+					notification.put(Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
 							c.getInt(8));
 
-					query = "select f.name,f.url,f.size from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
+					query = "select f.name,f.url,f.size,f._id from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
 							+ c.getInt(7) + "'";
 					Utility.log(TAG, query);
 					c_attachment = db.rawQuery(query, null);
-					if (c_attachment.moveToFirst()) {
-						while (!c_attachment.isAfterLast()) {
-							try {
-								attachment = new JSONObject();
-								attachment.put(Constants.JSONKEYS.FILES.NAME,
-										c_attachment.getString(0));
-								attachment.put(
-										Constants.JSONKEYS.NOTIFICATIONS.TIME,
-										c.getLong(2));
 								/**
 								 * put some mechanism to retry sending file in
 								 * case of failure
-								 */
-								Utility.log(TAG, c_attachment.getString(0));
-								sendfile(c_attachment.getString(0), new File(
-										c_attachment.getString(1)));
-								attachments.put(attachment);
-							} catch (Exception e) {
-								Utility.DEBUG(e);
-							}
-							c_attachment.moveToNext();
-						}
+								 */				
+					//mai yaha JSON array jo ban raha usi ko
+					// 
+						sendfile(c_attachment,c.getLong(2));
 						c_attachment.close();
-					}
-					notification.put(
-							Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
-							attachments);
 					// yaha pe code karna sayad teko thik hmm..likha rhne do
 					// ye.. :P
 					notifications.put(notification);
@@ -328,14 +362,42 @@ public class BackgroundService extends Service {
 		return notifications;
 	}
 
-	public void sendfile(String filename, File file) {
+	public void sendfile(Cursor c_attachment,long noti_time) {
+		//meko structure batao kaisa data bana k bhej ri server pe
+		// hmm
+		JSONArray attachments = new JSONArray();
+		JSONObject attachment = new JSONObject();
+		
+		RequestParams params = new RequestParams();
 		try {
-			Utility.log(TAG, "sending a file");
-
-			RequestParams params = new RequestParams();
-			params.put(Constants.QueryParameters.FILE, file);
-			AsyncHttpClient client = new AsyncHttpClient();
-			// client.addHeader("Content-Type", "multipart/form-data");
+			
+			int i=0;
+			if (c_attachment.moveToFirst()) {
+				while (!c_attachment.isAfterLast()) {
+					try {
+						attachment = new JSONObject();
+						attachment.put(Constants.JSONKEYS.FILES.NAME,
+								c_attachment.getString(0));
+						attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME, //naya contant bana lo files k andar
+								noti_time);
+						attachment.put(Constants.JSONKEYS.FILES.ID,
+								c_attachment.getString(3));
+						params.put(Constants.QueryParameters.FILE+i++, new File(c_attachment.getString(1))); //bt fir ham fetch kaise karenge?? server pe
+						attachments.put(attachment);
+					}
+					catch(Exception e){
+						Utility.DEBUG(e);
+					}
+					c_attachment.moveToNext();					
+				}
+			}						
+			Utility.log(TAG, "sending a file");			
+	//		JSONObject jsonob=new JSONObject;
+	//		jsonob.put(name, value);						
+			params.put(Constants.QueryParameters.FILE_ID,attachments);
+			AsyncHttpClient client = new SyncHttpClient(); 
+		 
+			//client.addHeader("Content-Type", "multipart/form-data");
 			//client.setTimeout(500000);
 			client.post(getApplicationContext(), Utility.getBaseURL()
 					+ "query/upload_file", params,
@@ -343,25 +405,41 @@ public class BackgroundService extends Service {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
-							Utility.log(TAG, response.toString());
+							Utility.log(TAG, response.toString());						
+							Utility.log(TAG, "sendfile on success");
+							upload_success=Constants.UPLOAD_STATUS.UPLOAD_STATUS;
 						}
 
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								Throwable throwable, JSONObject response) {
-							Utility.log(TAG, "fail " + response.toString());
+							Utility.log(TAG, "..fail1 " + response.toString());
+							upload_success=Constants.UPLOAD_STATUS.UPLOAD_FAILURE;
 						}
+						
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.log(TAG,"..fail2"+ throwable.getLocalizedMessage());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.log(TAG,"..fail3"+ throwable.getLocalizedMessage());
+						}						
 					});
 		} catch (Exception e) {
 			Utility.DEBUG(e);
 		}
+	//	return upload_success;
 	}
 
 	private JSONArray getPendingMessages() {
 		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
 		String[] args = { spref.getString(Constants.PREF_KEYS.user_id, null),
-				String.valueOf(Constants.STATE.PENDING) };
+				String.valueOf(Constants.MSG_STATE.PENDING) };
 		Cursor c = db.rawQuery(query, args);
 		JSONArray messages = new JSONArray();
 		JSONObject message;

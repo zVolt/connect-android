@@ -174,7 +174,7 @@ public class ChatActivity extends ActionBarActivity {
 			values.put(DbStructure.MessageTable.COLUMN_SENDER, sender_id);
 			values.put(DbStructure.MessageTable.COLUMN_RECEIVER, receiver_id);
 			values.put(DbStructure.MessageTable.COLUMN_STATE,
-					Constants.STATE.PENDING);
+					Constants.MSG_STATE.PENDING);
 			values.put(DbStructure.MessageTable.COLUMN_IS_GRP_MSG,
 					Constants.IS_GROUP_MSG.NO);
 

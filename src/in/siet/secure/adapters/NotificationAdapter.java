@@ -55,11 +55,11 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
 		ImageLoader.getInstance().displayImage(tmp_noti.image, holder.image);
 		tmp_state = tmp_noti.state;
 
-		if (tmp_state == Constants.STATE.PENDING) {
+		if (tmp_state == Constants.NOTI_STATE.PENDING) {
 			holder.state.setImageResource(R.drawable.ic_action_done);
 			holder.state.setVisibility(View.VISIBLE);
-		} else if (tmp_state == Constants.STATE.SENT
-				|| tmp_state == Constants.STATE.ACK_RECEIVED) {
+		} else if (tmp_state == Constants.NOTI_STATE.SENT
+				|| tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
 			holder.state.setImageResource(R.drawable.ic_action_done_all);
 			holder.state.setVisibility(View.VISIBLE);
 		}

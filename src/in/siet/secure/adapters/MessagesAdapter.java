@@ -31,9 +31,9 @@ public class MessagesAdapter extends CursorAdapter {
 		holder.text.setText(c.getString(1));
 		holder.time.setText(Utility.getTimeString(context, c.getLong(2)));
 		holder.state = c.getInt(3);
-		if (holder.state == Constants.STATE.PENDING
-				|| holder.state == Constants.STATE.SENT
-				|| holder.state == Constants.STATE.ACK_RECEIVED) {
+		if (holder.state == Constants.MSG_STATE.PENDING
+				|| holder.state == Constants.MSG_STATE.SENT
+				|| holder.state == Constants.MSG_STATE.ACK_RECEIVED) {
 			holder.container.setBackgroundResource(R.drawable.msg_right);
 			holder.text.setBackgroundColor(context.getResources().getColor(
 					R.color.msg_receive));
@@ -70,8 +70,8 @@ public class MessagesAdapter extends CursorAdapter {
 				c.getLong(2), DateUtils.SECOND_IN_MILLIS,
 				DateUtils.WEEK_IN_MILLIS, 0));
 		holder.state = c.getInt(3);
-		if (holder.state == Constants.STATE.PENDING
-				|| holder.state == Constants.STATE.SENT) {
+		if (holder.state == Constants.MSG_STATE.PENDING
+				|| holder.state == Constants.MSG_STATE.SENT) {
 			holder.container.setBackgroundResource(R.drawable.msg_right);
 			holder.text.setBackgroundColor(context.getResources().getColor(
 					R.color.msg_receive));

@@ -99,17 +99,19 @@ public interface Constants {
 		String MESSAGES = "messages";
 		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
 		String FILE = "file";
+		String FILE_ID = "file_id";
 		String INPUT_STREAM = "file_input_stream";
-		
+
 		public interface Notification {
 			String SUBJECT = "subject";
 			String BODY = "body";
 			String TIME = "time";
 		}
-		
-		
-		
+		public interface File {
+			
+		}
 
+		
 	}
 
 	/**
@@ -133,8 +135,8 @@ public interface Constants {
 	 * @author Zeeshan Khan
 	 * 
 	 */
-	public interface STATE {
-
+	public interface STATES {
+		// sent receive ack_sent ackreceived penfing
 		/**
 		 * this means that the message or notification is received from server
 		 * i.e, not created by user
@@ -168,7 +170,19 @@ public interface Constants {
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
-		
+
+	}
+
+	public interface MSG_STATE extends STATES {
+		// 5 yaha bhi
+	}
+
+	public interface NOTI_STATE extends STATES {
+		// 5 yaha bhi aa gaye 
+		//
+	}
+
+	public interface FILE_STATE extends STATES {
 		/**
 		 * file specific this means the file is present on local system
 		 */
@@ -179,10 +193,18 @@ public interface Constants {
 		int YES = 0;
 		int NO = 1;
 	}
+
 	public interface FOR_FACULTY {
 		int YES = 0;
 		int NO = 1;
 	}
+
+	public interface UPLOAD_STATUS {
+		int UPLOAD_STATUS = 1;
+		int UPLOAD_FAILURE = 0;
+		int UPLOAD_DEFAULT = -1;
+	}
+
 	public interface JSONKEYS {
 
 		String STUDENT = "Student";
@@ -240,14 +262,16 @@ public interface Constants {
 			String FOR_FACULTY = "For_Faculty";
 			String ATTACHMENTS = "attachments";
 		}
+
 		public static interface FILES {
 			String NAME = "name";
-		 
+			String ID = "Id";
+
 		}
 	}
 
 	public static interface NOTIFICATION {
-		
+
 		String SUBJECT = "Subject";
 		String TEXT = "Text";
 		String TIME = "Time";

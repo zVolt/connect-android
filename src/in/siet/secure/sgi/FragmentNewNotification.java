@@ -208,7 +208,7 @@ public class FragmentNewNotification extends Fragment implements
 					file_list); 
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
-
+// go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
 			Utility.RaiseToast(getActivity(), "send new message", false);

@@ -186,8 +186,8 @@ public class FragmentDetailNotification extends Fragment implements
 	@Override
 	public void onClick(View view) {
 		ViewHolder h = (ViewHolder) view.getTag();
-		if (h.state == Constants.STATE.DOWNLOADED
-				|| h.state == Constants.STATE.ACK_SEND) {
+		if (h.state == Constants.FILE_STATE.DOWNLOADED
+				|| h.state == Constants.FILE_STATE.ACK_SEND) {
 			// open file
 			Utility.log(TAG, "opening file");
 			File file = new File(h.url);
