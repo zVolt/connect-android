@@ -22,7 +22,8 @@ public class NewtorkBroadcastReceiver extends BroadcastReceiver {
 		SharedPreferences spf = context.getSharedPreferences(
 				Constants.PREF_FILE_NAME, Context.MODE_PRIVATE);
 		if (Utility.isConnected(context)
-				&& spf.getBoolean(Constants.PREF_KEYS.logged_in, false)) {
+				&& spf.getBoolean(Constants.PREF_KEYS.logged_in, false)
+				&& !BackgroundService.isServiceRunning()) {
 			Intent new_intent = new Intent(context, BackgroundService.class);
 			context.startService(new_intent);
 		}

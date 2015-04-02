@@ -177,11 +177,6 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		/**
-		 * I don't know why I wrote this
-		 */
-		Intent intent = new Intent(this, BackgroundService.class);
-		stopService(intent);
 	}
 
 	@Override

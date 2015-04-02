@@ -23,7 +23,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
-import android.os.Bundle;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -44,13 +44,14 @@ import com.loopj.android.http.SyncHttpClient;
  */
 public class BackgroundService extends IntentService {
 	private static boolean SERVICE_WORKING;
-	private static boolean HAVE_NEW_DATA;
-	
+	// private static boolean HAVE_NEW_DATA;
+	// private int NO_OF_INSTANCES;
+//	private final IBinder binder = new LocalBinder();
 	private boolean START_BY_GCM;
 	private SharedPreferences spref;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
-	
+
 	private boolean got_new_sender;
 	private Intent starter;
 
@@ -58,71 +59,48 @@ public class BackgroundService extends IntentService {
 		super("BackgroundService");
 	}
 
+	private boolean checkGcmMsgType(Intent intent) {
+		boolean res = false;
+		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+		String messageType = gcm.getMessageType(intent);
+
+		/*
+		 * Filter messages based on message type. Since it is likely that GCM
+		 * will be extended in the future with new message types, just ignore
+		 * any message types you're not interested in, or that you don't
+		 * recognize.
+		 */
+		if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+		} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED
+				.equals(messageType)) {
+			// If it's a regular GCM message, do some work.
+		} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE
+				.equals(messageType)) {
+			res = true;
+		}
+		return res;
+	}
+
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		Utility.log(TAG, "service hit");
-		if (!SERVICE_WORKING) {
-			Utility.log(TAG, "service was not running normal operation");
-			setServiceRunning(true);
-			starter = intent;
-			if (Utility.isConnected(getApplicationContext())) {
-				Bundle extras = intent.getExtras();
-
-				setStartByGCM(false);
-				if (extras != null) {
-					// called by gcm braodcast receiver
-					GoogleCloudMessaging gcm = GoogleCloudMessaging
-							.getInstance(this);
-					// The getMessageType() intent parameter must be the intent
-					// you
-					// received
-					// in your BroadcastReceiver.
-					String messageType = gcm.getMessageType(intent);
-
-					/*
-					 * Filter messages based on message type. Since it is likely
-					 * that GCM will be extended in the future with new message
-					 * types, just ignore any message types you're not
-					 * interested in, or that you don't recognize.
-					 */
-					if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR
-							.equals(messageType)) {
-						//
-					} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED
-							.equals(messageType)) {
-						// If it's a regular GCM message, do some work.
-					} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE
-							.equals(messageType)) {
-						// sync with back end and Post notification for the
-						// same.
-
-						setStartByGCM(true);
-						sync();
-					}
-
-					// Release the wake lock provided by the
-					// WakefulBroadcastReceiver.
-
-				} else {
-					// called by internal app components
-					// holdWakeLock();
-					sync();
-				}
-			} else {
-				Utility.log(TAG, "aborting sync no internet");
-				// set flag here that there is some data to be send to server
-			}
-		} else {
-			/**
-			 * service already running., now we may have some new data to send
-			 * to server so we will use alarm service to run this service later
-			 * in time automatically so that the new data get synchronize with
-			 * server here we will just mark that the service should set an
-			 * alarm in onDestroy method
-			 */
-			Utility.log(TAG, "service running so setting have new data");
-			setHaveNewData(true);
+		Utility.log(TAG, "service has accepted a request vai intent");
+		starter = intent; // intent required to release the wakeful
+							// serverice wakelock
+		if (!BackgroundService.isServiceRunning()) {
+			setStartByGCM(checkGcmMsgType(intent));
+			sync();
 		}
+
+		/*
+		 * else { /** service already running., now we may have some new data to
+		 * send to server so we will use alarm service to run this service later
+		 * in time automatically so that the new data get synchronize with
+		 * server here we will just mark that the service should set an alarm in
+		 * onDestroy method
+		 * 
+		 * Utility.log(TAG, "service running so setting have new data");
+		 * setHaveNewData(true); }
+		 */
 	}
 
 	/**
@@ -155,20 +133,10 @@ public class BackgroundService extends IntentService {
 		super.onDestroy();
 	}
 
-	private void setToStartAgain() {
-		if (HAVE_NEW_DATA) {
-			/**
-			 * if we have some new data to send start the new service as soon as
-			 * possible
-			 */
-			Utility.log(TAG, "setting service to run after 1 sec");
-			Utility.setAlarm(getApplicationContext(), 1000);
-		}
-	}
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
+		//return binder;
 	}
 
 	/**
@@ -238,6 +206,8 @@ public class BackgroundService extends IntentService {
 	 * here or specific as per requirement
 	 */
 	public void sync() {
+		Utility.log(TAG, "serice is in sync");
+		setServiceRunning(true);
 		JSONObject data_to_send = new JSONObject();
 		StringBuilder strb = new StringBuilder();
 
@@ -250,9 +220,10 @@ public class BackgroundService extends IntentService {
 					Constants.PREF_KEYS.is_faculty, false));
 			strb.append(Constants.NEW_LINE);
 
-			setHaveNewData(false);
+			// setHaveNewData(false);
 			/**
-			 * get pending messages
+			 * going to get all the pending data so we have no new data get
+			 * pending messages
 			 */
 			JSONArray pending_messages = getPendingMessages();
 
@@ -291,7 +262,7 @@ public class BackgroundService extends IntentService {
 		/**
 		 * send to server->credentials with some pending data if any
 		 */
-		Utility.log(TAG, "sending this " + strb.toString());
+		Utility.log(TAG, "sending data to a new thread");
 		new SendDataToServer().execute(body);
 
 	}
@@ -451,6 +422,7 @@ public class BackgroundService extends IntentService {
 	 *            of notification
 	 */
 	public void sendAck(JSONObject msg_and_noti_ids) {
+		Utility.log(TAG, "sending ack now");
 		AsyncHttpClient client = new AsyncHttpClient();
 		StringBuilder strb = new StringBuilder();
 		/**
@@ -476,8 +448,10 @@ public class BackgroundService extends IntentService {
 				new MyJsonHttpResponseHandler() {
 					@Override
 					public void commonTask() {
+						Utility.log(TAG, "sending ack done");
 						setServiceRunning(false);
-						setToStartAgain();
+						if (START_BY_GCM)
+							GcmBroadcastReceiver.completeWakefulIntent(starter);
 					}
 				});
 	}
@@ -488,8 +462,9 @@ public class BackgroundService extends IntentService {
 
 		@Override
 		protected Void doInBackground(HttpEntity... params) {
+			Utility.log(TAG,
+					"new thread received request to set data over network");
 			SyncHttpClient client = new SyncHttpClient();
-
 			client.addHeader("Content-Type", "application/json");
 			client.post(getApplicationContext(), Utility.getBaseURL()
 					+ "query/sync", params[0], null,
@@ -542,6 +517,8 @@ public class BackgroundService extends IntentService {
 								if (ids_to_get.length() > 0) {
 									setGotNewSenders(false);
 									try {
+										Utility.log(TAG,
+												"goning to hit server again");
 										HttpEntity entity = null;
 										StringBuilder strb = new StringBuilder();
 										Utility.putCredentials(strb,
@@ -563,10 +540,8 @@ public class BackgroundService extends IntentService {
 															int statusCode,
 															Header[] headers,
 															JSONObject response) {
-														Utility.log(
-																TAG,
-																"sucess get full detials of new user \n"
-																		+ response);
+														Utility.log(TAG,
+																"sucess get full detials of new user");
 														/*
 														 * got the new senders
 														 * now insert them into
@@ -586,6 +561,8 @@ public class BackgroundService extends IntentService {
 													 */
 													@Override
 													public void commonTask() {
+														Utility.log(TAG,
+																"fail to get full detials of new user");
 														setGotNewSenders(false);
 													};
 												});
@@ -596,6 +573,7 @@ public class BackgroundService extends IntentService {
 
 									Utility.log(TAG, "line after server hit");
 								} else {
+									Utility.log(TAG, "we have no new senders");
 									setGotNewSenders(true);
 								}
 								if (getGotNewSenders()) {
@@ -624,16 +602,10 @@ public class BackgroundService extends IntentService {
 																sender_lid));
 										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
 									}
-									if ((response
-											.has(Constants.JSONKEYS.MESSAGES.MESSAGES) && response
-											.getJSONArray(
-													Constants.JSONKEYS.MESSAGES.MESSAGES)
-											.length() > 0)
-											|| (response
-													.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS) && response
-													.getJSONArray(
-															Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)
-													.length() > 0)) {
+									if (ids_to_send
+											.has(Constants.JSONKEYS.MESSAGES.ACK)
+											|| ids_to_send
+													.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
 										Intent intent = new Intent(
 												getApplicationContext(),
 												MainActivity.class);
@@ -649,6 +621,11 @@ public class BackgroundService extends IntentService {
 								Utility.DEBUG(e);
 							}
 						}
+
+						public void commonTask() {
+							Utility.log(TAG,
+									"network operation complete with some error");
+						};
 					});
 
 			return null;
@@ -662,11 +639,9 @@ public class BackgroundService extends IntentService {
 				sendAck(ids_to_send);
 			} else {
 				setServiceRunning(false);
-				setToStartAgain();
+				if (START_BY_GCM)
+					GcmBroadcastReceiver.completeWakefulIntent(starter);
 			}
-
-			if (START_BY_GCM)
-				GcmBroadcastReceiver.completeWakefulIntent(starter);
 
 		}
 	}
@@ -794,14 +769,35 @@ public class BackgroundService extends IntentService {
 	}
 
 	private void setServiceRunning(boolean sending) {
+		Utility.log(TAG, "service running " + sending);
 		SERVICE_WORKING = sending;
 	}
 
-	private void setHaveNewData(boolean have_new_data) {
-		HAVE_NEW_DATA = have_new_data;
+	public static boolean isServiceRunning() {
+		return SERVICE_WORKING;
 	}
 
-	private void setStartByGCM(boolean start_by_gcm) {
+	/*
+	 * public void setHaveNewData(boolean have_new_data) { // HAVE_NEW_DATA =
+	 * have_new_data; }
+	 */
+	public void setStartByGCM(boolean start_by_gcm) {
 		START_BY_GCM = start_by_gcm;
 	}
+
+	/**
+	 * Binder class that returns the instance of service
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 *//*
+	public class LocalBinder extends Binder {
+		BackgroundService getService() {
+			return BackgroundService.this;
+		}
+	}*/
+	/*
+	 * private void InstanceCreated(){ NO_OF_INSTANCES++; } private void
+	 * InstanceDeleted(){ NO_OF_INSTANCES--; }
+	 */
 }

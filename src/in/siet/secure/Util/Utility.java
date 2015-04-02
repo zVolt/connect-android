@@ -39,7 +39,7 @@ import com.loopj.android.http.RequestParams;
 
 public class Utility {
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	public static String SERVER = "192.168.0.102";
+	public static String SERVER = "192.168.0.100";
 	private static ProgressDialog progress_dialog;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
@@ -258,8 +258,7 @@ public class Utility {
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				Utility.log(TAG, "download done");
-				SQLiteDatabase db = new DbHelper(context)
-						.getWritableDatabase();
+				SQLiteDatabase db = new DbHelper(context).getWritableDatabase();
 				db.execSQL("update files set state=1 where _id=" + id);
 				db.close();
 			} else
@@ -309,7 +308,11 @@ public class Utility {
 	}
 
 	public static void startBackgroundService(Context context) {
-		Intent intent = new Intent(context, BackgroundService.class);
-		context.startService(intent);
+		if (!BackgroundService.isServiceRunning()) {
+			Intent intent = new Intent(context, BackgroundService.class);
+			context.startService(intent);
+		} else {
+			Utility.setAlarm(context, 10000);
+		}
 	}
 }

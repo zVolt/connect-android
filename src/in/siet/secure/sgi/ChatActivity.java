@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.LocalBroadcastManager;
@@ -39,6 +38,8 @@ public class ChatActivity extends ActionBarActivity {
 	private Cursor c;
 	MessagesAdapter adapter;
 	SharedPreferences spref;
+//	BackgroundService service;
+//	boolean binded;
 	long receiver_id; // this is id of the receiver to whom user will text
 	String receiver_lid, user_image_url;
 	long sender_id; // sender is the user itself who is using the app
@@ -116,6 +117,26 @@ public class ChatActivity extends ActionBarActivity {
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		/*
+		Intent intent = new Intent(this, BackgroundService.class);
+		bindService(intent, service_connection, Context.BIND_AUTO_CREATE);
+*/
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		/*
+		if (binded) {
+			unbindService(service_connection);
+			binded = false;
+		}
+*/
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 		if (title != null)
@@ -128,6 +149,7 @@ public class ChatActivity extends ActionBarActivity {
 						local_broadcast_receiver,
 						new IntentFilter(
 								Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES));
+		updateCursor();
 	}
 
 	@Override
@@ -165,6 +187,17 @@ public class ChatActivity extends ActionBarActivity {
 							.getInstance().getTimeInMillis()));
 			updateCursor();
 		}
+	/*
+		if (binded && Utility.isConnected(getApplicationContext())) {
+			if (!BackgroundService.isServiceRunning()) {
+				service.sync();
+			} else {
+				// start the service after 10 sec
+				Utility.log(TAG, "set to start after 10 sec");
+				Utility.setAlarm(getApplicationContext(), 10000);
+			}
+		}
+*/
 	}
 
 	@Override
@@ -187,5 +220,19 @@ public class ChatActivity extends ActionBarActivity {
 			dbh = new DbHelper(getApplicationContext());
 		return dbh;
 	}
+/*
+	private ServiceConnection service_connection = new ServiceConnection() {
 
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			binded = false;
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service_) {
+			LocalBinder binder_ = (LocalBinder) service_;
+			service = binder_.getService();
+			binded = true;
+		}
+	};*/
 }
