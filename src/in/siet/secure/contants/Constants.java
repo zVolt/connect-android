@@ -8,8 +8,8 @@ public interface Constants {
 	 * breaking the url so that the user(developer) can change the ip address of
 	 * the server
 	 */
-	public String PORT = "8080";
-	public String COLON = ":";
+	//public String PORT = "8080";
+	//public String COLON = ":";
 
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
@@ -105,10 +105,12 @@ public interface Constants {
 		String section = "Section";
 		String year = "Year";
 		String db_id = "DbId";
+		
 		String UPDATE_INTERVAL = "update_interval";
+		String LOCAL_SERVER = "use_local_server";
 		String PROPERTY_REG_ID = "RegId";
 		String PROPERTY_APP_VERSION = "AppVersion";
-
+		String SERVER_IP = "server_ip";
 	}
 
 	public interface QueryParameters {

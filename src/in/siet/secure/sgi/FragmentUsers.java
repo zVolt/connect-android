@@ -162,7 +162,7 @@ public class FragmentUsers extends Fragment {
 		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);
 		params.put(Constants.QueryParameters.SECTION, FilterOptions.SECTION);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.getBaseURL() + "query/type_resolver", params,
+		client.get(Utility.getBaseURL(getActivity().getApplicationContext()) + "query/type_resolver", params,
 				new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,

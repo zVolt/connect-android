@@ -38,9 +38,12 @@ import android.widget.Toast;
 import com.loopj.android.http.RequestParams;
 
 public class Utility {
+	//private static boolean LOCA_SERVER = false;
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	public static String SERVER = "192.168.0.100";
+	//public static String SERVER = LOCA_SERVER ? "192.168.0.101"
+	//		: "sgitomcat-1093.rhcloud.com";
 	private static ProgressDialog progress_dialog;
+	private static SharedPreferences spf;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
 	 * STRING TO HOLD THE TEXT OF THE NOTIFICATION TO BE RAISED FOR INCOMING
@@ -69,9 +72,28 @@ public class Utility {
 		e.printStackTrace();
 	}
 
-	public static String getBaseURL() {
-		return "http://" + Utility.SERVER + Constants.COLON + Constants.PORT
-				+ "/SGI_webservice/";
+	private static SharedPreferences getSPreferences(Context context) {
+		if (spf == null)
+			spf = context.getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
+	}
+
+	public static String getBaseURL(Context context) {
+		String str;
+		if (getSPreferences(context).getBoolean(
+				Constants.PREF_KEYS.LOCAL_SERVER, false)) {
+			str = String.format(
+					"http://%s:%s/SGI_webservice/",
+					getSPreferences(context).getString(
+							Constants.PREF_KEYS.SERVER_IP, "192.168.0.100"),
+					"8080");
+		} else {
+			str = String.format("http://%s/SGI_webservice/",
+					"sgitomcat-1093.rhcloud.com");
+		}
+
+		return str;
 	}
 
 	public static void showProgressDialog(Context context) {

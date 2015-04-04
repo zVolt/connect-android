@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -158,7 +157,7 @@ public class BackgroundService extends IntentService {
 
 			final String user_id = getSPreferences().getString(
 					Constants.PREF_KEYS.user_id, null); // this is me :D
-			client.get(Utility.getBaseURL() + "query/give_me_messages",
+			client.get(Utility.getBaseURL(getApplicationContext()) + "query/give_me_messages",
 					reqparams, new MyJsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
@@ -371,7 +370,7 @@ public class BackgroundService extends IntentService {
 			// client.addHeader("Content-Type", "multipart/form-data");
 			// client.setTimeout(500000);
 
-			client.post(getApplicationContext(), Utility.getBaseURL()
+			client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
 					+ "query/upload_file", params,
 					new MyJsonHttpResponseHandler());
 		} catch (Exception e) {
@@ -443,7 +442,7 @@ public class BackgroundService extends IntentService {
 		}
 		Utility.log(TAG, "ack sending " + strb.toString());
 		client.addHeader("Content-Type", "application/json");
-		client.post(getApplicationContext(), Utility.getBaseURL()
+		client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
 				+ "query/receive_ack", entity, null,
 				new MyJsonHttpResponseHandler() {
 					@Override
@@ -466,7 +465,7 @@ public class BackgroundService extends IntentService {
 					"new thread received request to set data over network");
 			SyncHttpClient client = new SyncHttpClient();
 			client.addHeader("Content-Type", "application/json");
-			client.post(getApplicationContext(), Utility.getBaseURL()
+			client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
 					+ "query/sync", params[0], null,
 					new MyJsonHttpResponseHandler() {
 						/**
@@ -531,7 +530,7 @@ public class BackgroundService extends IntentService {
 												"application/json");
 										client.post(
 												getApplicationContext(),
-												Utility.getBaseURL()
+												Utility.getBaseURL(getApplicationContext())
 														+ "query/get_full_user_info",
 												entity,
 												null,

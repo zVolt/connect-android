@@ -231,7 +231,7 @@ public class LoginActivity extends ActionBarActivity {
 	public void clearInput() {
 		((TextView) findViewById(R.id.editText_userpassword)).setText(null);
 	}
-	
+
 	/**
 	 * saving user details in preference file
 	 * 
@@ -291,13 +291,14 @@ public class LoginActivity extends ActionBarActivity {
 			Utility.DEBUG(e1);
 		}
 
-		client.post(getApplicationContext(), Utility.getBaseURL()
-				+ "login/dologin", entity, null,
-				new MyJsonHttpResponseHandler() {
+		client.post(getApplicationContext(),
+				Utility.getBaseURL(getApplicationContext()) + "login/dologin",
+				entity, null, new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONObject response) {
 						try {
+							Utility.log(TAG, " resp: " + response);
 							/**
 							 * if the tag in response JSOObject is about login
 							 * and the status is true

@@ -11,7 +11,7 @@ public class MyJsonHttpResponseHandler extends JsonHttpResponseHandler {
 	private static String RESPONSE = " response:";
 	private static String SUCCESS = "success:";
 	private static String FAILURE = " failure:";
-
+	private static String THROWABLE = " throwable:";
 	
 	@Override
 	public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
@@ -36,20 +36,20 @@ public class MyJsonHttpResponseHandler extends JsonHttpResponseHandler {
 	public void onFailure(int statusCode, Header[] headers,
 			String responseString, Throwable throwable) {
 		commonTask();
-		Utility.log(TAG, FAILURE + statusCode + RESPONSE + responseString);
+		Utility.log(TAG, FAILURE + statusCode + THROWABLE + throwable.getLocalizedMessage() +RESPONSE + responseString);
 	}
 
 	public void onFailure(int statusCode, Header[] headers,
 			Throwable throwable, JSONArray errorResponse) {
 		commonTask();
-		Utility.log(TAG, FAILURE + statusCode + RESPONSE + errorResponse);
+		Utility.log(TAG, FAILURE + statusCode + THROWABLE + throwable.getLocalizedMessage() +RESPONSE + errorResponse);
 	}
 
 	@Override
 	public void onFailure(int statusCode, Header[] headers,
 			Throwable throwable, JSONObject errorResponse) {
 		commonTask();
-		Utility.log(TAG, FAILURE + statusCode + RESPONSE + errorResponse);
+		Utility.log(TAG, FAILURE + statusCode + THROWABLE + throwable.getLocalizedMessage() +RESPONSE + errorResponse);
 	}
 
 	/**

@@ -6,6 +6,12 @@
     <PreferenceCategory
         android:key="pref_key_server_settings"
         android:title="@string/pref_cat_server" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/pref_key_local_server"
+            android:summary="@string/pref_desc_local_server"
+            android:title="@string/pref_title_local_server" />
+
         <EditTextPreference
             android:defaultValue="192.168.0.100"
             android:digits="1234567890."

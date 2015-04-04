@@ -539,7 +539,7 @@ public class DbHelper extends SQLiteOpenHelper {
 				user.user_id);
 		params.put(Constants.QueryParameters.USER_TYPE, is_faculty);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.getBaseURL() + "query/get_user_info", params,
+		client.get(Utility.getBaseURL(context) + "query/get_user_info", params,
 				new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,

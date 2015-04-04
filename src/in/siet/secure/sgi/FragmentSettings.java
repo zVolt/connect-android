@@ -49,19 +49,32 @@ public class FragmentSettings extends PreferenceFragment implements
 			String key) {
 		if (key.equals(getString(R.string.pref_key_server_ip))) {
 			// Set summary to be the user-description for the selected value
-			String ip = sharedPref.getString(key, "192.168.0.100");
-			Utility.SERVER = ip;
+			String ip = sharedPref.getString(key, "");
+			// Utility.SERVER = ip;
+			getSPreferences()
+					.edit()
+					.putString(Constants.PREF_KEYS.SERVER_IP,
+							sharedPref.getString(key, "")).commit();
 
 			(findPreference(getString(R.string.pref_key_server_ip)))
 					.setSummary(ip);
-			Utility.RaiseToast(getActivity(), Utility.SERVER, false);
+
+			Utility.RaiseToast(getActivity(), "Server's IP Address updated",
+					false);
+
 		} else if (key.equals(getString(R.string.pref_key_update_interval))) {
-			//useless preference now as we implemented GCM
-			getSPreferences().edit()
+			// useless preference now as we implemented GCM
+			getSPreferences()
+					.edit()
 					.putString(Constants.PREF_KEYS.UPDATE_INTERVAL,
 							sharedPref.getString(key, String.valueOf(1)))
 					.commit();
 
+		} else if (key.equals(getString(R.string.pref_key_local_server))) {
+			getSPreferences()
+					.edit()
+					.putBoolean(Constants.PREF_KEYS.LOCAL_SERVER,
+							sharedPref.getBoolean(key, false)).commit();
 		}
 	}
 
