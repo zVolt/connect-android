@@ -347,7 +347,7 @@ public class BackgroundService extends Service {
 								 */				
 					//mai yaha JSON array jo ban raha usi ko
 					// 
-						sendfile(c_attachment,c.getLong(2));
+						sendfile(c_attachment,c.getLong(2),spref.getString(Constants.PREF_KEYS.user_id, null));
 						c_attachment.close();
 					// yaha pe code karna sayad teko thik hmm..likha rhne do
 					// ye.. :P
@@ -362,7 +362,7 @@ public class BackgroundService extends Service {
 		return notifications;
 	}
 
-	public void sendfile(Cursor c_attachment,long noti_time) {
+	public void sendfile(Cursor c_attachment,long noti_time,String user_id) {
 		//meko structure batao kaisa data bana k bhej ri server pe
 		// hmm
 		JSONArray attachments = new JSONArray();
@@ -395,8 +395,8 @@ public class BackgroundService extends Service {
 	//		JSONObject jsonob=new JSONObject;
 	//		jsonob.put(name, value);						
 			params.put(Constants.QueryParameters.FILE_ID,attachments);
-			AsyncHttpClient client = new SyncHttpClient(); 
-		 
+			params.put(Constants.QueryParameters.USERNAME, user_id);
+			AsyncHttpClient client = new SyncHttpClient(); 		
 			//client.addHeader("Content-Type", "multipart/form-data");
 			//client.setTimeout(500000);
 			client.post(getApplicationContext(), Utility.getBaseURL()
