@@ -42,7 +42,7 @@ public class FragmentUsers extends Fragment {
 	// private static ArrayList<User> users = new ArrayList<User>();
 	private UsersAdapter adapter;
 	private ListView listview;
-
+	private DbHelper dbh;
 	// public static View emptyView;
 
 	public FragmentUsers() {
@@ -136,7 +136,7 @@ public class FragmentUsers extends Fragment {
 			// (view.findViewById(R.id.ListItemUsersTextViewName)).toString();
 			UsersAdapter.ViewHolder holder = (UsersAdapter.ViewHolder) view
 					.getTag();
-			new DbHelper(getActivity()).getAndInsertUser(holder.user,
+			getDbHelper().getAndInsertUser(holder.user,
 					FilterOptions.FACULTY);
 			// Utility.RaiseToast(getActivity(),
 			// ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts",
@@ -162,7 +162,8 @@ public class FragmentUsers extends Fragment {
 		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);
 		params.put(Constants.QueryParameters.SECTION, FilterOptions.SECTION);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.getBaseURL(getActivity().getApplicationContext()) + "query/type_resolver", params,
+		client.get(Utility.getBaseURL(getActivity().getApplicationContext())
+				+ "query/type_resolver", params,
 				new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
@@ -233,5 +234,11 @@ public class FragmentUsers extends Fragment {
 			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
 					Context.MODE_PRIVATE);
 		return spf;
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

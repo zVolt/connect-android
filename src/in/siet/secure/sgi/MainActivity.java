@@ -43,6 +43,7 @@ public class MainActivity extends ActionBarActivity {
 	private SharedPreferences spf;
 	private static String ACTIVE_FRAGMENT_TAG;
 	private Toolbar toolbar;
+	private DbHelper dbh;
 	private View[] drawerItemHolder;
 	private int[] drawerInactiveIconIds, drawerActiveIconIds;
 
@@ -61,13 +62,15 @@ public class MainActivity extends ActionBarActivity {
 			UNI_IMG_LOADER_SET = true;
 		}
 
+		ACTIVE_FRAGMENT_TAG = getIntent().getStringExtra(
+				Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW);
 		if (ACTIVE_FRAGMENT_TAG == null) {
 			ACTIVE_FRAGMENT_TAG = FragmentNotification.TAG;
 		}
 		Fragment notification = getFragmentManager().findFragmentByTag(
 				ACTIVE_FRAGMENT_TAG);
 		if (notification == null) {
-			notification = new FragmentNotification();
+			notification = getNewFragment(ACTIVE_FRAGMENT_TAG);
 			Utility.log(TAG, "active fragment null");
 		}
 
@@ -95,6 +98,16 @@ public class MainActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
+	}
+
+	private Fragment getNewFragment(String fragment_tag) {
+		Fragment fragment = null;
+		if (fragment_tag.equalsIgnoreCase(FragmentNotification.TAG))
+			fragment = new FragmentNotification();
+		else if (fragment_tag.equalsIgnoreCase(FragmentContacts.TAG))
+			fragment = new FragmentContacts();
+
+		return fragment;
 	}
 
 	private void initDrawerItems() {
@@ -224,7 +237,7 @@ public class MainActivity extends ActionBarActivity {
 		} else if (id == R.id.action_logout) {
 			// clear pref but retain gcm registration ID and version number of
 			// application
-			String user_id=getSPreferences().getString(
+			String user_id = getSPreferences().getString(
 					Constants.PREF_KEYS.user_id, "");
 			String reg_id = getSPreferences().getString(
 					Constants.PREF_KEYS.PROPERTY_REG_ID, "");
@@ -239,14 +252,14 @@ public class MainActivity extends ActionBarActivity {
 					.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
 							app_version).commit();
 
-			//new DbHelper(getApplicationContext()).softReset();
+			// new DbHelper(getApplicationContext()).softReset();
 
 			Log.d(TAG, "pref cleared");
 			Utility.startActivity(this, LoginActivity.class);
 			finish();
 			return true;
 		} else if (id == R.id.action_reset) {
-			new DbHelper(getApplicationContext()).clearUserData();
+			getDbHelper().clearUserData();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -375,5 +388,11 @@ public class MainActivity extends ActionBarActivity {
 			spf = getSharedPreferences(Constants.PREF_FILE_NAME,
 					Context.MODE_PRIVATE);
 		return spf;
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getApplicationContext());
+		return dbh;
 	}
 }

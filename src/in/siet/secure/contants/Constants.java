@@ -8,8 +8,8 @@ public interface Constants {
 	 * breaking the url so that the user(developer) can change the ip address of
 	 * the server
 	 */
-	//public String PORT = "8080";
-	//public String COLON = ":";
+	// public String PORT = "8080";
+	// public String COLON = ":";
 
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
@@ -17,7 +17,8 @@ public interface Constants {
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
 	 */
-	public int notification_msg_id = 1;
+	public int MSG_NOTI_ID = 1;
+	public int NOTI_NOTI_ID = 2;
 	public String PATH_TO_APP = Environment.getExternalStorageDirectory()
 			.getPath() + "/in.secure.siet.sgi/download/";
 	public String PREF_FILE_NAME = "in.siet.secure.preference_file";
@@ -52,13 +53,24 @@ public interface Constants {
 	}
 
 	public interface INTENT_EXTRA {
-		String NOTIFICATION_ID = "notification_id";
+		String NOTIFICATION_ID = "noti_id";
 		String BUNDLE_NAME = "extra_bundle";
 		String ATTACHMENTS_DATA = "attachments_data";
 		String HAS_ATTACHMENTS = "has_attachments";
-		
+		String NOTIFICATIONS = "notifications";
+
+		String FRAGMENT_TO_SHOW = "fargemnt_to_show";
+
 		String CHAT_NAME = "name";
 		String CHAT_USER_PK = "user_pk";
+	}
+
+	public interface BUNDLE_DATA {
+		String NOTIFICATION_ID = "not_id";
+		String NOTIFICATION_SUBJECT = "Subject";
+		String NOTIFICATION_TEXT = "Text";
+		String NOTIFICATION_TIME = "Time";
+		String NOTIFICATION_IMAGE = "Image";
 	}
 
 	public interface ATTACHMENTS {
@@ -83,7 +95,6 @@ public interface Constants {
 		int CREATE_NOTICE = R.drawable.ic_newnotice_active;
 	}
 
-	
 	public interface LOCAL_INTENT_ACTION {
 		String RELOAD_NOTIFICATIONS = "reload_notifications";
 		String RELOAD_MESSAGES = "reload_messages";
@@ -105,7 +116,7 @@ public interface Constants {
 		String section = "Section";
 		String year = "Year";
 		String db_id = "DbId";
-		
+
 		String UPDATE_INTERVAL = "update_interval";
 		String LOCAL_SERVER = "use_local_server";
 		String PROPERTY_REG_ID = "RegId";
@@ -195,6 +206,12 @@ public interface Constants {
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
+
+		/**
+		 * this shows whether the user has read the message/notification or not.
+		 * Used to highlight new ones
+		 */
+		int READ = 6;
 
 	}
 

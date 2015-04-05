@@ -16,20 +16,16 @@ import android.widget.TextView;
 
 public class MessagesAdapter extends CursorAdapter {
 
-	Context context;
-	Cursor cursor;
-
 	public MessagesAdapter(Context con, Cursor c, int flags) {
 		super(con, c, flags);
-		context = con;
-		cursor = c;
 	}
 
 	@Override
 	public void bindView(View view, Context context, Cursor c) {
 		ViewHolder holder = (ViewHolder) view.getTag();
 		holder.text.setText(c.getString(1));
-		holder.time.setText(Utility.getTimeString(context, c.getLong(2)));
+		holder.time
+				.setText(Utility.getTimeString(context, c.getLong(2), false));
 		holder.state = c.getInt(3);
 		if (holder.state == Constants.MSG_STATE.PENDING
 				|| holder.state == Constants.MSG_STATE.SENT

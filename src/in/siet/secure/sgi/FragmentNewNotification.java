@@ -36,6 +36,7 @@ public class FragmentNewNotification extends Fragment implements
 	private ArrayList<Attachment> file_list;
 	private SharedPreferences spf;
 	private EditText subject, body;
+	private DbHelper dbh;
 
 	public FragmentNewNotification() {
 	}
@@ -192,9 +193,10 @@ public class FragmentNewNotification extends Fragment implements
 			int for_faculty = FilterOptions.FACULTY ? Constants.FOR_FACULTY.YES
 					: Constants.FOR_FACULTY.NO;
 			// fid string pk of user
-			DbHelper db = new DbHelper(getActivity().getApplicationContext());
-			int pk_user = db.getUserPk(getSPreferences().getString(
-					Constants.PREF_KEYS.user_id, null));
+
+			int pk_user = getDbHelper().getUserPk(
+					getSPreferences().getString(Constants.PREF_KEYS.user_id,
+							null));
 
 			long time = Calendar.getInstance().getTimeInMillis();
 			subject_txt = subject.getText().toString();
@@ -203,7 +205,7 @@ public class FragmentNewNotification extends Fragment implements
 					body_txt, time, pk_user, course, branch, section, year,
 					file_list);
 			// state if filled by db class
-			db.insertNewNotification(new_noti);
+			getDbHelper().insertNewNotification(new_noti);
 
 			subject.getText().clear();
 			body.getText().clear();
@@ -226,5 +228,11 @@ public class FragmentNewNotification extends Fragment implements
 			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
 					Context.MODE_PRIVATE);
 		return spf;
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

@@ -97,8 +97,6 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 			long id) {
 		Intent intent = new Intent();
 		intent.setClass(getActivity(), ChatActivity.class);
-		intent.putExtra(Constants.INTENT_EXTRA.CHAT_NAME,
-				((ViewHolder) view.getTag()).user_name);
 		intent.putExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
 				((ViewHolder) view.getTag()).user_pk_id);
 		startActivity(intent);

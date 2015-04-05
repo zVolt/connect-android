@@ -45,9 +45,10 @@ public class BackgroundService extends IntentService {
 	private static boolean SERVICE_WORKING;
 	// private static boolean HAVE_NEW_DATA;
 	// private int NO_OF_INSTANCES;
-//	private final IBinder binder = new LocalBinder();
+	// private final IBinder binder = new LocalBinder();
 	private boolean START_BY_GCM;
 	private SharedPreferences spref;
+	private DbHelper dbh;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
 
@@ -56,6 +57,12 @@ public class BackgroundService extends IntentService {
 
 	public BackgroundService() {
 		super("BackgroundService");
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getApplicationContext());
+		return dbh;
 	}
 
 	private boolean checkGcmMsgType(Intent intent) {
@@ -135,7 +142,7 @@ public class BackgroundService extends IntentService {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
-		//return binder;
+		// return binder;
 	}
 
 	/**
@@ -157,20 +164,19 @@ public class BackgroundService extends IntentService {
 
 			final String user_id = getSPreferences().getString(
 					Constants.PREF_KEYS.user_id, null); // this is me :D
-			client.get(Utility.getBaseURL(getApplicationContext()) + "query/give_me_messages",
-					reqparams, new MyJsonHttpResponseHandler() {
+			client.get(Utility.getBaseURL(getApplicationContext())
+					+ "query/give_me_messages", reqparams,
+					new MyJsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONArray response) {
 							try {
 								if (response.length() > 0) {
 
-									DbHelper db = new DbHelper(
-											getApplicationContext());
-
 									ack_ids.put(
 											Constants.JSONKEYS.MESSAGES.ACK,
-											db.fillMessages(response, user_id));
+											getDbHelper().fillMessages(
+													response, user_id));
 
 								} else {
 									Utility.log(TAG, "no messages");
@@ -273,7 +279,7 @@ public class BackgroundService extends IntentService {
 		JSONObject attachment;
 		Cursor c_attachment;
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
-		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+		SQLiteDatabase db = getDbHelper().getDb();
 		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
 				getSPreferences().getString(Constants.PREF_KEYS.user_id, null) };
 		Cursor c = db.rawQuery(query, args);
@@ -370,8 +376,9 @@ public class BackgroundService extends IntentService {
 			// client.addHeader("Content-Type", "multipart/form-data");
 			// client.setTimeout(500000);
 
-			client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
-					+ "query/upload_file", params,
+			client.post(getApplicationContext(),
+					Utility.getBaseURL(getApplicationContext())
+							+ "query/upload_file", params,
 					new MyJsonHttpResponseHandler());
 		} catch (Exception e) {
 			Utility.DEBUG(e);
@@ -379,7 +386,7 @@ public class BackgroundService extends IntentService {
 	}
 
 	private JSONArray getPendingMessages() {
-		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+		SQLiteDatabase db = getDbHelper().getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
 		String[] args = {
 				getSPreferences().getString(Constants.PREF_KEYS.user_id, null),
@@ -442,8 +449,9 @@ public class BackgroundService extends IntentService {
 		}
 		Utility.log(TAG, "ack sending " + strb.toString());
 		client.addHeader("Content-Type", "application/json");
-		client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
-				+ "query/receive_ack", entity, null,
+		client.post(getApplicationContext(),
+				Utility.getBaseURL(getApplicationContext())
+						+ "query/receive_ack", entity, null,
 				new MyJsonHttpResponseHandler() {
 					@Override
 					public void commonTask() {
@@ -465,9 +473,9 @@ public class BackgroundService extends IntentService {
 					"new thread received request to set data over network");
 			SyncHttpClient client = new SyncHttpClient();
 			client.addHeader("Content-Type", "application/json");
-			client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
-					+ "query/sync", params[0], null,
-					new MyJsonHttpResponseHandler() {
+			client.post(getApplicationContext(),
+					Utility.getBaseURL(getApplicationContext()) + "query/sync",
+					params[0], null, new MyJsonHttpResponseHandler() {
 						/**
 						 * got data(messages and notifications and
 						 * acknowledgment for the data we have send) form server
@@ -496,8 +504,7 @@ public class BackgroundService extends IntentService {
 
 								if (acks.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)
 										|| acks.has(Constants.JSONKEYS.MESSAGES.ACK))
-									new DbHelper(getApplicationContext())
-											.receivedAck(acks);
+									getDbHelper().receivedAck(acks);
 
 								// get notification and insert it into db(help
 								// of
@@ -546,9 +553,9 @@ public class BackgroundService extends IntentService {
 														 * now insert them into
 														 * database
 														 */
-														new DbHelper(
-																getApplicationContext())
-																.insertUsers(response);
+														getDbHelper()
+																.insertUsers(
+																		response);
 														setGotNewSenders(true);
 													}
 
@@ -576,8 +583,7 @@ public class BackgroundService extends IntentService {
 									setGotNewSenders(true);
 								}
 								if (getGotNewSenders()) {
-									DbHelper db = new DbHelper(
-											getApplicationContext());
+
 									if (response
 											.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
 										JSONArray notifs = response
@@ -585,7 +591,9 @@ public class BackgroundService extends IntentService {
 
 										ids_to_send
 												.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
-														db.fillNotifications(notifs));
+														getDbHelper()
+																.fillNotifications(
+																		notifs));
 
 										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 									}
@@ -596,24 +604,39 @@ public class BackgroundService extends IntentService {
 											.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
 										ids_to_send
 												.put(Constants.JSONKEYS.MESSAGES.ACK,
-														db.fillMessages(
-																response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
-																sender_lid));
+														getDbHelper()
+																.fillMessages(
+																		response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
+																		sender_lid));
 										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
 									}
+
 									if (ids_to_send
-											.has(Constants.JSONKEYS.MESSAGES.ACK)
-											|| ids_to_send
-													.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
+											.has(Constants.JSONKEYS.MESSAGES.ACK)) {
 										Intent intent = new Intent(
 												getApplicationContext(),
 												MainActivity.class);
-
+										// gte pk of new sender if one if there
+										// are many senders then change the
+										// intent class to main activity
 										Utility.buildNotification(
 												getApplicationContext(),
-												MainActivity.class, intent,
-												"Some Updates",
-												"You have new notification(s) and/or message(s)");
+												intent, "Message",
+												"You have new messages");
+									}
+									if (ids_to_send
+											.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
+										// chnage the open notification fragment
+										Intent intent = new Intent(
+												getApplicationContext(),
+												MainActivity.class);
+										intent.putExtra(
+												Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW,
+												FragmentNotification.TAG);
+										Utility.buildNotification(
+												getApplicationContext(),
+												intent, "Notifications",
+												"You have new notifications");
 									}
 								}
 							} catch (JSONException e) {
@@ -729,8 +752,8 @@ public class BackgroundService extends IntentService {
 				}
 				query.append(") as a where a.login_id NOT IN (select login_id from user)");
 
-				Cursor c = new DbHelper(getApplicationContext()).getDb()
-						.rawQuery(query.toString(), args);
+				Cursor c = getDbHelper().getDb().rawQuery(query.toString(),
+						args);
 				if (c.moveToFirst()) {
 					while (!c.isAfterLast()) {
 						// ids that has to be get from server
@@ -789,12 +812,11 @@ public class BackgroundService extends IntentService {
 	 * 
 	 * @author Zeeshan Khan
 	 * 
-	 *//*
-	public class LocalBinder extends Binder {
-		BackgroundService getService() {
-			return BackgroundService.this;
-		}
-	}*/
+	 */
+	/*
+	 * public class LocalBinder extends Binder { BackgroundService getService()
+	 * { return BackgroundService.this; } }
+	 */
 	/*
 	 * private void InstanceCreated(){ NO_OF_INSTANCES++; } private void
 	 * InstanceDeleted(){ NO_OF_INSTANCES--; }

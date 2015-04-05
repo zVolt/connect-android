@@ -31,11 +31,12 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class FragmentDetailNotification extends Fragment implements
 		OnClickListener {
-	private int not_id;
-	public LinearLayout listViewAtachments;
+	private long not_id;
+	private LinearLayout listViewAtachments;
 	private ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 	private NotificationAttachmentAdapter adapter;
-	public View rootView;
+	private View rootView;
+	private DbHelper dbh;
 	public static final String TAG = "in.siet.secure.sgi.FragmentDetailNotification";
 	private BroadcastReceiver refresh_receiver = new BroadcastReceiver() {
 
@@ -84,10 +85,10 @@ public class FragmentDetailNotification extends Fragment implements
 			Bundle savedInstanceState) {
 
 		adapter = new NotificationAttachmentAdapter(getActivity(), attachments);
+
 		Bundle bundle = getArguments();
-		not_id = bundle.getInt(Constants.NOTIFICATION.ID);
-		new DbHelper(getActivity().getApplicationContext())
-				.getFilesOfNotification(not_id);
+		not_id = bundle.getLong(Constants.BUNDLE_DATA.NOTIFICATION_ID);
+		getDbHelper().getFilesOfNotification(not_id);
 
 		rootView = inflater.inflate(R.layout.fragment_detailed_notification,
 				container, false);
@@ -103,18 +104,17 @@ public class FragmentDetailNotification extends Fragment implements
 		listViewAtachments = (LinearLayout) rootView
 				.findViewById(R.id.linearLayoutNotificationAttachmentsList);
 
-		subject.setText(bundle.getString(Constants.NOTIFICATION.SUBJECT));
-		text.setText(bundle.getString(Constants.NOTIFICATION.TEXT));
+		subject.setText(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_SUBJECT));
+		text.setText(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_TEXT));
 
 		time.setText(Utility.getTimeString(getActivity()
-				.getApplicationContext(), bundle
-				.getLong(Constants.NOTIFICATION.TIME)));
+				.getApplicationContext(), bundle.getLong(Constants.BUNDLE_DATA.NOTIFICATION_TIME), true));
 
-		ImageLoader.getInstance().displayImage(
-				bundle.getString(Constants.NOTIFICATION.SENDER_IMAGE), image);
+		ImageLoader.getInstance().displayImage(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_IMAGE), image);
 		// adapter=new NotificationAttachmentAdapter(getActivity(),
 		// attachments);
 		processAttachments();
+		getDbHelper().updateNotificationState(not_id, Constants.STATES.READ);
 		return rootView;
 	}
 
@@ -215,11 +215,17 @@ public class FragmentDetailNotification extends Fragment implements
 				// download file
 				Utility.log(TAG, "downloading file state " + h.state);
 				Utility.log("Yaha", "clicked on " + h.name.getText());
-				new Utility.DownloadFile(getActivity().getApplicationContext()).execute(h.url,
-						(String) h.name.getText(), "" + h.id);
+				new Utility.DownloadFile(getActivity().getApplicationContext())
+						.execute(h.url, (String) h.name.getText(), "" + h.id);
 			}
 			break;
 		}
 
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

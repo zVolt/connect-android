@@ -13,7 +13,6 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +35,8 @@ public class UserFilterDialog extends DialogFragment {
 	private ArrayAdapter<String> adapterYear;
 	private ArrayAdapter<String> adapterDepart;
 	private ArrayAdapter<String> adapterSection;
-	private SQLiteDatabase db;
+
+	private DbHelper dbh;
 	Bundle bundle;
 	boolean students_selected = true;
 	boolean all_department = true;
@@ -46,8 +46,7 @@ public class UserFilterDialog extends DialogFragment {
 		LayoutInflater inflater = (LayoutInflater) getActivity()
 				.getLayoutInflater();
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		final View dialog = inflater.inflate(R.layout.filter_dialog, null,
-				false);
+		final View dialog = inflater.inflate(R.layout.filter_dialog, null);
 		final ViewHolder holder = new ViewHolder();
 
 		holder.radio_group = (RadioGroup) dialog
@@ -64,7 +63,6 @@ public class UserFilterDialog extends DialogFragment {
 				.findViewById(R.id.dialogFilterSpinnerDepartment);
 		holder.years = (Spinner) dialog
 				.findViewById(R.id.dialogFilterSpinnerYear);
-		db = new DbHelper(getActivity()).getReadableDatabase();
 
 		holder.radio_group
 				.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -270,11 +268,12 @@ public class UserFilterDialog extends DialogFragment {
 		branch.add("All");
 		section.clear();
 		section.add("All");
-		Cursor c = db.rawQuery("select name from courses", null);// DbStructure.COURSES.TABLE_NAME,courses_columns,
-																	// null,
-																	// null,
-																	// null,
-																	// null,null);
+		Cursor c = getDbHelper().getDb().rawQuery("select name from courses",
+				null);// DbStructure.COURSES.TABLE_NAME,courses_columns,
+		// null,
+		// null,
+		// null,
+		// null,null);
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
 			course.add(c.getString(0));
@@ -286,7 +285,8 @@ public class UserFilterDialog extends DialogFragment {
 	public void setYearsAndBranches(String course_name) {
 		branch.clear();
 		branch.add("All");
-		Cursor c = db
+		Cursor c = getDbHelper()
+				.getDb()
 				.rawQuery(
 						"select branches.name from branches join courses on course_id=courses._id where courses.name='"
 								+ course_name + "'", null);
@@ -298,9 +298,11 @@ public class UserFilterDialog extends DialogFragment {
 		c.close();
 		year.clear();
 		year.add("All");
-		c = db.rawQuery(
-				"select distinct year.year from year join branches on branch_id=branches._id join courses on course_id=courses._id where courses.name='"
-						+ course_name + "'", null);
+		c = getDbHelper()
+				.getDb()
+				.rawQuery(
+						"select distinct year.year from year join branches on branch_id=branches._id join courses on course_id=courses._id where courses.name='"
+								+ course_name + "'", null);
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
 			year.add(c.getString(0));
@@ -313,7 +315,8 @@ public class UserFilterDialog extends DialogFragment {
 		section.clear();
 		section.add("All");
 		String[] args = { "" + year, branch_name, course_name };
-		Cursor c = db
+		Cursor c = getDbHelper()
+				.getDb()
 				.rawQuery(
 						"select sections.name from sections join year on year_id=year._id join branches on branch_id=branches._id join courses on course_id=courses._id where year.year=? and branches.name=? and courses.name=? ",
 						args);
@@ -324,5 +327,11 @@ public class UserFilterDialog extends DialogFragment {
 		}
 		c.close();
 		Utility.log(TAG, course_name + " " + branch_name + " " + year);
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

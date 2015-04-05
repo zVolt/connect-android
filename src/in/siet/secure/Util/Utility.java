@@ -17,7 +17,6 @@ import java.text.DecimalFormat;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -38,10 +37,10 @@ import android.widget.Toast;
 import com.loopj.android.http.RequestParams;
 
 public class Utility {
-	//private static boolean LOCA_SERVER = false;
+	// private static boolean LOCA_SERVER = false;
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	//public static String SERVER = LOCA_SERVER ? "192.168.0.101"
-	//		: "sgitomcat-1093.rhcloud.com";
+	// public static String SERVER = LOCA_SERVER ? "192.168.0.101"
+	// : "sgitomcat-1093.rhcloud.com";
 	private static ProgressDialog progress_dialog;
 	private static SharedPreferences spf;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
@@ -49,7 +48,8 @@ public class Utility {
 	 * STRING TO HOLD THE TEXT OF THE NOTIFICATION TO BE RAISED FOR INCOMING
 	 * MESSAGE
 	 */
-	public static String notification_msg_text[] = new String[MAX_NOTIFICATION_TEXT_LINES];
+	// public static String notification_msg_text[] = new
+	// String[MAX_NOTIFICATION_TEXT_LINES];
 	/**
 	 * BOOLEAN VARIABLE TO CHECK WHETHER NOTIFICATION IS ACTIVE IN THE
 	 * NOTIFICATION DRAWER OR NOT
@@ -162,13 +162,13 @@ public class Utility {
 	 * @param title
 	 * @param text
 	 */
-	public static void buildNotification(Context context,
-			Class<?> resultantclass, Intent action, String title, String text) {
+	public static void buildNotification(Context context, Intent action,
+			String title, String text) {
 
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context).setSmallIcon(R.drawable.ic_stat_launcher)
-				.setContentTitle(title).setContentText(text)
-				.setDefaults(Notification.DEFAULT_ALL);
+				.setContentTitle(title).setContentText(text);
+		// .setDefaults(Notification.DEFAULT_ALL);
 
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 		inboxStyle.setBigContentTitle(title);
@@ -182,7 +182,9 @@ public class Utility {
 		mBuilder.setContentIntent(p_intent);
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.notify(Constants.notification_msg_id, mBuilder.build());
+		mNotifyMgr.notify(
+				title.equalsIgnoreCase("Message") ? Constants.MSG_NOTI_ID
+						: Constants.NOTI_NOTI_ID, mBuilder.build());
 		notification_msg_active = true;
 	}
 
@@ -194,27 +196,21 @@ public class Utility {
 	 * 
 	 * @param txt
 	 */
-	public static void AddLines(String txt) {
-		int i = 0;
-		while (notification_msg_text[i] != null) {
-			i++;
-		}
-		notification_msg_text[i] = txt;
-	}
-
+	/*
+	 * public static void AddLines(String txt) { int i = 0; while
+	 * (notification_msg_text[i] != null) { i++; } notification_msg_text[i] =
+	 * txt; }
+	 */
 	/**
 	 * FUCTION TO CANCEL THE MESSAGE PRESENT IN THE NOTIFICATION DRAWER AND TO
 	 * CLEAR THE TEXT OF notification_msg_text
 	 * 
 	 * @param context
 	 */
-	public static void CancelMessageNotification(Context context) {
-		for (int i = 0; i < MAX_NOTIFICATION_TEXT_LINES; i++)
-			notification_msg_text[i] = null;
-		notification_msg_active = false;
+	public static void CancelNotification(Context context, int notification_id) {
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.cancel(Constants.notification_msg_id);
+		mNotifyMgr.cancel(notification_id);
 	}
 
 	public static RequestParams putCredentials(RequestParams params,
@@ -305,10 +301,11 @@ public class Utility {
 		Utility.log(TAG, "alarm reset on " + time_in_milisec / 1000 + " sec");
 	}
 
-	public static String getTimeString(Context context, long time_in_milisec) {
-		return DateUtils.getRelativeDateTimeString(context, time_in_milisec,
-				DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0)
-				.toString();
+	public static String getTimeString(Context context, long time_in_milisec,
+			boolean preposition) {
+		return DateUtils.getRelativeTimeSpanString(context, time_in_milisec,
+				preposition).toString();
+		// ,DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0).toString();
 	}
 
 	public static String getSizeString(float bytes) {

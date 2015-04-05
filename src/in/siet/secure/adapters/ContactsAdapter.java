@@ -39,7 +39,7 @@ public class ContactsAdapter extends CursorAdapter {
 	@Override
 	public void bindView(View view, Context context, Cursor c) {
 		holder = (ViewHolder) view.getTag();
-		holder.name.setText(holder.user_name = getName(c));
+		holder.name.setText(getName(c));
 		holder.detail.setText(getDetailText());
 		holder.extra.setText(getExtraText());
 		holder.image.setImageDrawable(context.getResources().getDrawable(
@@ -66,7 +66,7 @@ public class ContactsAdapter extends CursorAdapter {
 
 		holder.user_pk_id = c.getInt(0);
 
-		holder.name.setText(holder.user_name = getName(c));
+		holder.name.setText(getName(c));
 		holder.detail.setText(getDetailText());
 
 		holder.extra.setText(getExtraText());
@@ -77,7 +77,7 @@ public class ContactsAdapter extends CursorAdapter {
 
 	public static class ViewHolder {
 		public int user_pk_id;
-		public String user_name;
+		//public String user_name;
 		TextView name;
 		TextView detail;
 		TextView extra;

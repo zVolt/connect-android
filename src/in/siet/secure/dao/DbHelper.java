@@ -144,10 +144,10 @@ public class DbHelper extends SQLiteOpenHelper {
 	/**
 	 * this should be done by service
 	 * 
-	 * @param noti_id
+	 * @param not_id
 	 */
-	public void getFilesOfNotification(int noti_id) {
-		new FetchFilesOfNotification().execute(this, noti_id);
+	public void getFilesOfNotification(long not_id) {
+		new FetchFilesOfNotification(not_id).execute();
 	}
 
 	/**
@@ -301,6 +301,46 @@ public class DbHelper extends SQLiteOpenHelper {
 			}
 		}
 		return ids;
+	}
+
+	/**
+	 * Update the state column of notification
+	 * 
+	 * @param not_id
+	 *            ID(primary key) of notification who's state is to be updated
+	 * @param state
+	 *            to which state the value should be updated see
+	 *            {@link Constants.STATES}
+	 */
+	public void updateNotificationState(long not_id, int state) {
+		new UpdateNotificationState(not_id, state).execute();
+	}
+
+	/**
+	 * {@link AsyncTask} class to update the notification state
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	private class UpdateNotificationState extends AsyncTask<Void, Void, Void> {
+		long notification_id;
+		int state;
+
+		public UpdateNotificationState(long not_id, int state_) {
+			notification_id = not_id;
+			state = state_;
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			setDb();
+			ContentValues values = new ContentValues();
+			values.put(DbStructure.NotificationTable.COLUMN_STATE, state);
+
+			db.update(DbStructure.NotificationTable.TABLE_NAME, values,
+					" _id=?", new String[] { String.valueOf(notification_id) });
+			return null;
+		}
 	}
 
 	/**
@@ -727,7 +767,7 @@ public class DbHelper extends SQLiteOpenHelper {
 					db.update(DbStructure.NotificationTable.TABLE_NAME, value,
 							query.toString(), args);
 					// send broadcast to update notification list
-					intent = new Intent(
+					Intent intent = new Intent(
 							Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 					LocalBroadcastManager.getInstance(context).sendBroadcast(
 							intent);
@@ -843,12 +883,14 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * 
 	 */
 	private class FetchFilesOfNotification extends
-			AsyncTask<Object, Integer, ArrayList<Attachment>> {
-		int noti_id;
-
+			AsyncTask<Void, Void, ArrayList<Attachment>> {
+		long noti_id;
+		public FetchFilesOfNotification(long not_id_){
+			noti_id=not_id_;
+		}
 		@Override
-		protected ArrayList<Attachment> doInBackground(Object... params) {
-			noti_id = (Integer) params[1];
+		protected ArrayList<Attachment> doInBackground(Void... params) {
+			
 			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 			String[] column = { DbStructure.FileTable.COLUMN_NAME,
 					DbStructure.FileTable.COLUMN_STATE,
@@ -913,5 +955,70 @@ public class DbHelper extends SQLiteOpenHelper {
 			LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 		}
 	}
-
+	/*
+	 * public void getNotificationsFromDB() { new
+	 * GetNotificationsFromDB().execute(); }
+	 * 
+	 * /* get the data for notification list from database move it to DbHelper
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 * 
+	 * private class GetNotificationsFromDB extends AsyncTask<Void, Integer,
+	 * ArrayList<Notification>> {
+	 * 
+	 * @Override protected ArrayList<Notification> doInBackground(Void...
+	 * params) {
+	 * 
+	 * /** to prevent fc when the activity is reconstructed and the background
+	 * thread is still executing
+	 * 
+	 * setDb();
+	 * 
+	 * String[] columns = { DbStructure.NotificationTable._ID,
+	 * DbStructure.UserTable.COLUMN_PROFILE_PIC,
+	 * DbStructure.NotificationTable.COLUMN_SUBJECT,
+	 * DbStructure.NotificationTable.COLUMN_TEXT,
+	 * DbStructure.NotificationTable.COLUMN_TIME,
+	 * DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+	 * DbStructure.NotificationTable.COLUMN_STATE,
+	 * DbStructure.NotificationTable.COLUMN_FOR_FACULTY };
+	 * 
+	 * Cursor c = db .rawQuery("select " +
+	 * DbStructure.NotificationTable.TABLE_NAME + DbConstants.DOT + columns[0] +
+	 * DbConstants.COMMA + columns[1] + DbConstants.COMMA + columns[2] +
+	 * DbConstants.COMMA + columns[3] + DbConstants.COMMA + columns[4] +
+	 * DbConstants.COMMA + columns[5] + DbConstants.COMMA + columns[6] +
+	 * " from " + DbStructure.NotificationTable.TABLE_NAME + " join " +
+	 * DbStructure.UserTable.TABLE_NAME + " on " +
+	 * DbStructure.NotificationTable.COLUMN_SENDER + "=" +
+	 * DbStructure.UserTable.TABLE_NAME + DbConstants.DOT +
+	 * DbStructure.UserTable._ID + " order by " +
+	 * DbStructure.NotificationTable.COLUMN_TIME + " desc", null);
+	 * 
+	 * ArrayList<Notification> notifications = new ArrayList<Notification>();
+	 * c.moveToFirst(); while (c.isAfterLast() == false) {
+	 * 
+	 * Notification tmpnot = new Notification(c.getInt(c
+	 * .getColumnIndexOrThrow(columns[5])), c.getInt(c
+	 * .getColumnIndexOrThrow(columns[0])), c.getString(c
+	 * .getColumnIndexOrThrow(columns[1])), c.getString(c
+	 * .getColumnIndexOrThrow(columns[2])), c.getString(c
+	 * .getColumnIndexOrThrow(columns[3])), c.getLong(c
+	 * .getColumnIndexOrThrow(columns[4])), c.getInt(c
+	 * .getColumnIndexOrThrow(columns[6]))); notifications.add(tmpnot);
+	 * 
+	 * c.moveToNext();
+	 * 
+	 * } return notifications; }
+	 * 
+	 * @Override protected void onPostExecute(ArrayList<Notification> data) { if
+	 * (data != null) { Intent intent = new Intent(
+	 * Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
+	 * intent.putParcelableArrayListExtra( Constants.INTENT_EXTRA.NOTIFICATIONS,
+	 * data); LocalBroadcastManager.getInstance(context) .sendBroadcast(intent);
+	 * } }
+	 * 
+	 * }
+	 */
 }

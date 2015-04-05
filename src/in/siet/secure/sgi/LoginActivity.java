@@ -52,7 +52,7 @@ public class LoginActivity extends ActionBarActivity {
 	private static String TAG = "in.siet.secure.sgi.LoginActivity";
 	private String user_id = null;
 	private String pwd = null;
-
+	private DbHelper dbh;
 	private User user = null;
 	private boolean back_pressed = false;
 	private boolean in_settings = false;
@@ -243,9 +243,9 @@ public class LoginActivity extends ActionBarActivity {
 				Constants.PREF_KEYS.user_id, null);
 		Utility.log(TAG, "previously user logged in was " + saved_user_id);
 		if (saved_user_id != null && user_id.equalsIgnoreCase(saved_user_id)) {
-			new DbHelper(getApplicationContext()).clearCourseData();
+			getDbHelper().clearCourseData();
 		} else {
-			new DbHelper(getApplicationContext()).hardReset();
+			getDbHelper().hardReset();
 		}
 		Editor editor = getSPreferences().edit();
 		editor.remove(Constants.PREF_KEYS.user_id)
@@ -368,10 +368,8 @@ public class LoginActivity extends ActionBarActivity {
 								InitialData idata = parseInitialData(response
 										.getJSONObject(Constants.JSONKEYS.INITIAL_DATA));
 
-								DbHelper db = new DbHelper(
-										getApplicationContext());
-								db.addInitialData(idata);
-								db.insertUser(user, is_faculty);
+								getDbHelper().addInitialData(idata);
+								getDbHelper().insertUser(user, is_faculty);
 								startMainActivity();
 							} else {
 
@@ -617,4 +615,9 @@ public class LoginActivity extends ActionBarActivity {
 		editor.commit();
 	}
 
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getApplicationContext());
+		return dbh;
+	}
 }

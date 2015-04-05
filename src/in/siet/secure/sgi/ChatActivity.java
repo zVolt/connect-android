@@ -38,8 +38,8 @@ public class ChatActivity extends ActionBarActivity {
 	private Cursor c;
 	MessagesAdapter adapter;
 	SharedPreferences spref;
-//	BackgroundService service;
-//	boolean binded;
+	// BackgroundService service;
+	// boolean binded;
 	long receiver_id; // this is id of the receiver to whom user will text
 	String receiver_lid, user_image_url;
 	long sender_id; // sender is the user itself who is using the app
@@ -64,7 +64,8 @@ public class ChatActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_chat);
 
 		Intent intent = getIntent();
-		title = intent.getStringExtra(Constants.INTENT_EXTRA.CHAT_NAME);
+		// title="tambu";
+		// title = intent.getStringExtra(Constants.INTENT_EXTRA.CHAT_NAME);
 		receiver_id = intent.getIntExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
 				-1);
 		// if receiver_id==-1 go back to previous activity
@@ -72,20 +73,24 @@ public class ChatActivity extends ActionBarActivity {
 		msg = (EditText) findViewById(R.id.editTextChats);
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-		String tmpq = "select _id,login_id,pic_url from user where login_id='"
-				+ (sender_lid = getSPreferences().getString(
-						Constants.PREF_KEYS.user_id, null)) + "' or _id="
-				+ receiver_id; // me or the
-								// receiver
+		String tmpq = "select _id,login_id,pic_url,f_name,l_name from user where login_id=? or _id=?";
 
-		c = getDbHelper().getDb().rawQuery(tmpq, null);
+		c = getDbHelper().getDb().rawQuery(
+				tmpq,
+				new String[] {
+						getSPreferences().getString(
+								Constants.PREF_KEYS.user_id, null),
+						String.valueOf(receiver_id) });
+		
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
-			if (c.getInt(0) == receiver_id) {
+			if (c.getLong(0) == receiver_id) {
 				receiver_lid = c.getString(1);
 				user_image_url = c.getString(2);
-			} else
+				title = c.getString(3) + Constants.SPACE + c.getString(4);
+			} else {
 				sender_id = c.getLong(0);
+			}
 			c.moveToNext();
 		}
 		c.close();
@@ -120,20 +125,17 @@ public class ChatActivity extends ActionBarActivity {
 	protected void onStart() {
 		super.onStart();
 		/*
-		Intent intent = new Intent(this, BackgroundService.class);
-		bindService(intent, service_connection, Context.BIND_AUTO_CREATE);
-*/
+		 * Intent intent = new Intent(this, BackgroundService.class);
+		 * bindService(intent, service_connection, Context.BIND_AUTO_CREATE);
+		 */
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		/*
-		if (binded) {
-			unbindService(service_connection);
-			binded = false;
-		}
-*/
+		 * if (binded) { unbindService(service_connection); binded = false; }
+		 */
 	}
 
 	@Override
@@ -187,17 +189,13 @@ public class ChatActivity extends ActionBarActivity {
 							.getInstance().getTimeInMillis()));
 			updateCursor();
 		}
-	/*
-		if (binded && Utility.isConnected(getApplicationContext())) {
-			if (!BackgroundService.isServiceRunning()) {
-				service.sync();
-			} else {
-				// start the service after 10 sec
-				Utility.log(TAG, "set to start after 10 sec");
-				Utility.setAlarm(getApplicationContext(), 10000);
-			}
-		}
-*/
+		/*
+		 * if (binded && Utility.isConnected(getApplicationContext())) { if
+		 * (!BackgroundService.isServiceRunning()) { service.sync(); } else { //
+		 * start the service after 10 sec Utility.log(TAG,
+		 * "set to start after 10 sec");
+		 * Utility.setAlarm(getApplicationContext(), 10000); } }
+		 */
 	}
 
 	@Override
@@ -220,19 +218,14 @@ public class ChatActivity extends ActionBarActivity {
 			dbh = new DbHelper(getApplicationContext());
 		return dbh;
 	}
-/*
-	private ServiceConnection service_connection = new ServiceConnection() {
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			binded = false;
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service_) {
-			LocalBinder binder_ = (LocalBinder) service_;
-			service = binder_.getService();
-			binded = true;
-		}
-	};*/
+	/*
+	 * private ServiceConnection service_connection = new ServiceConnection() {
+	 * 
+	 * @Override public void onServiceDisconnected(ComponentName name) { binded
+	 * = false; }
+	 * 
+	 * @Override public void onServiceConnected(ComponentName name, IBinder
+	 * service_) { LocalBinder binder_ = (LocalBinder) service_; service =
+	 * binder_.getService(); binded = true; } };
+	 */
 }
