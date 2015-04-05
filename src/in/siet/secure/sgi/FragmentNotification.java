@@ -185,9 +185,11 @@ public class FragmentNotification extends Fragment {
 			ViewHolder holder = (ViewHolder) view.getTag();
 			bundle.putLong(Constants.BUNDLE_DATA.NOTIFICATION_ID, holder.id);
 			bundle.putLong(Constants.BUNDLE_DATA.NOTIFICATION_TIME, holder.time);
+			bundle.putInt(Constants.BUNDLE_DATA.NOTIFICATION_STATE, holder.state);
 			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_SUBJECT, holder.subject);
 			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_TEXT, holder.text);
 			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_IMAGE, holder.image);
+			
 			
 			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
 			startActivity(intent);

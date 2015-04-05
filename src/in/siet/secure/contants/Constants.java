@@ -71,6 +71,7 @@ public interface Constants {
 		String NOTIFICATION_TEXT = "Text";
 		String NOTIFICATION_TIME = "Time";
 		String NOTIFICATION_IMAGE = "Image";
+		String NOTIFICATION_STATE = "State";
 	}
 
 	public interface ATTACHMENTS {

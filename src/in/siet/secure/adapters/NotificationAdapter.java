@@ -40,46 +40,7 @@ public class NotificationAdapter extends CursorAdapter {
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
 		holder = (ViewHolder) view.getTag();
-
-		holder.id = cursor.getLong(0);
-		holder.image = cursor.getString(1);
-		holder.subject = cursor.getString(2);
-		holder.text = cursor.getString(3);
-		holder.time = cursor.getLong(4);
-		holder.state = cursor.getInt(6);
-
-		ImageLoader.getInstance().displayImage(holder.image, holder.image_view);
-		tmp_state = holder.state;
-		SpannableString content = null;
-		if (tmp_state == Constants.NOTI_STATE.PENDING) {
-			holder.state_view.setImageResource(R.drawable.ic_action_done);
-			holder.state_view.setVisibility(View.VISIBLE);
-		} else if (tmp_state == Constants.NOTI_STATE.SENT
-				|| tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
-			holder.state_view.setImageResource(R.drawable.ic_action_done_all);
-			holder.state_view.setVisibility(View.VISIBLE);
-		} else {
-			holder.state_view.setVisibility(View.GONE);
-			if (tmp_state != Constants.NOTI_STATE.READ) {
-				// set text bold
-				content = new SpannableString(cursor.getString(2));
-				content.setSpan(new StyleSpan(Typeface.BOLD), 0,
-						content.length(), 0);
-			}
-
-		}
-
-		if (content == null) {
-			holder.subject_view.setText(holder.subject);
-
-		} else {
-			holder.subject_view.setText(content);
-
-		}
-		holder.time_view.setText(Utility.getTimeString(context, holder.time,
-				true));
-
-		view.setTag(holder);
+		view = setData(view, holder, cursor, context);
 	}
 
 	@Override
@@ -89,14 +50,7 @@ public class NotificationAdapter extends CursorAdapter {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = inflater.inflate(R.layout.list_item_notification, parent,
 				false);
-
 		holder = new ViewHolder();
-		holder.id = cursor.getLong(0);
-		holder.image = cursor.getString(1);
-		holder.subject = cursor.getString(2);
-		holder.text = cursor.getString(3);
-		holder.time = cursor.getLong(4);
-		holder.state = cursor.getInt(6);
 
 		holder.image_view = (ImageView) view
 				.findViewById(R.id.imageViewNotificationImage);
@@ -106,14 +60,30 @@ public class NotificationAdapter extends CursorAdapter {
 				.findViewById(R.id.textViewNotificationTime);
 		holder.state_view = (ImageView) view
 				.findViewById(R.id.imageViewNotificationState);
+
+		view = setData(view, holder, cursor, context);
+		return view;
+	}
+
+	private View setData(View view, ViewHolder holder, Cursor cursor,
+			Context context) {
+		holder.id = cursor.getLong(0);
+		holder.image = cursor.getString(1);
+		holder.subject = cursor.getString(2);
+		holder.text = cursor.getString(3);
+		holder.time = cursor.getLong(4);
+		holder.state = cursor.getInt(6);
+
 		ImageLoader.getInstance().displayImage(holder.image, holder.image_view);
 		tmp_state = holder.state;
 		SpannableString content = null;
 		if (tmp_state == Constants.NOTI_STATE.PENDING) {
+			holder.state_view.setImageResource(R.drawable.ic_action_wait);
+			holder.state_view.setVisibility(View.VISIBLE);
+		} else if (tmp_state == Constants.NOTI_STATE.SENT) {
 			holder.state_view.setImageResource(R.drawable.ic_action_done);
 			holder.state_view.setVisibility(View.VISIBLE);
-		} else if (tmp_state == Constants.NOTI_STATE.SENT
-				|| tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
+		} else if (tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
 			holder.state_view.setImageResource(R.drawable.ic_action_done_all);
 			holder.state_view.setVisibility(View.VISIBLE);
 		} else {

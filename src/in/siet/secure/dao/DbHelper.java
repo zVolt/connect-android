@@ -885,12 +885,14 @@ public class DbHelper extends SQLiteOpenHelper {
 	private class FetchFilesOfNotification extends
 			AsyncTask<Void, Void, ArrayList<Attachment>> {
 		long noti_id;
-		public FetchFilesOfNotification(long not_id_){
-			noti_id=not_id_;
+
+		public FetchFilesOfNotification(long not_id_) {
+			noti_id = not_id_;
 		}
+
 		@Override
 		protected ArrayList<Attachment> doInBackground(Void... params) {
-			
+
 			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 			String[] column = { DbStructure.FileTable.COLUMN_NAME,
 					DbStructure.FileTable.COLUMN_STATE,

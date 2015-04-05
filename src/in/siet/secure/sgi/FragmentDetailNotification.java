@@ -104,17 +104,25 @@ public class FragmentDetailNotification extends Fragment implements
 		listViewAtachments = (LinearLayout) rootView
 				.findViewById(R.id.linearLayoutNotificationAttachmentsList);
 
-		subject.setText(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_SUBJECT));
+		subject.setText(bundle
+				.getString(Constants.BUNDLE_DATA.NOTIFICATION_SUBJECT));
 		text.setText(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_TEXT));
 
 		time.setText(Utility.getTimeString(getActivity()
-				.getApplicationContext(), bundle.getLong(Constants.BUNDLE_DATA.NOTIFICATION_TIME), true));
+				.getApplicationContext(), bundle
+				.getLong(Constants.BUNDLE_DATA.NOTIFICATION_TIME), true));
 
-		ImageLoader.getInstance().displayImage(bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_IMAGE), image);
+		ImageLoader.getInstance().displayImage(
+				bundle.getString(Constants.BUNDLE_DATA.NOTIFICATION_IMAGE),
+				image);
 		// adapter=new NotificationAttachmentAdapter(getActivity(),
 		// attachments);
 		processAttachments();
-		getDbHelper().updateNotificationState(not_id, Constants.STATES.READ);
+		int tmp_state = bundle.getInt(Constants.BUNDLE_DATA.NOTIFICATION_STATE);
+		if (tmp_state == Constants.NOTI_STATE.RECEIVED
+				|| tmp_state == Constants.NOTI_STATE.ACK_SEND)
+			getDbHelper()
+					.updateNotificationState(not_id, Constants.STATES.READ);
 		return rootView;
 	}
 
