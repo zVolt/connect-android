@@ -1,5 +1,6 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
@@ -7,7 +8,6 @@ import in.siet.secure.dao.DbHelper;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.sql.ResultSet;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -16,7 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,70 +24,110 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.SyncHttpClient;
 
 /**
  * SENDER IS ONE WHO IS SENDING US MESSAGE
  * 
- * @author swati
+ * related to wake locks the GCM broadcast receiver starts the service holding
+ * the wake-lock but if we start the service manually then the wake-lock should
+ * be managed by the service itself(BackgroundService)
+ * 
+ * @author Zeeshan Khan
  * 
  */
-public class BackgroundService extends Service {
-
+public class BackgroundService extends IntentService {
+	private static boolean SERVICE_WORKING;
+	// private static boolean HAVE_NEW_DATA;
+	// private int NO_OF_INSTANCES;
+	// private final IBinder binder = new LocalBinder();
+	private boolean START_BY_GCM;
 	private SharedPreferences spref;
+	private DbHelper dbh;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
-	private WakeLock wake;
 	private JSONArray json_fileid = null;
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		spref = getApplicationContext().getSharedPreferences(
-				Constants.pref_file_name, Context.MODE_PRIVATE);
-		if (spref != null) {
-			if ((sender_lid = spref
-					.getString(Constants.PREF_KEYS.user_id, null)) != null)
-				handleIntent(intent); // if logged in
-		} else {
-			Utility.log(TAG, "pref is null");
+
+	private boolean got_new_sender;
+	private Intent starter;
+
+	public BackgroundService() {
+		super("BackgroundService");
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getApplicationContext());
+		return dbh;
+	}
+
+	private boolean checkGcmMsgType(Intent intent) {
+		boolean res = false;
+		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+		String messageType = gcm.getMessageType(intent);
+
+		/*
+		 * Filter messages based on message type. Since it is likely that GCM
+		 * will be extended in the future with new message types, just ignore
+		 * any message types you're not interested in, or that you don't
+		 * recognize.
+		 */
+		if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+		} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED
+				.equals(messageType)) {
+			// If it's a regular GCM message, do some work.
+		} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE
+				.equals(messageType)) {
+			res = true;
 		}
-		return START_STICKY;
+		return res;
+	}
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		Utility.log(TAG, "service has accepted a request vai intent");
+		starter = intent; // intent required to release the wakeful
+							// serverice wakelock
+		if (!BackgroundService.isServiceRunning()) {
+			setStartByGCM(checkGcmMsgType(intent));
+			sync();
+		}
+
+		/*
+		 * else { /** service already running., now we may have some new data to
+		 * send to server so we will use alarm service to run this service later
+		 * in time automatically so that the new data get synchronize with
+		 * server here we will just mark that the service should set an alarm in
+		 * onDestroy method
+		 * 
+		 * Utility.log(TAG, "service running so setting have new data");
+		 * setHaveNewData(true); }
+		 */
 	}
 
 	/**
 	 * Hold a partial wake lock so that you don't get killed ;)
 	 */
-	private void holdWakeLock() {
-		PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-		if (wake == null)
-			wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-		if (!wake.isHeld())
-			wake.acquire();
-	}
-
+	/*
+	 * private void holdWakeLock() { PowerManager pm = (PowerManager)
+	 * getSystemService(POWER_SERVICE); if (wake == null) wake =
+	 * pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG); if (!wake.isHeld())
+	 * wake.acquire(); }
+	 */
 	/**
 	 * release the wake lock
 	 */
-	private void releaseLock() {
-		if (wake != null && wake.isHeld())
-			wake.release();
-	}
 
-	public void handleIntent(Intent intent) {
-
-		holdWakeLock();
-		// sendToServer();
-		// getMessagesFromServer();
-		new StartSync().execute();
-	}
-
+	/*
+	 * private void releaseLock() { if (wake != null && wake.isHeld())
+	 * wake.release(); }
+	 */
 	public void getMessagesFromServer() {
 		new GetMessagesFromServer().execute();
 	}
@@ -98,13 +138,14 @@ public class BackgroundService extends Service {
 
 	@Override
 	public void onDestroy() {
-		releaseLock();
+		Utility.log(TAG, "service destroyed");
 		super.onDestroy();
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
+		// return binder;
 	}
 
 	/**
@@ -121,35 +162,24 @@ public class BackgroundService extends Service {
 		@Override
 		protected JSONObject doInBackground(Void... params) {
 			RequestParams reqparams = new RequestParams();
-			Utility.putCredentials(reqparams, spref);
+			Utility.putCredentials(reqparams, getSPreferences());
 			SyncHttpClient client = new SyncHttpClient();
 
-			final String user_id = spref.getString(Constants.PREF_KEYS.user_id,
-					null); // this is me :D
-			client.get(Utility.getBaseURL() + "query/give_me_messages",
-					reqparams, new JsonHttpResponseHandler() {
+			final String user_id = getSPreferences().getString(
+					Constants.PREF_KEYS.user_id, null); // this is me :D
+			client.get(Utility.getBaseURL(getApplicationContext())
+					+ "query/give_me_messages", reqparams,
+					new MyJsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONArray response) {
 							try {
 								if (response.length() > 0) {
 
-									DbHelper db = new DbHelper(
-											getApplicationContext());
-
 									ack_ids.put(
 											Constants.JSONKEYS.MESSAGES.ACK,
-											db.fillMessages(response, user_id));
-
-									Intent intent = new Intent(
-											getApplicationContext(),
-											ChatActivity.class);
-
-									Utility.buildNotification(
-											getApplicationContext(),
-											MainActivity.class, intent,
-											"New Messages",
-											"You have new messages");
+											getDbHelper().fillMessages(
+													response, user_id));
 
 								} else {
 									Utility.log(TAG, "no messages");
@@ -157,24 +187,6 @@ public class BackgroundService extends Service {
 							} catch (Exception e) {
 								Utility.DEBUG(e);
 							}
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONObject errorResponse) {
-							Utility.log(TAG, throwable.getLocalizedMessage());
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								String responseString, Throwable throwable) {
-							Utility.log(TAG, throwable.getLocalizedMessage());
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONArray errorResponse) {
-							Utility.log(TAG, throwable.getLocalizedMessage());
 						}
 					});
 			return ack_ids;
@@ -198,6 +210,7 @@ public class BackgroundService extends Service {
 	 * 5. receive data from server (messages and notification) 
 	 * 6. fill database accordingly 
 	 * 7. trigger notification action
+
 	 */
 	
 	public class StartSync extends AsyncTask<Void, Void, Void> {
@@ -209,6 +222,8 @@ public class BackgroundService extends Service {
 	}
 
 	public void sync() {
+		Utility.log(TAG, "serice is in sync");
+		setServiceRunning(true);
 		JSONObject data_to_send = new JSONObject();
 		StringBuilder strb = new StringBuilder();
 
@@ -216,11 +231,15 @@ public class BackgroundService extends Service {
 			/**
 			 * set user credentials
 			 */
-			Utility.putCredentials(strb, spref);
-			strb.append(spref.getBoolean(Constants.PREF_KEYS.is_faculty, false));
+			Utility.putCredentials(strb, getSPreferences());
+			strb.append(getSPreferences().getBoolean(
+					Constants.PREF_KEYS.is_faculty, false));
 			strb.append(Constants.NEW_LINE);
+
+			// setHaveNewData(false);
 			/**
-			 * set pending messages
+			 * going to get all the pending data so we have no new data get
+			 * pending messages
 			 */
 			JSONArray pending_messages = getPendingMessages();
 
@@ -231,13 +250,15 @@ public class BackgroundService extends Service {
 			/**
 			 * set pending notifications if user is faculty
 			 */
-			if (spref.getBoolean(Constants.PREF_KEYS.is_faculty, false)) {
+			if (getSPreferences().getBoolean(Constants.PREF_KEYS.is_faculty,
+					false)) {
 				JSONArray pending_notifications = getPendingNotifications();
 				if (pending_notifications.length() > 0)
 					data_to_send.put(
 							Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS,
 							pending_notifications);
 			}
+
 		} catch (JSONException e) {
 			Utility.DEBUG(e);
 		}
@@ -255,9 +276,9 @@ public class BackgroundService extends Service {
 			Utility.DEBUG(e);
 		}
 		/**
-		 * send to server either credentials only or with some pending data
+		 * send to server->credentials with some pending data if any
 		 */
-		Utility.log(TAG, "sending this " + strb.toString());
+		Utility.log(TAG, "sending data to a new thread");
 		new SendDataToServer().execute(body);
 
 	}
@@ -279,9 +300,10 @@ public class BackgroundService extends Service {
 		Cursor c_attachment;
 		int status;
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
-		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+
+		SQLiteDatabase db = getDbHelper().getDb();
 		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
-				spref.getString(Constants.PREF_KEYS.user_id, null) };
+				getSPreferences().getString(Constants.PREF_KEYS.user_id, null) };
 		Cursor c = db.rawQuery(query, args);
 		if (c.moveToFirst()) {
 			while (!c.isAfterLast()) {
@@ -321,6 +343,7 @@ public class BackgroundService extends Service {
 					notification.put(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS, attachment);
 					Utility.log(TAG, "after sending file");
 					c_attachment.close();
+
 					notifications.put(notification);
 				} catch (Exception e) {
 					Utility.DEBUG(e);
@@ -338,6 +361,7 @@ public class BackgroundService extends Service {
 		RequestParams params = new RequestParams();
 		try {
 			int i = 0;
+			//meaole  
 			if (c_attachment.moveToFirst()) {
 				while (!c_attachment.isAfterLast()) {
 					try {
@@ -363,9 +387,9 @@ public class BackgroundService extends Service {
 			AsyncHttpClient client = new SyncHttpClient();
 			// client.addHeader("Content-Type", "multipart/form-data");
 			// client.setTimeout(500000);
-			client.post(getApplicationContext(), Utility.getBaseURL()
+			client.post(getApplicationContext(), Utility.getBaseURL(getApplicationContext())
 					+ "query/upload_file", params,
-					new JsonHttpResponseHandler() {
+					new MyJsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(int statusCode, Header[] headers,
 								JSONObject response) {
@@ -398,15 +422,17 @@ public class BackgroundService extends Service {
 									"..fail3" + throwable.getLocalizedMessage());
 						}
 					});
+
 		} catch (Exception e) {
 			Utility.DEBUG(e);
 		}
 	}
 
 	private JSONArray getPendingMessages() {
-		SQLiteDatabase db = new DbHelper(getApplicationContext()).getDb();
+		SQLiteDatabase db = getDbHelper().getDb();
 		String query = "select u.login_id,m.text,m.is_group_msg,m.time,m._id from messages as m join user as u on m.receiver=u._id where m.sender=(select _id from user where login_id=?) and m.state=?";
-		String[] args = { spref.getString(Constants.PREF_KEYS.user_id, null),
+		String[] args = {
+				getSPreferences().getString(Constants.PREF_KEYS.user_id, null),
 				String.valueOf(Constants.MSG_STATE.PENDING) };
 		Cursor c = db.rawQuery(query, args);
 		JSONArray messages = new JSONArray();
@@ -445,15 +471,17 @@ public class BackgroundService extends Service {
 	 *            of notification
 	 */
 	public void sendAck(JSONObject msg_and_noti_ids) {
+		Utility.log(TAG, "sending ack now");
 		AsyncHttpClient client = new AsyncHttpClient();
 		StringBuilder strb = new StringBuilder();
 		/**
 		 * set user credentials
 		 */
-		strb.append(spref
-				.getString(Constants.PREF_KEYS.encripted_user_id, null).trim());
+		strb.append(getSPreferences().getString(
+				Constants.PREF_KEYS.encripted_user_id, null).trim());
 		strb.append(Constants.NEW_LINE);
-		strb.append(spref.getString(Constants.PREF_KEYS.token, null).trim());
+		strb.append(getSPreferences()
+				.getString(Constants.PREF_KEYS.token, null).trim());
 		strb.append(Constants.NEW_LINE);
 		strb.append(msg_and_noti_ids);
 		HttpEntity entity = null;
@@ -464,40 +492,16 @@ public class BackgroundService extends Service {
 		}
 		Utility.log(TAG, "ack sending " + strb.toString());
 		client.addHeader("Content-Type", "application/json");
-		client.post(getApplicationContext(), Utility.getBaseURL()
-				+ "query/receive_ack", entity, null,
-				new JsonHttpResponseHandler() {
+		client.post(getApplicationContext(),
+				Utility.getBaseURL(getApplicationContext())
+						+ "query/receive_ack", entity, null,
+				new MyJsonHttpResponseHandler() {
 					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONObject response) {
-						Utility.log(TAG, "ack received " + response.toString());
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-						Utility.log(
-								TAG,
-								"on failure sendAck "
-										+ throwable.getLocalizedMessage());
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							String responseString, Throwable throwable) {
-						Utility.log(
-								TAG,
-								"on failure sendAck "
-										+ throwable.getLocalizedMessage());
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONArray errorResponse) {
-						Utility.log(
-								TAG,
-								"on failure sendAck "
-										+ throwable.getLocalizedMessage());
+					public void commonTask() {
+						Utility.log(TAG, "sending ack done");
+						setServiceRunning(false);
+						if (START_BY_GCM)
+							GcmBroadcastReceiver.completeWakefulIntent(starter);
 					}
 				});
 	}
@@ -508,13 +512,13 @@ public class BackgroundService extends Service {
 
 		@Override
 		protected Void doInBackground(HttpEntity... params) {
-
+			Utility.log(TAG,
+					"new thread received request to set data over network");
 			SyncHttpClient client = new SyncHttpClient();
-
 			client.addHeader("Content-Type", "application/json");
-			client.post(getApplicationContext(), Utility.getBaseURL()
-					+ "query/sync", params[0], null,
-					new JsonHttpResponseHandler() {
+			client.post(getApplicationContext(),
+					Utility.getBaseURL(getApplicationContext()) + "query/sync",
+					params[0], null, new MyJsonHttpResponseHandler() {
 						/**
 						 * got data(messages and notifications and
 						 * acknowledgment for the data we have send) form server
@@ -543,8 +547,7 @@ public class BackgroundService extends Service {
 
 								if (acks.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)
 										|| acks.has(Constants.JSONKEYS.MESSAGES.ACK))
-									new DbHelper(getApplicationContext())
-											.receivedAck(acks);
+									getDbHelper().receivedAck(acks);
 
 								// get notification and insert it into db(help
 								// of
@@ -559,11 +562,16 @@ public class BackgroundService extends Service {
 								JSONArray ids_to_get = getNewSenders(response);
 								// hit server synchronously :P
 								// hiting only if new senders are there
+
 								if (ids_to_get.length() > 0) {
+									setGotNewSenders(false);
 									try {
+										Utility.log(TAG,
+												"goning to hit server again");
 										HttpEntity entity = null;
 										StringBuilder strb = new StringBuilder();
-										Utility.putCredentials(strb, spref);
+										Utility.putCredentials(strb,
+												getSPreferences());
 										strb.append(ids_to_get);
 										entity = new StringEntity(strb
 												.toString());
@@ -572,27 +580,39 @@ public class BackgroundService extends Service {
 												"application/json");
 										client.post(
 												getApplicationContext(),
-												Utility.getBaseURL()
+												Utility.getBaseURL(getApplicationContext())
 														+ "query/get_full_user_info",
-												entity, null,
-												new JsonHttpResponseHandler() {
+												entity,
+												null,
+												new MyJsonHttpResponseHandler() {
 													public void onSuccess(
 															int statusCode,
 															Header[] headers,
 															JSONObject response) {
-														Utility.log(
-																TAG,
-																"sucess get ids of new user \n"
-																		+ response);
-														// got the data now
-														// insert
-														// it into database and
-														// you
-														// will be free
-														new DbHelper(
-																getApplicationContext())
-																.insertUser(response);
+														Utility.log(TAG,
+																"sucess get full detials of new user");
+														/*
+														 * got the new senders
+														 * now insert them into
+														 * database
+														 */
+														getDbHelper()
+																.insertUsers(
+																		response);
+														setGotNewSenders(true);
+													}
 
+													/**
+													 * skip rest process of
+													 * inserting data to local
+													 * database if we don't get
+													 * senders details
+													 */
+													@Override
+													public void commonTask() {
+														Utility.log(TAG,
+																"fail to get full detials of new user");
+														setGotNewSenders(false);
 													};
 												});
 
@@ -600,71 +620,77 @@ public class BackgroundService extends Service {
 										Utility.DEBUG(e);
 									}
 
-									Utility.log(TAG, "line afeter server hit");
+									Utility.log(TAG, "line after server hit");
+								} else {
+									Utility.log(TAG, "we have no new senders");
+									setGotNewSenders(true);
 								}
-								DbHelper db = new DbHelper(
-										getApplicationContext());
-								if (response
-										.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
-									JSONArray notifs = response
-											.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS);
+								if (getGotNewSenders()) {
 
-									ids_to_send
-											.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
-													db.fillNotifications(notifs));
+									if (response
+											.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
+										JSONArray notifs = response
+												.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS);
 
-									sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
+										ids_to_send
+												.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
+														getDbHelper()
+																.fillNotifications(
+																		notifs));
+
+										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
+									}
+									// get messages and insert it into db(help
+									// of
+									// DbHelper)
+									if (response
+											.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
+										ids_to_send
+												.put(Constants.JSONKEYS.MESSAGES.ACK,
+														getDbHelper()
+																.fillMessages(
+																		response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
+																		sender_lid));
+										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
+									}
+
+									if (ids_to_send
+											.has(Constants.JSONKEYS.MESSAGES.ACK)) {
+										Intent intent = new Intent(
+												getApplicationContext(),
+												MainActivity.class);
+										// gte pk of new sender if one if there
+										// are many senders then change the
+										// intent class to main activity
+										Utility.buildNotification(
+												getApplicationContext(),
+												intent, "Message",
+												"You have new messages");
+									}
+									if (ids_to_send
+											.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
+										// chnage the open notification fragment
+										Intent intent = new Intent(
+												getApplicationContext(),
+												MainActivity.class);
+										intent.putExtra(
+												Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW,
+												FragmentNotification.TAG);
+										Utility.buildNotification(
+												getApplicationContext(),
+												intent, "Notifications",
+												"You have new notifications");
+									}
 								}
-								// get messages and insert it into db(help of
-								// DbHelper)
-								if (response
-										.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
-									ids_to_send.put(
-											Constants.JSONKEYS.MESSAGES.ACK,
-											db.fillMessages(
-													response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
-													sender_lid));
-									sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
-								}
-
 							} catch (JSONException e) {
 								Utility.DEBUG(e);
 							}
 						}
 
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								String responseString, Throwable throwable) {
-							Utility.log(
-									TAG,
-									"on failure sync "
-											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers,
-									responseString, throwable);
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONArray errorResponse) {
-							Utility.log(
-									TAG,
-									"on failure sync "
-											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers, throwable,
-									errorResponse);
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONObject errorResponse) {
-							Utility.log(
-									TAG,
-									"on failure sync "
-											+ throwable.getLocalizedMessage());
-							super.onFailure(statusCode, headers, throwable,
-									errorResponse);
-						}
-						// override all sucess and failure methods
+						public void commonTask() {
+							Utility.log(TAG,
+									"network operation complete with some error");
+						};
 					});
 
 			return null;
@@ -674,8 +700,14 @@ public class BackgroundService extends Service {
 		protected void onPostExecute(Void result) {
 			// on main thread
 			if (ids_to_send.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)
-					|| ids_to_send.has(Constants.JSONKEYS.MESSAGES.ACK))
+					|| ids_to_send.has(Constants.JSONKEYS.MESSAGES.ACK)) {
 				sendAck(ids_to_send);
+			} else {
+				setServiceRunning(false);
+				if (START_BY_GCM)
+					GcmBroadcastReceiver.completeWakefulIntent(starter);
+			}
+
 		}
 	}
 
@@ -739,10 +771,11 @@ public class BackgroundService extends Service {
 	 *         local database
 	 */
 	private JSONArray getUsersNotInDb(JSONArray userids) {
-		// select login_id from (select 'emp-091' as login_id union all select
-		// 'b-11-136'
-		// union all select 'emp-000') as a where a.login_id not in (select
-		// login_id from user)
+		/**
+		 * select login_id from (select 'emp-091' as login_id union all select
+		 * 'b-11-136' union all select 'emp-000') as a where a.login_id not in
+		 * (select login_id from user)
+		 */
 
 		String unionall = " union all ";
 		String select = " select ";
@@ -762,8 +795,8 @@ public class BackgroundService extends Service {
 				}
 				query.append(") as a where a.login_id NOT IN (select login_id from user)");
 
-				Cursor c = new DbHelper(getApplicationContext()).getDb()
-						.rawQuery(query.toString(), args);
+				Cursor c = getDbHelper().getDb().rawQuery(query.toString(),
+						args);
 				if (c.moveToFirst()) {
 					while (!c.isAfterLast()) {
 						// ids that has to be get from server
@@ -784,4 +817,51 @@ public class BackgroundService extends Service {
 		LocalBroadcastManager.getInstance(getApplicationContext())
 				.sendBroadcast(intent);
 	}
+
+	private void setGotNewSenders(boolean set) {
+		got_new_sender = set;
+	}
+
+	private boolean getGotNewSenders() {
+		return got_new_sender;
+	}
+
+	private SharedPreferences getSPreferences() {
+		if (spref == null)
+			spref = getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spref;
+	}
+
+	private void setServiceRunning(boolean sending) {
+		Utility.log(TAG, "service running " + sending);
+		SERVICE_WORKING = sending;
+	}
+
+	public static boolean isServiceRunning() {
+		return SERVICE_WORKING;
+	}
+
+	/*
+	 * public void setHaveNewData(boolean have_new_data) { // HAVE_NEW_DATA =
+	 * have_new_data; }
+	 */
+	public void setStartByGCM(boolean start_by_gcm) {
+		START_BY_GCM = start_by_gcm;
+	}
+
+	/**
+	 * Binder class that returns the instance of service
+	 * 
+	 * @author Zeeshan Khan
+	 * 
+	 */
+	/*
+	 * public class LocalBinder extends Binder { BackgroundService getService()
+	 * { return BackgroundService.this; } }
+	 */
+	/*
+	 * private void InstanceCreated(){ NO_OF_INSTANCES++; } private void
+	 * InstanceDeleted(){ NO_OF_INSTANCES--; }
+	 */
 }

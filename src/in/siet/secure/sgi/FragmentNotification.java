@@ -1,23 +1,18 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAdapter;
+import in.siet.secure.adapters.NotificationAdapter.ViewHolder;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 import in.siet.secure.dao.DbStructure;
-
-import java.util.ArrayList;
-
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
@@ -32,10 +27,13 @@ import android.widget.ListView;
 
 public class FragmentNotification extends Fragment {
 	public static final String TAG = "in.siet.secure.sgi.FragmentNotification";
-	private ArrayList<Notification> notifications = new ArrayList<Notification>();
+	// private ArrayList<Notification> notifications = new
+	// ArrayList<Notification>();
+	private DbHelper dbh;
 	private NotificationAdapter adapter;
 	private View rootView;
 	private ListView listView;
+	private String query;
 	private BroadcastReceiver local_broadcast_receiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -47,14 +45,43 @@ public class FragmentNotification extends Fragment {
 	public FragmentNotification() {
 	}
 
+	private String getQuery() {
+		if (query == null) {
+			String[] columns = { DbStructure.NotificationTable._ID,
+					DbStructure.UserTable.COLUMN_PROFILE_PIC,
+					DbStructure.NotificationTable.COLUMN_SUBJECT,
+					DbStructure.NotificationTable.COLUMN_TEXT,
+					DbStructure.NotificationTable.COLUMN_TIME,
+					DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
+					DbStructure.NotificationTable.COLUMN_STATE };
+
+			StringBuilder strb = new StringBuilder("select "
+					+ DbStructure.NotificationTable.TABLE_NAME
+					+ DbConstants.DOT + columns[0] + DbConstants.COMMA
+					+ columns[1] + DbConstants.COMMA + columns[2]
+					+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
+					+ columns[4] + DbConstants.COMMA + columns[5]
+					+ DbConstants.COMMA + columns[6] + " from "
+					+ DbStructure.NotificationTable.TABLE_NAME + " join "
+					+ DbStructure.UserTable.TABLE_NAME + " on "
+					+ DbStructure.NotificationTable.COLUMN_SENDER + "="
+					+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
+					+ DbStructure.UserTable._ID + " order by "
+					+ DbStructure.NotificationTable.COLUMN_TIME + " desc");
+
+			query = strb.toString();
+		}
+		return query;
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		rootView = inflater.inflate(R.layout.fragment_notification, container,
 				false);
-		adapter = new NotificationAdapter(getActivity(), notifications);
 
-		updateList();
+		Cursor c = getDbHelper().getDb().rawQuery(getQuery(), null);
+		adapter = new NotificationAdapter(getActivity(), c, 0);
 
 		setHasOptionsMenu(true);
 		listView = (ListView) rootView
@@ -73,6 +100,12 @@ public class FragmentNotification extends Fragment {
 	}
 
 	@Override
+	public void onStart() {
+		super.onStart();
+		updateList();
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
@@ -83,7 +116,9 @@ public class FragmentNotification extends Fragment {
 						local_broadcast_receiver,
 						new IntentFilter(
 								Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS));
-		refresh();
+
+		Utility.CancelNotification(getActivity().getApplicationContext(),
+				Constants.NOTI_NOTI_ID);
 	}
 
 	@Override
@@ -103,15 +138,8 @@ public class FragmentNotification extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		/**
-		 * updates notifications only from local db is probably useless need to
-		 * delete this or implement the server hit method real refresh
+		 * we can use this to implement special menu options for notificaion
 		 */
-		if (item.getItemId() == R.id.action_refresh_notifications) {
-			Utility.log(TAG, "refresh notification");
-
-			updateList();
-			return true;
-		}
 		return false;
 	}
 
@@ -119,17 +147,10 @@ public class FragmentNotification extends Fragment {
 	 * public method to update notification list
 	 */
 	public void updateList() {
-		new GetNotificationsFromDB(getActivity().getApplicationContext())
-				.execute();
-	}
-
-	/**
-	 * This method tells the adapter to update as underlying data has been
-	 * changed
-	 */
-	public void refresh() {
-		if (adapter != null)
-			adapter.notifyDataSetChanged();
+		Cursor cursor = getDbHelper().getDb().rawQuery(getQuery(), null);
+		cursor = adapter.swapCursor(cursor);
+		if (cursor != null)
+			cursor.close();
 	}
 
 	/**
@@ -139,12 +160,11 @@ public class FragmentNotification extends Fragment {
 	 * @param data
 	 *            ArrayList of Notification to be added in list
 	 */
-	public void setDataInAdapter(ArrayList<Notification> data) {
-		Utility.log(TAG, "received " + data.size());
-		adapter.clear();
-		adapter.addAll(data);
-	}
-
+	/*
+	 * public void setDataInAdapter(ArrayList<Notification> data) {
+	 * Utility.log(TAG, "received " + data.size()); // adapter.clear();
+	 * adapter.addAll(data); refresh(); }
+	 */
 	/**
 	 * handling click on notification lead to fire a intent to start a
 	 * notification activity
@@ -157,100 +177,29 @@ public class FragmentNotification extends Fragment {
 		@Override
 		public void onItemClick(AdapterView<?> adapter, View view,
 				int position, long id) {
-			Notification notify = ((Notification) adapter
-					.getItemAtPosition(position));
 
 			Intent intent = new Intent(getActivity().getApplicationContext(),
 					NotificationActivity.class);
 
 			Bundle bundle = new Bundle();
-			bundle.putString(Constants.NOTIFICATION.SUBJECT, notify.subject);
-			bundle.putString(Constants.NOTIFICATION.TEXT, notify.text);
-			bundle.putLong(Constants.NOTIFICATION.TIME, notify.time);
-			bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, notify.image);
-			bundle.putInt(Constants.NOTIFICATION.ID, notify.sender_id);
+			ViewHolder holder = (ViewHolder) view.getTag();
+			bundle.putLong(Constants.BUNDLE_DATA.NOTIFICATION_ID, holder.id);
+			bundle.putLong(Constants.BUNDLE_DATA.NOTIFICATION_TIME, holder.time);
+			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_SUBJECT, holder.subject);
+			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_TEXT, holder.text);
+			bundle.putString(Constants.BUNDLE_DATA.NOTIFICATION_IMAGE, holder.image);
 			
 			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
 			startActivity(intent);
+
+			// seting the notification state to read on
+			// FragmentDetailNotification's on Create view
 		}
 	}
 
-	/**
-	 * get the data for notification list from database move it to DbHelper
-	 * 
-	 * @author Zeeshan Khan
-	 * 
-	 */
-	private class GetNotificationsFromDB extends
-			AsyncTask<Void, Integer, ArrayList<Notification>> {
-		private Context context;
-
-		public GetNotificationsFromDB(Context context_) {
-			context = context_;
-
-		}
-
-		@Override
-		protected ArrayList<Notification> doInBackground(Void... params) {
-
-			/**
-			 * to prevent fc when the activity is reconstructed and the
-			 * background thread is still executing
-			 */
-			if (context != null) {
-				String[] columns = { DbStructure.NotificationTable._ID,
-						DbStructure.UserTable.COLUMN_PROFILE_PIC,
-						DbStructure.NotificationTable.COLUMN_SUBJECT,
-						DbStructure.NotificationTable.COLUMN_TEXT,
-						DbStructure.NotificationTable.COLUMN_TIME,
-						DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
-						DbStructure.NotificationTable.COLUMN_STATE };
-				SQLiteDatabase db = new DbHelper(context).getDb();
-				Cursor c = db.rawQuery("select "
-						+ DbStructure.NotificationTable.TABLE_NAME
-						+ DbConstants.DOT + columns[0] + DbConstants.COMMA
-						+ columns[1] + DbConstants.COMMA + columns[2]
-						+ DbConstants.COMMA + columns[3] + DbConstants.COMMA
-						+ columns[4] + DbConstants.COMMA + columns[5]
-						+ DbConstants.COMMA + columns[6] + " from "
-						+ DbStructure.NotificationTable.TABLE_NAME + " join "
-						+ DbStructure.UserTable.TABLE_NAME + " on "
-						+ DbStructure.NotificationTable.COLUMN_SENDER + "="
-						+ DbStructure.UserTable.TABLE_NAME + DbConstants.DOT
-						+ DbStructure.UserTable._ID + " order by "
-						+ DbStructure.NotificationTable.COLUMN_TIME, null);
-
-				ArrayList<Notification> notifications = new ArrayList<Notification>();
-				c.moveToFirst();
-				while (c.isAfterLast() == false) {
-					Utility.log(TAG, "processsing notification");
-					Notification tmpnot = new Notification(c.getInt(c
-							.getColumnIndexOrThrow(columns[5])), c.getInt(c
-							.getColumnIndexOrThrow(columns[0])), c.getString(c
-							.getColumnIndexOrThrow(columns[1])), c.getString(c
-							.getColumnIndexOrThrow(columns[2])), c.getString(c
-							.getColumnIndexOrThrow(columns[3])), c.getLong(c
-							.getColumnIndexOrThrow(columns[4])), c.getInt(c
-							.getColumnIndexOrThrow(columns[6])));
-					notifications.add(tmpnot);
-					Utility.log(TAG, tmpnot.subject);
-					c.moveToNext();
-
-				}
-				return notifications;
-			} else {
-				return null;
-			}
-		}
-
-		@Override
-		protected void onPostExecute(ArrayList<Notification> data) {
-			if (data != null) {
-				Utility.log(TAG, "we get data" + data.toString());
-				setDataInAdapter(data);
-				refresh();
-			}
-		}
-
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

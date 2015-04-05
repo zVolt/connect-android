@@ -9,6 +9,11 @@ public class StudentFull extends Student {
 		u_roll_no = u_roll;
 	}
 
+	public StudentFull(Student student) {
+		this(student.f_name, student.l_name, student.user_id, student.picUrl,
+				student.year, student.section, null);
+	}
+
 	public StudentFull() {
 		super();
 	}

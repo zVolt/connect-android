@@ -36,6 +36,7 @@ public class FragmentNewNotification extends Fragment implements
 	private ArrayList<Attachment> file_list;
 	private SharedPreferences spf;
 	private EditText subject, body;
+	private DbHelper dbh;
 
 	public FragmentNewNotification() {
 	}
@@ -43,8 +44,7 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		spf = getActivity().getSharedPreferences(Constants.pref_file_name,
-				Context.MODE_PRIVATE);
+
 		View rootView = inflater.inflate(R.layout.fragment_new_notification,
 				container, false);
 		// ViewHolder holder = new ViewHolder();
@@ -173,10 +173,8 @@ public class FragmentNewNotification extends Fragment implements
 	}
 
 	/**
-	 * Creates a new Notification from data provided, Insert it in database and
-	 * send it to server.
-	 * 
-	 * sending part should be moved to server
+	 * Creates a new Notification from data provided, Insert it in local
+	 * database.
 	 * 
 	 * @param view
 	 *            View on which the action is performed (ImageButton in this
@@ -185,7 +183,6 @@ public class FragmentNewNotification extends Fragment implements
 	public void sendNewNotification(View view) {
 
 		if (verifyNewNotificationData()) {
-
 			int year;
 			// data copied in case use change it suddenly
 			String course = FilterOptions.COURSE;
@@ -193,21 +190,23 @@ public class FragmentNewNotification extends Fragment implements
 			String section = FilterOptions.SECTION;
 			String subject_txt, body_txt;
 			year = FilterOptions.YEAR;
-			int for_faculty = FilterOptions.STUDENT ? Constants.FOR_FACULTY.NO
-					: Constants.FOR_FACULTY.YES;
+			int for_faculty = FilterOptions.FACULTY ? Constants.FOR_FACULTY.YES
+					: Constants.FOR_FACULTY.NO;
 			// fid string pk of user
-			DbHelper db = new DbHelper(getActivity().getApplicationContext());
-			int pk_user = db.getUserPk(spf.getString(
-					Constants.PREF_KEYS.user_id, null));
+
+			int pk_user = getDbHelper().getUserPk(
+					getSPreferences().getString(Constants.PREF_KEYS.user_id,
+							null));
 
 			long time = Calendar.getInstance().getTimeInMillis();
 			subject_txt = subject.getText().toString();
 			body_txt = body.getText().toString();
 			Notification new_noti = new Notification(for_faculty, subject_txt,
 					body_txt, time, pk_user, course, branch, section, year,
-					file_list); 
+					file_list);
 			// state if filled by db class
-			db.insertNewNotification(new_noti);
+
+			getDbHelper().insertNewNotification(new_noti);
 			
 			Intent intent = new Intent(getActivity().getApplicationContext(),
 					NotificationActivity.class);
@@ -222,7 +221,7 @@ public class FragmentNewNotification extends Fragment implements
 // go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
-			Utility.RaiseToast(getActivity(), "send new message", false);
+			Utility.RaiseToast(getActivity(), "send new notification", false);
 		} else {
 			Utility.RaiseToast(getActivity(), "cannot create notification",
 					false);
@@ -234,5 +233,18 @@ public class FragmentNewNotification extends Fragment implements
 		String body_txt = body.getText().toString().trim();
 		return !(subject_txt.length() == 0 || body_txt.length() == 0);
 
+	}
+
+	private SharedPreferences getSPreferences() {
+		if (spf == null)
+			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

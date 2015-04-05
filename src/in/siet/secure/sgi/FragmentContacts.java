@@ -1,13 +1,10 @@
 package in.siet.secure.sgi;
 
-import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.ContactsAdapter;
 import in.siet.secure.adapters.ContactsAdapter.ViewHolder;
-import in.siet.secure.dao.DbHelper;
+import in.siet.secure.contants.Constants;
 import android.app.Fragment;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,14 +21,10 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 	public static String TAG = "in.siet.secure.sgi.FramentContacts";
 
 	private ContactsAdapter adapter;
-	private Cursor cs, cf;
-	private SQLiteDatabase db;
 	/**
 	 * to maintain the which list to show students or faculty
 	 */
-	public static boolean student;
-	final String ss = "select user._id,f_name,l_name,pic_url,sections.name,year.year,branches.name,courses.name,login_id from user join student on user._id=student.user_id join sections on section_id=sections._id join year on year_id=year._id join branches on branch_id=branches._id join courses on course_id=courses._id",
-			sf = "select user._id,f_name,l_name,pic_url,branches.name,courses.name,login_id from user join faculty on user._id=faculty.user_id join branches on branch_id=branches._id join courses on course_id=courses._id";
+	private boolean student;
 
 	public FragmentContacts() {
 	}
@@ -59,10 +52,7 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 			student = true;
 		// retain this fragment
 		setRetainInstance(true);
-		db = new DbHelper(getActivity()).getReadableDatabase();
-		cs = db.rawQuery(ss, null);
-		cf = db.rawQuery(sf, null);
-		adapter = new ContactsAdapter(getActivity(), cs, 0);
+		adapter = new ContactsAdapter(getActivity(), student);
 		switchContacts();
 		super.onCreate(savedInstanceState);
 	}
@@ -70,7 +60,6 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		// student=true;
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_contacts);
 	}
@@ -88,7 +77,6 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_switch) {
-			Utility.RaiseToast(getActivity(), "change cursor", false);
 			if (student)
 				item.setIcon(R.drawable.ic_teacher);
 			else
@@ -100,12 +88,8 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 	}
 
 	public void switchContacts() {
-		if (student) {
-			adapter.swapCursor(cf);
-		} else {
-			adapter.swapCursor(cs);
-		}
 		student = !student;
+		adapter.swap(!student);
 	}
 
 	@Override
@@ -113,8 +97,8 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 			long id) {
 		Intent intent = new Intent();
 		intent.setClass(getActivity(), ChatActivity.class);
-		intent.putExtra("name", ((ViewHolder) view.getTag()).user_name);
-		intent.putExtra("user_pk_id", ((ViewHolder) view.getTag()).user_pk_id);
+		intent.putExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
+				((ViewHolder) view.getTag()).user_pk_id);
 		startActivity(intent);
 	}
 }

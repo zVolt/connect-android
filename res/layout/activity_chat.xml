@@ -47,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:background="@null"
-            android:onClick="insertMessageToDb"
+            android:onClick="sendNewMessage"
             android:src="@drawable/ic_action_send" />
     </LinearLayout>
 

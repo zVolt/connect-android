@@ -17,7 +17,6 @@ import java.text.DecimalFormat;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -38,15 +37,19 @@ import android.widget.Toast;
 import com.loopj.android.http.RequestParams;
 
 public class Utility {
+	// private static boolean LOCA_SERVER = false;
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	public static String SERVER = "192.168.1.101";
+	// public static String SERVER = LOCA_SERVER ? "192.168.0.101"
+	// : "sgitomcat-1093.rhcloud.com";
 	private static ProgressDialog progress_dialog;
+	private static SharedPreferences spf;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
 	/**
 	 * STRING TO HOLD THE TEXT OF THE NOTIFICATION TO BE RAISED FOR INCOMING
 	 * MESSAGE
 	 */
-	public static String notification_msg_text[] = new String[MAX_NOTIFICATION_TEXT_LINES];
+	// public static String notification_msg_text[] = new
+	// String[MAX_NOTIFICATION_TEXT_LINES];
 	/**
 	 * BOOLEAN VARIABLE TO CHECK WHETHER NOTIFICATION IS ACTIVE IN THE
 	 * NOTIFICATION DRAWER OR NOT
@@ -69,9 +72,28 @@ public class Utility {
 		e.printStackTrace();
 	}
 
-	public static String getBaseURL() {
-		return "http://" + Utility.SERVER + Constants.COLON + Constants.PORT
-				+ "/SGI_webservice/";
+	private static SharedPreferences getSPreferences(Context context) {
+		if (spf == null)
+			spf = context.getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
+	}
+
+	public static String getBaseURL(Context context) {
+		String str;
+		if (getSPreferences(context).getBoolean(
+				Constants.PREF_KEYS.LOCAL_SERVER, false)) {
+			str = String.format(
+					"http://%s:%s/SGI_webservice/",
+					getSPreferences(context).getString(
+							Constants.PREF_KEYS.SERVER_IP, "192.168.0.100"),
+					"8080");
+		} else {
+			str = String.format("http://%s/SGI_webservice/",
+					"sgitomcat-1093.rhcloud.com");
+		}
+
+		return str;
 	}
 
 	public static void showProgressDialog(Context context) {
@@ -140,13 +162,13 @@ public class Utility {
 	 * @param title
 	 * @param text
 	 */
-	public static void buildNotification(Context context,
-			Class<?> resultantclass, Intent action, String title, String text) {
+	public static void buildNotification(Context context, Intent action,
+			String title, String text) {
 
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context).setSmallIcon(R.drawable.ic_stat_launcher)
-				.setContentTitle(title).setContentText(text)
-				.setDefaults(Notification.DEFAULT_ALL);
+				.setContentTitle(title).setContentText(text);
+		// .setDefaults(Notification.DEFAULT_ALL);
 
 		NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 		inboxStyle.setBigContentTitle(title);
@@ -160,7 +182,9 @@ public class Utility {
 		mBuilder.setContentIntent(p_intent);
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.notify(Constants.notification_msg_id, mBuilder.build());
+		mNotifyMgr.notify(
+				title.equalsIgnoreCase("Message") ? Constants.MSG_NOTI_ID
+						: Constants.NOTI_NOTI_ID, mBuilder.build());
 		notification_msg_active = true;
 	}
 
@@ -172,36 +196,30 @@ public class Utility {
 	 * 
 	 * @param txt
 	 */
-	public static void AddLines(String txt) {
-		int i = 0;
-		while (notification_msg_text[i] != null) {
-			i++;
-		}
-		notification_msg_text[i] = txt;
-	}
-
+	/*
+	 * public static void AddLines(String txt) { int i = 0; while
+	 * (notification_msg_text[i] != null) { i++; } notification_msg_text[i] =
+	 * txt; }
+	 */
 	/**
 	 * FUCTION TO CANCEL THE MESSAGE PRESENT IN THE NOTIFICATION DRAWER AND TO
 	 * CLEAR THE TEXT OF notification_msg_text
 	 * 
 	 * @param context
 	 */
-	public static void CancelMessageNotification(Context context) {
-		for (int i = 0; i < MAX_NOTIFICATION_TEXT_LINES; i++)
-			notification_msg_text[i] = null;
-		notification_msg_active = false;
+	public static void CancelNotification(Context context, int notification_id) {
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.cancel(Constants.notification_msg_id);
+		mNotifyMgr.cancel(notification_id);
 	}
 
 	public static RequestParams putCredentials(RequestParams params,
 			SharedPreferences sharedPreferences) {
 
 		params.put(Constants.QueryParameters.USERNAME, sharedPreferences
-				.getString(Constants.PREF_KEYS.encripted_user_id, null).trim());
+				.getString(Constants.PREF_KEYS.encripted_user_id, "").trim());
 		params.put(Constants.QueryParameters.TOKEN, sharedPreferences
-				.getString(Constants.PREF_KEYS.token, null).trim());
+				.getString(Constants.PREF_KEYS.token, "").trim());
 		return params;
 	}
 
@@ -209,10 +227,10 @@ public class Utility {
 			SharedPreferences sharedPreferences) {
 
 		strb.append(sharedPreferences.getString(
-				Constants.PREF_KEYS.encripted_user_id, null).trim());
+				Constants.PREF_KEYS.encripted_user_id, "").trim());
 		strb.append(Constants.NEW_LINE);
-		strb.append(sharedPreferences
-				.getString(Constants.PREF_KEYS.token, null).trim());
+		strb.append(sharedPreferences.getString(Constants.PREF_KEYS.token, "")
+				.trim());
 		strb.append(Constants.NEW_LINE);
 		return strb;
 	}
@@ -220,6 +238,11 @@ public class Utility {
 	public static class DownloadFile extends
 			AsyncTask<String, Integer, Boolean> {
 		int id;
+		Context context;
+
+		public DownloadFile(Context context_) {
+			context = context_;
+		}
 
 		@Override
 		protected Boolean doInBackground(String... arg0) {
@@ -231,7 +254,7 @@ public class Utility {
 				conection.connect();
 				InputStream inputStream = new BufferedInputStream(
 						url.openStream(), 1024);
-				File file = new File(Constants.pathToApp);
+				File file = new File(Constants.PATH_TO_APP);
 				file.mkdirs();
 				OutputStream fileOutput = new FileOutputStream(new File(file,
 						filename));
@@ -253,8 +276,7 @@ public class Utility {
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				Utility.log(TAG, "download done");
-				SQLiteDatabase db = new DbHelper(DbHelper.context)
-						.getWritableDatabase();
+				SQLiteDatabase db = new DbHelper(context).getWritableDatabase();
 				db.execSQL("update files set state=1 where _id=" + id);
 				db.close();
 			} else
@@ -274,16 +296,16 @@ public class Utility {
 		Intent intent = new Intent(context, BackgroundService.class);
 		PendingIntent pi = PendingIntent.getService(context, 0, intent, 0);
 		alarmmanager.cancel(pi);
-		alarmmanager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-				SystemClock.elapsedRealtime() + time_in_milisec,
-				time_in_milisec, pi);
+		alarmmanager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime() + time_in_milisec, pi);
 		Utility.log(TAG, "alarm reset on " + time_in_milisec / 1000 + " sec");
 	}
 
-	public static String getTimeString(Context context, long time_in_milisec) {
-		return DateUtils.getRelativeDateTimeString(context, time_in_milisec,
-				DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0)
-				.toString();
+	public static String getTimeString(Context context, long time_in_milisec,
+			boolean preposition) {
+		return DateUtils.getRelativeTimeSpanString(context, time_in_milisec,
+				preposition).toString();
+		// ,DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0).toString();
 	}
 
 	public static String getSizeString(float bytes) {
@@ -302,5 +324,14 @@ public class Utility {
 		}
 		DecimalFormat format = new DecimalFormat(".##");
 		return String.valueOf(format.format(bytes)) + res;
+	}
+
+	public static void startBackgroundService(Context context) {
+		if (!BackgroundService.isServiceRunning()) {
+			Intent intent = new Intent(context, BackgroundService.class);
+			context.startService(intent);
+		} else {
+			Utility.setAlarm(context, 10000);
+		}
 	}
 }

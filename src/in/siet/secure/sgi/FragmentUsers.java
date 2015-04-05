@@ -2,6 +2,7 @@ package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Faculty;
 import in.siet.secure.Util.FilterOptions;
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Student;
 import in.siet.secure.Util.User;
 import in.siet.secure.Util.Utility;
@@ -33,16 +34,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 public class FragmentUsers extends Fragment {
 	public static final String TAG = "in.siet.secure.sgi.FragmentUsers";
-	private SharedPreferences sharedPreferences = null;
+	private SharedPreferences spf = null;
 	// private static ArrayList<User> users = new ArrayList<User>();
 	private UsersAdapter adapter;
 	private ListView listview;
-
+	private DbHelper dbh;
 	// public static View emptyView;
 
 	public FragmentUsers() {
@@ -52,8 +52,6 @@ public class FragmentUsers extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		adapter = new UsersAdapter(getActivity(), new ArrayList<User>());
-		sharedPreferences = getActivity().getSharedPreferences(
-				Constants.pref_file_name, Context.MODE_PRIVATE);
 		View rootView = inflater.inflate(R.layout.fragment_users, container,
 				false);
 		// Utility.log(TAG,"onCreate"+FilterOptions.USER_TYPE);
@@ -88,7 +86,10 @@ public class FragmentUsers extends Fragment {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_users);
-		load();
+		if (Utility.isConnected(getActivity()))
+			load();
+		else
+			Utility.RaiseToast(getActivity(), "No internet", true);
 	}
 
 	@Override
@@ -100,7 +101,8 @@ public class FragmentUsers extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_filter) {
-			MainActivity.show.show(getFragmentManager(), UserFilterDialog.TAG);
+			((MainActivity) getActivity()).show.show(getFragmentManager(),
+					UserFilterDialog.TAG);
 			return true;
 		}
 		return false;
@@ -115,17 +117,14 @@ public class FragmentUsers extends Fragment {
 	public void refresh() {
 		if (adapter != null)
 			adapter.notifyDataSetChanged();
-		else
-			Utility.log(TAG + " refresh()", "adapter is null");
+
 	}
 
 	public void setData(ArrayList<User> data) {
 		if (adapter != null) {
 			adapter.clear();
 			adapter.addAll(data);
-			adapter.notifyDataSetChanged();
-		} else {
-			Utility.log(TAG, "adapetr empty");
+			refresh();
 		}
 	}
 
@@ -137,8 +136,8 @@ public class FragmentUsers extends Fragment {
 			// (view.findViewById(R.id.ListItemUsersTextViewName)).toString();
 			UsersAdapter.ViewHolder holder = (UsersAdapter.ViewHolder) view
 					.getTag();
-			new DbHelper(getActivity()).getAndAddUser(holder.user,
-					FilterOptions.STUDENT);
+			getDbHelper().getAndInsertUser(holder.user,
+					FilterOptions.FACULTY);
 			// Utility.RaiseToast(getActivity(),
 			// ((TextView)(view.findViewById(R.id.ListItemUsersTextViewName))).getText().toString()+" is added to contacts",
 			// false);
@@ -156,15 +155,16 @@ public class FragmentUsers extends Fragment {
 	public void fetch_all() {
 
 		RequestParams params = new RequestParams();
-		Utility.putCredentials(params, sharedPreferences);
-		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.STUDENT);
+		Utility.putCredentials(params, getSPreferences());
+		params.put(Constants.QueryParameters.USER_TYPE, FilterOptions.FACULTY);
 		params.put(Constants.QueryParameters.COURSE, FilterOptions.COURSE);
 		params.put(Constants.QueryParameters.BRANCH, FilterOptions.BRANCH);
 		params.put(Constants.QueryParameters.YEAR, FilterOptions.YEAR);
 		params.put(Constants.QueryParameters.SECTION, FilterOptions.SECTION);
 		AsyncHttpClient client = new AsyncHttpClient();
-		client.get(Utility.getBaseURL() + "query/type_resolver", params,
-				new JsonHttpResponseHandler() {
+		client.get(Utility.getBaseURL(getActivity().getApplicationContext())
+				+ "query/type_resolver", params,
+				new MyJsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(int statusCode, Header[] headers,
 							JSONArray response) {
@@ -172,24 +172,7 @@ public class FragmentUsers extends Fragment {
 					}
 
 					@Override
-					public void onSuccess(int statusCode, Header[] headers,
-							JSONObject response) {
-						// just in case we receive a object instead of an array
-						Utility.log(TAG + " onSucess()", response.toString());
-						Utility.hideProgressDialog();
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONArray errorResponse) {
-						Utility.log(TAG, "failure" + errorResponse);
-						Utility.hideProgressDialog();
-					}
-
-					@Override
-					public void onFailure(int statusCode, Header[] headers,
-							Throwable throwable, JSONObject errorResponse) {
-						Utility.log(TAG, "failure" + errorResponse);
+					public void commonTask() {
 						Utility.hideProgressDialog();
 					}
 				});
@@ -244,5 +227,18 @@ public class FragmentUsers extends Fragment {
 			setData(data);
 			Utility.hideProgressDialog();
 		}
+	}
+
+	private SharedPreferences getSPreferences() {
+		if (spf == null)
+			spf = getActivity().getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE);
+		return spf;
+	}
+
+	private DbHelper getDbHelper() {
+		if (dbh == null)
+			dbh = new DbHelper(getActivity().getApplicationContext());
+		return dbh;
 	}
 }

@@ -3,6 +3,7 @@
 
     <!-- App Name -->
     <string name="app_name">SGI</string>
+    
     <!-- Titles -->
     <string name="title_notification">Notification</string>
     <string name="title_main">Notification</string>
@@ -19,7 +20,7 @@
     <string name="action_about">About</string>
     <string name="action_contacts">Contacts</string>
     <string name="action_users">All Users</string>
-    <string name="action_reset">Reset</string>
+    <string name="action_reset">Reset DB</string>
     <string name="action_refresh_notifications">Refresh Notifications</string>
 
     <!-- Form texts -->
@@ -47,13 +48,17 @@
     <!-- Setting titles -->
     <string name="pref_title_server_ip">Server IP Address</string>
     <string name="pref_title_update_interval">Update Interval</string>
-
+	<string name="pref_title_local_server">Local Server</string>
+	
     <!-- Setting Desc -->
     <string name="pref_desc_server_ip">Server\'s IP Address (Developers only)</string>
     <string name="pref_desc_update_interval">How frequently you want updates</string>
+    <string name="pref_desc_local_server">Use local server</string>
+    
     <!-- Setting Desc -->
     <string name="pref_key_server_ip">server_ip</string>
     <string name="pref_key_update_interval">update_interval</string>
+	<string name="pref_key_local_server">use_local_server</string>
 
     <!-- Drawer text -->
     <string name="getMsg">Refresh</string>

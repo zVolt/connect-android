@@ -1,84 +1,137 @@
 package in.siet.secure.adapters;
 
-import in.siet.secure.Util.Notification;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.R;
-
-import java.util.ArrayList;
-
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public class NotificationAdapter extends ArrayAdapter<Notification> {
-	private Context context;
-	private ArrayList<Notification> values;
+public class NotificationAdapter extends CursorAdapter {
+
 	public static String TAG = "in.siet.secure.adapters.NotificationAdapter";
 	ViewHolder holder;
 	private int tmp_state;
-	private Notification tmp_noti;
 
-	public NotificationAdapter(Context contxt, ArrayList<Notification> objects) {
-		super(contxt, R.layout.list_item_notification, objects);
-		context = contxt;
-		values = objects;
+	public NotificationAdapter(Context context_, Cursor cursor_, int flags) {
+		super(context_, cursor_, flags);
+	}
+
+	public static class ViewHolder {
+		public long id, time;
+		public String image, subject, text;
+		public int state;
+		ImageView image_view;
+		TextView subject_view;
+		TextView time_view;
+		ImageView state_view;
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		if (convertView == null) {
-			LayoutInflater inflater = (LayoutInflater) context
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = inflater.inflate(R.layout.list_item_notification,
-					parent, false);
-			holder = new ViewHolder();
-			holder.image = (ImageView) convertView
-					.findViewById(R.id.imageViewNotificationImage);
-			holder.subject = (TextView) convertView
-					.findViewById(R.id.textViewNotificationTitle);
-			holder.time = (TextView) convertView
-					.findViewById(R.id.textViewNotificationTime);
-			holder.state = (ImageView) convertView
-					.findViewById(R.id.imageViewNotificationState);
-		} else {
-			holder = (ViewHolder) convertView.getTag();
-		}
-		tmp_noti = values.get(position);
+	public void bindView(View view, Context context, Cursor cursor) {
+		holder = (ViewHolder) view.getTag();
 
-		ImageLoader.getInstance().displayImage(tmp_noti.image, holder.image);
-		tmp_state = tmp_noti.state;
+		holder.id = cursor.getLong(0);
+		holder.image = cursor.getString(1);
+		holder.subject = cursor.getString(2);
+		holder.text = cursor.getString(3);
+		holder.time = cursor.getLong(4);
+		holder.state = cursor.getInt(6);
 
+		ImageLoader.getInstance().displayImage(holder.image, holder.image_view);
+		tmp_state = holder.state;
+		SpannableString content = null;
 		if (tmp_state == Constants.NOTI_STATE.PENDING) {
-			holder.state.setImageResource(R.drawable.ic_action_done);
-			holder.state.setVisibility(View.VISIBLE);
+			holder.state_view.setImageResource(R.drawable.ic_action_done);
+			holder.state_view.setVisibility(View.VISIBLE);
 		} else if (tmp_state == Constants.NOTI_STATE.SENT
 				|| tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
-			holder.state.setImageResource(R.drawable.ic_action_done_all);
-			holder.state.setVisibility(View.VISIBLE);
+			holder.state_view.setImageResource(R.drawable.ic_action_done_all);
+			holder.state_view.setVisibility(View.VISIBLE);
+		} else {
+			holder.state_view.setVisibility(View.GONE);
+			if (tmp_state != Constants.NOTI_STATE.READ) {
+				// set text bold
+				content = new SpannableString(cursor.getString(2));
+				content.setSpan(new StyleSpan(Typeface.BOLD), 0,
+						content.length(), 0);
+			}
+
 		}
-		else{
-			holder.state.setVisibility(View.GONE);
-		}
+		if (content == null)
+			holder.subject_view.setText(holder.subject);
+		else
+			holder.subject_view.setText(content);
 
-		holder.subject.setText(tmp_noti.subject);
+		holder.time_view.setText(Utility.getTimeString(context, holder.time,
+				true));
 
-		holder.time.setText(Utility.getTimeString(context, tmp_noti.time));
-
-		convertView.setTag(holder);
-		return convertView;
+		view.setTag(holder);
 	}
 
-	static class ViewHolder {
-		ImageView image;
-		TextView subject;
-		TextView time;
-		ImageView state;
+	@Override
+	public View newView(Context context, Cursor cursor, ViewGroup parent) {
+
+		LayoutInflater inflater = (LayoutInflater) context
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflater.inflate(R.layout.list_item_notification, parent,
+				false);
+
+		holder = new ViewHolder();
+		holder.id = cursor.getLong(0);
+		holder.image = cursor.getString(1);
+		holder.subject = cursor.getString(2);
+		holder.text = cursor.getString(3);
+		holder.time = cursor.getLong(4);
+		holder.state = cursor.getInt(6);
+
+		holder.image_view = (ImageView) view
+				.findViewById(R.id.imageViewNotificationImage);
+		holder.subject_view = (TextView) view
+				.findViewById(R.id.textViewNotificationTitle);
+		holder.time_view = (TextView) view
+				.findViewById(R.id.textViewNotificationTime);
+		holder.state_view = (ImageView) view
+				.findViewById(R.id.imageViewNotificationState);
+		ImageLoader.getInstance().displayImage(holder.image, holder.image_view);
+		tmp_state = holder.state;
+		SpannableString content = null;
+		if (tmp_state == Constants.NOTI_STATE.PENDING) {
+			holder.state_view.setImageResource(R.drawable.ic_action_done);
+			holder.state_view.setVisibility(View.VISIBLE);
+		} else if (tmp_state == Constants.NOTI_STATE.SENT
+				|| tmp_state == Constants.NOTI_STATE.ACK_RECEIVED) {
+			holder.state_view.setImageResource(R.drawable.ic_action_done_all);
+			holder.state_view.setVisibility(View.VISIBLE);
+		} else {
+			holder.state_view.setVisibility(View.GONE);
+			if (tmp_state != Constants.NOTI_STATE.READ) {
+				// set text bold
+				content = new SpannableString(cursor.getString(2));
+				content.setSpan(new StyleSpan(Typeface.BOLD), 0,
+						content.length(), 0);
+			}
+
+		}
+		if (content == null)
+			holder.subject_view.setText(holder.subject);
+		else
+			holder.subject_view.setText(content);
+
+		holder.time_view.setText(Utility.getTimeString(context, holder.time,
+				true));
+
+		view.setTag(holder);
+		return view;
 	}
 }
