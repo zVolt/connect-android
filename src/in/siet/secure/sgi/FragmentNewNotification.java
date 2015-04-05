@@ -208,6 +208,17 @@ public class FragmentNewNotification extends Fragment implements
 					file_list); 
 			// state if filled by db class
 			db.insertNewNotification(new_noti);
+			
+			Intent intent = new Intent(getActivity().getApplicationContext(),
+					NotificationActivity.class);
+			Bundle bundle = new Bundle();
+			bundle.putString(Constants.NOTIFICATION.SUBJECT, new_noti.subject);
+			bundle.putString(Constants.NOTIFICATION.TEXT, new_noti.text);
+			bundle.putLong(Constants.NOTIFICATION.TIME, new_noti.time);
+			bundle.putString(Constants.NOTIFICATION.SENDER_IMAGE, new_noti.image);
+			bundle.putInt(Constants.NOTIFICATION.ID, new_noti.sender_id);		
+			intent.putExtra(Constants.INTENT_EXTRA.BUNDLE_NAME, bundle);
+			startActivity(intent);			
 // go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
