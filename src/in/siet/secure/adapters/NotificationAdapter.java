@@ -68,11 +68,14 @@ public class NotificationAdapter extends CursorAdapter {
 			}
 
 		}
-		if (content == null)
+
+		if (content == null) {
 			holder.subject_view.setText(holder.subject);
-		else
+
+		} else {
 			holder.subject_view.setText(content);
 
+		}
 		holder.time_view.setText(Utility.getTimeString(context, holder.time,
 				true));
 
@@ -123,11 +126,13 @@ public class NotificationAdapter extends CursorAdapter {
 			}
 
 		}
-		if (content == null)
+		if (content == null) {
 			holder.subject_view.setText(holder.subject);
-		else
+
+		} else {
 			holder.subject_view.setText(content);
 
+		}
 		holder.time_view.setText(Utility.getTimeString(context, holder.time,
 				true));
 
