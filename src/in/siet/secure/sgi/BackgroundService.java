@@ -51,6 +51,7 @@ public class BackgroundService extends IntentService {
 	private DbHelper dbh;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	private String my_userid;
+	private JSONArray json_fileid = null;
 
 	private boolean got_new_sender;
 	private Intent starter;
@@ -121,6 +122,7 @@ public class BackgroundService extends IntentService {
 	/**
 	 * release the wake lock
 	 */
+
 	/*
 	 * private void releaseLock() { if (wake != null && wake.isHeld())
 	 * wake.release(); }
@@ -128,6 +130,7 @@ public class BackgroundService extends IntentService {
 	/**
 	 * not called from any where
 	 */
+
 	public void getMessagesFromServer() {
 		new GetMessagesFromServer().execute();
 	}
@@ -206,11 +209,16 @@ public class BackgroundService extends IntentService {
 	 * credentials out of data collected above 4. send to server 5. receive data
 	 * from server (messages and notification) 6. fill database accordingly 7.
 	 * trigger notification action
-	 * 
-	 * 
-	 * break it into 2 parts 1 messages 2 notifications call both of them from
-	 * here or specific as per requirement
 	 */
+
+	public class StartSync extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
+			sync();
+			return null;
+		}
+	}
+
 	public void sync() {
 		Utility.log(TAG, "serice is in sync");
 		setServiceRunning(true);
@@ -273,13 +281,24 @@ public class BackgroundService extends IntentService {
 
 	}
 
+	/**
+	 * ye bas notification aur usky sath attachments ki list de ok >? hmm
+	 * irrespective of uploading..ryt?han idont know kya soach ri tu local db me
+	 * notifications hongi kuch jinky sath files hongi maybe?hmm wo nikaly db se
+	 * JSAONArray banaye aur return kary bas no uploding n all hmm ok uploading
+	 * upar handle karengy ok hmm
+	 * 
+	 * @return
+	 */
 	private JSONArray getPendingNotifications() {
 		JSONArray notifications = new JSONArray();
 		JSONObject notification;
 		JSONArray attachments = new JSONArray();
-		JSONObject attachment;
+		JSONObject attachment = new JSONObject();
 		Cursor c_attachment;
+		int status;
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
+
 		SQLiteDatabase db = getDbHelper().getDb();
 		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
 				getSPreferences().getString(Constants.PREF_KEYS.user_id, null) };
@@ -307,41 +326,24 @@ public class BackgroundService extends IntentService {
 					notification.put(
 							Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
 							c.getInt(8));
-
-					query = "select f.name,f.url,f.size from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
+					query = "select f.name,f.url,f.size,f._id from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
 							+ c.getInt(7) + "'";
 					Utility.log(TAG, query);
 					c_attachment = db.rawQuery(query, null);
-					if (c_attachment.moveToFirst()) {
-						while (!c_attachment.isAfterLast()) {
-							try {
-								attachment = new JSONObject();
-								attachment.put(Constants.JSONKEYS.FILES.NAME,
-										c_attachment.getString(0));
-								attachment.put(Constants.JSONKEYS.FILES.URL,
-										c_attachment.getString(1));
-								attachment.put(Constants.JSONKEYS.FILES.SIZE,
-										c_attachment.getLong(2));
-								/**
-								 * put some mechanism to retry sending file in
-								 * case of failure
-								 */
-								// Utility.log(TAG, c_attachment.getString(0));
-
-								attachments.put(attachment);
-							} catch (Exception e) {
-								Utility.DEBUG(e);
-							}
-							c_attachment.moveToNext();
-						}
-						c_attachment.close();
-					}
+					/**
+					 * put some mechanism to retry sending file in case of
+					 * failure
+					 */
+					Utility.log(TAG, "before sending file");
+					sendfile(c_attachment, c.getLong(2),
+							spref.getString(Constants.PREF_KEYS.user_id, null));
+					attachment.put(Constants.JSONKEYS.FILES.ID, json_fileid);
 					notification.put(
 							Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
-							attachments);
-					// yaha pe code karna sayad teko thik hmm..likha rhne do
-					// ye.. :P
-					sendfiles(attachments);
+							attachment);
+					Utility.log(TAG, "after sending file");
+					c_attachment.close();
+
 					notifications.put(notification);
 				} catch (Exception e) {
 					Utility.DEBUG(e);
@@ -353,34 +355,84 @@ public class BackgroundService extends IntentService {
 		return notifications;
 	}
 
-	public void sendfiles(JSONArray attachments) {
+	public void sendfile(Cursor c_attachment, long noti_time, String user_id) {
+		JSONArray attachments = new JSONArray();
+		JSONObject attachment = new JSONObject();
+		RequestParams params = new RequestParams();
 		try {
-			Utility.log(TAG, "sending a file");
-
-			RequestParams params = new RequestParams();
-
-			int len = attachments.length();
-			for (int i = 0; i < len; i++) {
-				Utility.log(
-						TAG,
-						"putting file no "
-								+ i
-								+ " "
-								+ attachments.getJSONObject(i).getString(
-										Constants.JSONKEYS.FILES.URL));
-				params.put(
-						Constants.QueryParameters.FILE + i,
-						new File(attachments.getJSONObject(i).getString(
-								Constants.JSONKEYS.FILES.URL)));
+			int i = 0;
+			// meaole
+			if (c_attachment.moveToFirst()) {
+				while (!c_attachment.isAfterLast()) {
+					try {
+						attachment = new JSONObject();
+						attachment.put(Constants.JSONKEYS.FILES.NAME,
+								c_attachment.getString(0));
+						attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME, // naya
+																				// contant
+																				// bana
+																				// lo
+																				// files
+																				// k
+																				// andar
+								noti_time);
+						attachment.put(Constants.JSONKEYS.FILES.ID,
+								c_attachment.getString(3));
+						params.put(Constants.QueryParameters.FILE + i++,
+								new File(c_attachment.getString(1)));
+						attachments.put(attachment);
+					} catch (Exception e) {
+						Utility.DEBUG(e);
+					}
+					c_attachment.moveToNext();
+				}
 			}
-			AsyncHttpClient client = new AsyncHttpClient();
+			Utility.log(TAG, "sending a file");
+			params.put(Constants.QueryParameters.FILE_ID, attachments);
+			params.put(Constants.QueryParameters.USERNAME, user_id);
+			AsyncHttpClient client = new SyncHttpClient();
 			// client.addHeader("Content-Type", "multipart/form-data");
 			// client.setTimeout(500000);
-
 			client.post(getApplicationContext(),
 					Utility.getBaseURL(getApplicationContext())
 							+ "query/upload_file", params,
-					new MyJsonHttpResponseHandler());
+					new MyJsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(int statusCode, Header[] headers,
+								JSONObject response) {
+							Utility.log(TAG, response.toString());
+							Utility.log(TAG, "sendfile on success");
+							try {
+								if (response.has(Constants.JSONKEYS.FILES.ID))
+									json_fileid = response
+											.getJSONArray(Constants.JSONKEYS.FILES.ID);
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONObject response) {
+							Utility.log(TAG, "..fail1 " + response.toString());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								String responseString, Throwable throwable) {
+							Utility.log(TAG,
+									"..fail2" + throwable.getLocalizedMessage());
+						}
+
+						@Override
+						public void onFailure(int statusCode, Header[] headers,
+								Throwable throwable, JSONArray errorResponse) {
+							Utility.log(TAG,
+									"..fail3" + throwable.getLocalizedMessage());
+						}
+					});
+
 		} catch (Exception e) {
 			Utility.DEBUG(e);
 		}
@@ -403,8 +455,8 @@ public class BackgroundService extends IntentService {
 					message = new JSONObject();
 					message.put(Constants.JSONKEYS.MESSAGES.RECEIVER,
 							c.getString(0));
-					message.put(Constants.JSONKEYS.MESSAGES.TEXT,Utility.encode(
-							c.getString(1)));
+					message.put(Constants.JSONKEYS.MESSAGES.TEXT,
+							Utility.encode(c.getString(1)));
 					message.put(Constants.JSONKEYS.MESSAGES.IS_GROUP_MESSAGE,
 							c.getInt(2));
 					message.put(Constants.JSONKEYS.MESSAGES.TIME, c.getLong(3));

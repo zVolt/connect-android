@@ -141,6 +141,7 @@ public interface Constants {
 		String MESSAGES = "messages";
 		String GET_DETAILS_OF_USER_ID = "get_details_of_user";
 		String FILE = "file";
+		String FILE_ID = "file_id";
 		String INPUT_STREAM = "file_input_stream";
 
 		public interface Notification {
@@ -149,6 +150,7 @@ public interface Constants {
 			String TIME = "time";
 		}
 
+		
 	}
 
 	/**
@@ -173,7 +175,6 @@ public interface Constants {
 	 * 
 	 */
 	public interface STATES {
-
 		/**
 		 * this means that the message or notification is received from server
 		 * i.e, not created by user
@@ -207,7 +208,6 @@ public interface Constants {
 		 * acknowledgment about the same (PENDING->SENT->ACK_RECEIVED)
 		 */
 		int ACK_RECEIVED = 4;
-
 		/**
 		 * this shows whether the user has read the message/notification or not.
 		 * Used to highlight new ones
@@ -310,6 +310,7 @@ public interface Constants {
 
 		public static interface FILES {
 			String NAME = "name";
+			String ID = "Id";
 			String URL = "url";
 			String SIZE = "size";
 		}

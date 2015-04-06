@@ -40,7 +40,8 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static SQLiteDatabase db;
 	private Context context;
 	public static SharedPreferences spf;
-	//private Intent intent;
+
+	// private Intent intent;
 
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
@@ -889,6 +890,7 @@ public class DbHelper extends SQLiteOpenHelper {
 		protected Void doInBackground(Notification... params) {
 			long target_id, noti_id, file_id;
 			ContentValues values = new ContentValues();
+			ContentValues values_map = new ContentValues();
 			Notification n = params[0];
 			Attachment files;
 			int len;
@@ -929,25 +931,30 @@ public class DbHelper extends SQLiteOpenHelper {
 				values.clear();
 				values.put(DbStructure.FileTable.COLUMN_URL, files.url);
 				values.put(DbStructure.FileTable.COLUMN_NAME, files.name);
-				values.put(DbStructure.FileTable.COLUMN_STATE,
-						Constants.FILE_STATE.PENDING); // insert files with
-														// pending status and
-														// update after sending
-														// to server
+
 				values.put(DbStructure.FileTable.COLUMN_SENDER, n.sid);
 				values.put(DbStructure.FileTable.COLUMN_SIZE, files.size);
+				values.put(DbStructure.FileTable.COLUMN_STATE,
+						Constants.FILE_STATE.PENDING);
+				Utility.log(TAG, files.url);
+				Utility.log(TAG, files.name);
+				Utility.log(TAG, "" + n.sid);
+				Utility.log(TAG, "" + files.size);
 
 				file_id = db.insert(DbStructure.FileTable.TABLE_NAME, null,
 						values);
 
 				values.clear();
-				values.put(
-						DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID,
-						noti_id);
-				values.put(DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
+				values_map.clear();
+				values_map
+						.put(DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID,
+								noti_id);
+				values_map.put(
+						DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
 						file_id);
 				db.insert(DbStructure.FileNotificationMapTable.TABLE_NAME,
-						null, values);
+						null, values_map);
+				values_map.clear();
 			}
 			return null;
 		}

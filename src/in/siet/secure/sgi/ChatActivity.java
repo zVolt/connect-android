@@ -233,6 +233,7 @@ public class ChatActivity extends ActionBarActivity {
 		String msgtxt = msg.getText().toString();
 		msg.setText("");
 		if (msgtxt.trim().length() > 0) {
+
 			getDbHelper().insertNewMessage(
 					new Message(sender_id, receiver_id, msgtxt, Calendar
 							.getInstance().getTimeInMillis()));

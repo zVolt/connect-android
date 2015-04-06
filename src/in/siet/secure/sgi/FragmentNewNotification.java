@@ -205,8 +205,9 @@ public class FragmentNewNotification extends Fragment implements
 					body_txt, time, pk_user, course, branch, section, year,
 					file_list);
 			// state if filled by db class
-			getDbHelper().insertNewNotification(new_noti);
 
+			getDbHelper().insertNewNotification(new_noti);
+// go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
 			Utility.RaiseToast(getActivity(), "send new notification", false);

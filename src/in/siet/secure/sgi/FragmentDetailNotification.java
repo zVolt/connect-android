@@ -193,7 +193,6 @@ public class FragmentDetailNotification extends Fragment implements
 
 	@Override
 	public void onClick(View view) {
-
 		switch (view.getId()) {
 		case R.id.imageButtonAttachmentAction:
 

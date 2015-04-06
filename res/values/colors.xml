@@ -21,9 +21,9 @@
     <color name="gray14">#e0e0e0</color>
     <color name="gray15">#f0f0f0</color>
     <color name="white">#FFFFFF</color>
-    <!-- B2FFC4 BFFFCE -->
-    <color name="msg_send">#A2C481</color>
-    <color name="msg_receive">#7FC1BB</color>
+    <!-- B2FFC4 BFFFCE 	.#A2C481		.#7FC1BB-->
+    <color name="msg_send">#BBDEFB</color>
+    <color name="msg_receive">#C5E1A5</color>
     <color name="drawer_header">#00838F</color>
     <color name="colorPrimaryLight">#00ACC1</color>
     <color name="colorPrimaryDark">#006064</color>
