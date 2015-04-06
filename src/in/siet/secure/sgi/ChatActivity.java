@@ -62,9 +62,14 @@ public class ChatActivity extends ActionBarActivity {
 			markAllRead();
 		}
 	};
+	private MarkAllRead mark_all;
 
 	private void markAllRead() {
-		new MarkAllRead().execute();
+		if (mark_all != null
+				&& mark_all.getStatus() != AsyncTask.Status.FINISHED)
+			mark_all.cancel(true);
+		mark_all = new MarkAllRead();
+		mark_all.execute();
 	}
 
 	private class MarkAllRead extends AsyncTask<Void, Void, Void> {

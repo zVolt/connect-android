@@ -27,19 +27,20 @@ public class ContactsAdapter extends CursorAdapter {
 	int state;
 	private boolean show_faculty, have_new_msg;
 	private DbHelper dbh;
-	private final String ss = "select user._id,f_name,l_name,pic_url,login_id,last_msg_on from user join student on user_id=user._id where user._id<>? order by last_msg_on desc",
-			sf = "select user._id,f_name,l_name,pic_url,login_id,last_msg_on from user join faculty on user_id=user._id where user._id<>? order by last_msg_on desc",
+	private final String ss = "select user._id,f_name,l_name,pic_url,login_id,last_msg_on from user join student on user_id=user._id where user.login_id<>? order by last_msg_on desc",
+			sf = "select user._id,f_name,l_name,pic_url,login_id,last_msg_on from user join faculty on user_id=user._id where user.login_id<>? order by last_msg_on desc",
 			sm = "select text,state from messages where sender=? or receiver=? order by time desc limit 1";
-	private String[] args = { String.valueOf(1) }; // first user will be me(the
-													// user of the application)
+	private String[] args; // first user will be me(the
+							// user of the application)
 
-	public ContactsAdapter(Context con, boolean show_faculty_) {
-		super(con, null, 0);
-		context = con;
+	public ContactsAdapter(Context context_, boolean show_faculty_) {
+		super(context_, null, 0);
+		context = context_;
 		// cursor = c;
 		// cs = getDbHelper().getDb().rawQuery(ss, null);
 		// cf = getDbHelper().getDb().rawQuery(sf, null);
 		show_faculty = show_faculty_;
+		args = new String[] { Utility.getUserLoginId(context_) };
 		reQuery();
 		// swap(show_faculty);
 

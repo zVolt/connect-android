@@ -96,6 +96,11 @@ public class Utility {
 		return str;
 	}
 
+	public static String getUserLoginId(Context context) {
+		return getSPreferences(context).getString(Constants.PREF_KEYS.user_id,
+				"");
+	}
+
 	public static void showProgressDialog(Context context) {
 		try {
 			progress_dialog = ProgressDialog.show(context, null,
@@ -119,9 +124,9 @@ public class Utility {
 		return BASE_IMG_URL + id.toLowerCase().trim() + ".jpg";
 	}
 
-	//public static User getUser(String id) {
-	//	return null;
-	//}
+	// public static User getUser(String id) {
+	// return null;
+	// }
 
 	public static String sha1(String input) {
 		try {
@@ -141,6 +146,10 @@ public class Utility {
 
 	public static String encode(String str) {
 		return Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
+	}
+
+	public static String decode(String str) {
+		return new String(Base64.decode(str, Base64.DEFAULT));
 	}
 
 	public static boolean isConnected(Context context) {

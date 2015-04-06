@@ -220,8 +220,8 @@ public class DbHelper extends SQLiteOpenHelper {
 					j = i * 6;
 					args[j] = obj.getString(Constants.JSONKEYS.MESSAGES.SENDER);
 					args[j + 1] = receiver_id;
-					args[j + 2] = obj
-							.getString(Constants.JSONKEYS.MESSAGES.TEXT);
+					args[j + 2] = Utility.decode(obj
+							.getString(Constants.JSONKEYS.MESSAGES.TEXT));
 					args[j + 3] = String.valueOf(obj
 							.getLong(Constants.JSONKEYS.MESSAGES.TIME));
 					args[j + 4] = String

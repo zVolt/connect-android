@@ -403,8 +403,8 @@ public class BackgroundService extends IntentService {
 					message = new JSONObject();
 					message.put(Constants.JSONKEYS.MESSAGES.RECEIVER,
 							c.getString(0));
-					message.put(Constants.JSONKEYS.MESSAGES.TEXT,
-							c.getString(1));
+					message.put(Constants.JSONKEYS.MESSAGES.TEXT,Utility.encode(
+							c.getString(1)));
 					message.put(Constants.JSONKEYS.MESSAGES.IS_GROUP_MESSAGE,
 							c.getInt(2));
 					message.put(Constants.JSONKEYS.MESSAGES.TIME, c.getLong(3));
