@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class MessagesAdapter extends CursorAdapter {
+	private LinearLayout.LayoutParams params;
 
 	public MessagesAdapter(Context con, Cursor c, int flags) {
 		super(con, c, flags);
@@ -30,24 +31,18 @@ public class MessagesAdapter extends CursorAdapter {
 		if (holder.state == Constants.MSG_STATE.PENDING
 				|| holder.state == Constants.MSG_STATE.SENT
 				|| holder.state == Constants.MSG_STATE.ACK_RECEIVED) {
-			holder.container.setBackgroundResource(R.drawable.msg_right);
-			holder.text.setBackgroundColor(context.getResources().getColor(
-					R.color.msg_receive));
-			((LinearLayout) holder.container.getParent())
-					.setGravity(Gravity.RIGHT);
-			// holder.container.setGravity(Gravity.RIGHT);
-			holder.time.setGravity(Gravity.RIGHT);
-			holder.text.setGravity(Gravity.RIGHT);
-		} else {
-			holder.container.setBackgroundResource(R.drawable.msg_left);
-			holder.text.setBackgroundColor(context.getResources().getColor(
-					R.color.msg_send));
-			((LinearLayout) holder.container.getParent())
-					.setGravity(Gravity.LEFT);
-			// holder.container.setGravity(Gravity.LEFT);
-			holder.time.setGravity(Gravity.LEFT);
-			holder.text.setGravity(Gravity.LEFT);
+			holder.text.setBackgroundResource(R.drawable.msg_right_back);
+			params = (LinearLayout.LayoutParams) holder.text.getLayoutParams();
+			params.setMargins(100, 0, 0, 0);
+			holder.text.setLayoutParams(params);
+			holder.container.setGravity(Gravity.RIGHT);
 
+		} else {
+			holder.text.setBackgroundResource(R.drawable.msg_left_back);
+			params = (LinearLayout.LayoutParams) holder.text.getLayoutParams();
+			params.setMargins(0, 0, 100, 0);
+			holder.text.setLayoutParams(params);
+			holder.container.setGravity(Gravity.LEFT);
 		}
 	}
 
@@ -68,25 +63,17 @@ public class MessagesAdapter extends CursorAdapter {
 		holder.state = c.getInt(3);
 		if (holder.state == Constants.MSG_STATE.PENDING
 				|| holder.state == Constants.MSG_STATE.SENT) {
-			holder.container.setBackgroundResource(R.drawable.msg_right);
-			holder.text.setBackgroundColor(context.getResources().getColor(
-					R.color.msg_receive));
-			((LinearLayout) holder.container.getParent())
-					.setGravity(Gravity.RIGHT);
-			// holder.container.setGravity(Gravity.RIGHT);
-			holder.time.setGravity(Gravity.RIGHT);
-			holder.text.setGravity(Gravity.RIGHT);
+			holder.text.setBackgroundResource(R.drawable.msg_right_back);
+			params = (LinearLayout.LayoutParams) holder.text.getLayoutParams();
+			params.setMargins(100, 0, 0, 0);
+			holder.text.setLayoutParams(params);
+			holder.container.setGravity(Gravity.RIGHT);
 		} else {
-
-			holder.container.setBackgroundResource(R.drawable.msg_left);
-			holder.text.setBackgroundColor(context.getResources().getColor(
-					R.color.msg_send));
-			((LinearLayout) holder.container.getParent())
-					.setGravity(Gravity.LEFT);
-			// holder.container.setGravity(Gravity.LEFT);
-			holder.time.setGravity(Gravity.LEFT);
-			holder.text.setGravity(Gravity.LEFT);
-
+			holder.text.setBackgroundResource(R.drawable.msg_left_back);
+			params = (LinearLayout.LayoutParams) holder.text.getLayoutParams();
+			params.setMargins(0, 0, 100, 0);
+			holder.text.setLayoutParams(params);
+			holder.container.setGravity(Gravity.LEFT);
 		}
 		view.setTag(holder);
 		return view;
