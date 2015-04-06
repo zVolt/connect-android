@@ -119,10 +119,9 @@ public class Utility {
 		return BASE_IMG_URL + id.toLowerCase().trim() + ".jpg";
 	}
 
-	public static User getUser(String id) {
-
-		return null;
-	}
+	//public static User getUser(String id) {
+	//	return null;
+	//}
 
 	public static String sha1(String input) {
 		try {

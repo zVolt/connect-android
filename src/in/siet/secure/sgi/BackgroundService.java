@@ -50,7 +50,7 @@ public class BackgroundService extends IntentService {
 	private SharedPreferences spref;
 	private DbHelper dbh;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
-	String sender_lid; // ye bhejny waly ki b-11-136 jaisi id
+	private String my_userid;
 
 	private boolean got_new_sender;
 	private Intent starter;
@@ -125,6 +125,9 @@ public class BackgroundService extends IntentService {
 	 * private void releaseLock() { if (wake != null && wake.isHeld())
 	 * wake.release(); }
 	 */
+	/**
+	 * not called from any where
+	 */
 	public void getMessagesFromServer() {
 		new GetMessagesFromServer().execute();
 	}
@@ -162,8 +165,6 @@ public class BackgroundService extends IntentService {
 			Utility.putCredentials(reqparams, getSPreferences());
 			SyncHttpClient client = new SyncHttpClient();
 
-			final String user_id = getSPreferences().getString(
-					Constants.PREF_KEYS.user_id, null); // this is me :D
 			client.get(Utility.getBaseURL(getApplicationContext())
 					+ "query/give_me_messages", reqparams,
 					new MyJsonHttpResponseHandler() {
@@ -176,7 +177,7 @@ public class BackgroundService extends IntentService {
 									ack_ids.put(
 											Constants.JSONKEYS.MESSAGES.ACK,
 											getDbHelper().fillMessages(
-													response, user_id));
+													response, getMyUserid()));
 
 								} else {
 									Utility.log(TAG, "no messages");
@@ -427,19 +428,14 @@ public class BackgroundService extends IntentService {
 	 *            will contain IDs of messages and second one will contain IDs
 	 *            of notification
 	 */
-	public void sendAck(JSONObject msg_and_noti_ids) {
+	public void sendAck(final JSONObject msg_and_noti_ids) {
 		Utility.log(TAG, "sending ack now");
 		AsyncHttpClient client = new AsyncHttpClient();
 		StringBuilder strb = new StringBuilder();
 		/**
 		 * set user credentials
 		 */
-		strb.append(getSPreferences().getString(
-				Constants.PREF_KEYS.encripted_user_id, null).trim());
-		strb.append(Constants.NEW_LINE);
-		strb.append(getSPreferences()
-				.getString(Constants.PREF_KEYS.token, null).trim());
-		strb.append(Constants.NEW_LINE);
+		strb = Utility.putCredentials(strb, getSPreferences());
 		strb.append(msg_and_noti_ids);
 		HttpEntity entity = null;
 		try {
@@ -453,6 +449,29 @@ public class BackgroundService extends IntentService {
 				Utility.getBaseURL(getApplicationContext())
 						+ "query/receive_ack", entity, null,
 				new MyJsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(int statusCode, Header[] headers,
+							JSONObject response) {
+						// update msg and notification state state to ack_sent
+						try {
+							if (msg_and_noti_ids
+									.has(Constants.JSONKEYS.MESSAGES.ACK))
+								getDbHelper()
+										.updateMsgState(
+												msg_and_noti_ids
+														.getJSONArray(Constants.JSONKEYS.MESSAGES.ACK));
+							if (msg_and_noti_ids
+									.has(Constants.JSONKEYS.NOTIFICATIONS.ACK))
+								getDbHelper()
+										.updateNotiState(
+												msg_and_noti_ids
+														.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.ACK));
+						} catch (JSONException e) {
+							Utility.DEBUG(e);
+						}
+						commonTask();
+					}
+
 					@Override
 					public void commonTask() {
 						Utility.log(TAG, "sending ack done");
@@ -518,9 +537,9 @@ public class BackgroundService extends IntentService {
 
 								JSONArray ids_to_get = getNewSenders(response);
 								// hit server synchronously :P
-								// hiting only if new senders are there
 
 								if (ids_to_get.length() > 0) {
+									// hiting only if new senders are there
 									setGotNewSenders(false);
 									try {
 										Utility.log(TAG,
@@ -607,7 +626,7 @@ public class BackgroundService extends IntentService {
 														getDbHelper()
 																.fillMessages(
 																		response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
-																		sender_lid));
+																		getMyUserid()));
 										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
 									}
 
@@ -807,18 +826,11 @@ public class BackgroundService extends IntentService {
 		START_BY_GCM = start_by_gcm;
 	}
 
-	/**
-	 * Binder class that returns the instance of service
-	 * 
-	 * @author Zeeshan Khan
-	 * 
-	 */
-	/*
-	 * public class LocalBinder extends Binder { BackgroundService getService()
-	 * { return BackgroundService.this; } }
-	 */
-	/*
-	 * private void InstanceCreated(){ NO_OF_INSTANCES++; } private void
-	 * InstanceDeleted(){ NO_OF_INSTANCES--; }
-	 */
+	private String getMyUserid() {
+		if (my_userid == null)
+			my_userid = getSharedPreferences(Constants.PREF_FILE_NAME,
+					Context.MODE_PRIVATE).getString(
+					Constants.PREF_KEYS.user_id, null);
+		return my_userid;
+	}
 }

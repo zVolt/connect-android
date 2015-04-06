@@ -1,11 +1,16 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.ContactsAdapter;
 import in.siet.secure.adapters.ContactsAdapter.ViewHolder;
 import in.siet.secure.contants.Constants;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +30,18 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 	 * to maintain the which list to show students or faculty
 	 */
 	private boolean student;
+	private BroadcastReceiver local_broadcast_receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Utility.log(TAG, "received local broadcast");
+			updateList();
+		}
+	};
+
+	private void updateList() {
+		adapter.notifyDataSetChanged();
+		adapter.reQuery();
+	}
 
 	public FragmentContacts() {
 	}
@@ -62,6 +79,22 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 		super.onResume();
 		((MainActivity) getActivity()).getSupportActionBar().setTitle(
 				R.string.fragemnt_title_contacts);
+
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.registerReceiver(
+						local_broadcast_receiver,
+						new IntentFilter(
+								Constants.LOCAL_INTENT_ACTION.RELOAD_CONTACTS));
+		updateList();
+	}
+
+	@Override
+	public void onPause() {
+		LocalBroadcastManager
+				.getInstance(getActivity().getApplicationContext())
+				.unregisterReceiver(local_broadcast_receiver);
+		super.onPause();
 	}
 
 	@Override
@@ -101,4 +134,5 @@ public class FragmentContacts extends Fragment implements OnItemClickListener {
 				((ViewHolder) view.getTag()).user_pk_id);
 		startActivity(intent);
 	}
+
 }

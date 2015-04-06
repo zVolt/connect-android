@@ -90,6 +90,7 @@ public class NotificationAdapter extends CursorAdapter {
 			holder.state_view.setVisibility(View.GONE);
 			if (tmp_state != Constants.NOTI_STATE.READ) {
 				// set text bold
+				
 				content = new SpannableString(cursor.getString(2));
 				content.setSpan(new StyleSpan(Typeface.BOLD), 0,
 						content.length(), 0);

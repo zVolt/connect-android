@@ -40,7 +40,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	public static SQLiteDatabase db;
 	private Context context;
 	public static SharedPreferences spf;
-	private Intent intent;
+	//private Intent intent;
 
 	public DbHelper(Context contxt) {
 		super(contxt, DATABASE_NAME, null, DATABASE_VERSION);
@@ -188,6 +188,8 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * fill messages received from server to db this should take ArrayList of
 	 * Messages
 	 * 
+	 * called on non UI thread
+	 * 
 	 * @param messages
 	 *            {@link JSONArray} of messages received
 	 * @param receiver
@@ -202,19 +204,22 @@ public class DbHelper extends SQLiteOpenHelper {
 		int len = messages.length();
 		if (len > 0) {
 			StringBuilder query = new StringBuilder(
-					"insert into messages(sender,receiver,text,time,is_group_msg) values");
+					"insert into messages(sender,receiver,text,time,is_group_msg,state) values");
 			JSONObject obj;
 			int j;
-			int receiver_id = getUserPk(receiver);
-			String[] args = new String[len * 5];
+			String receiver_id = String.valueOf(getUserPk(receiver));
+			String state_received = String
+					.valueOf(Constants.MSG_STATE.RECEIVED);
+			String[] args = new String[len * 6];
+
 			try {
 				for (int i = 0; i < len; i++) {
-					query.append("((select _id from user where login_id=?),?,?,?,?)");
+					query.append("((select _id from user where login_id=?),?,?,?,?,?)");
 					query.append(DbConstants.COMMA);
 					obj = messages.getJSONObject(i);
-					j = i * 5;
+					j = i * 6;
 					args[j] = obj.getString(Constants.JSONKEYS.MESSAGES.SENDER);
-					args[j + 1] = String.valueOf(receiver_id);
+					args[j + 1] = receiver_id;
 					args[j + 2] = obj
 							.getString(Constants.JSONKEYS.MESSAGES.TEXT);
 					args[j + 3] = String.valueOf(obj
@@ -222,10 +227,19 @@ public class DbHelper extends SQLiteOpenHelper {
 					args[j + 4] = String
 							.valueOf(obj
 									.getInt(Constants.JSONKEYS.MESSAGES.IS_GROUP_MESSAGE));
+					args[j + 5] = state_received;
 					ids.put(obj.getInt(Constants.JSONKEYS.MESSAGES.ID));
+
 				}
 				query.deleteCharAt(query.length() - 1);
 				db.execSQL(query.toString(), args);
+
+				// update user table for each msg
+
+				db.execSQL("update user set last_msg_on=(select time from messages where sender=user._id or receiver=user._id order by time desc limit 1)");
+
+				sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
+				sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_CONTACTS);
 			} catch (Exception e) {
 				Utility.DEBUG(e);
 			}
@@ -296,11 +310,78 @@ public class DbHelper extends SQLiteOpenHelper {
 					ids.put(notification
 							.getInt(Constants.JSONKEYS.NOTIFICATIONS.ID));
 				}
+				sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 			} catch (Exception e) {
 				Utility.DEBUG(e);
 			}
 		}
 		return ids;
+	}
+
+	/**
+	 * update the state of messages to state ACK_SENT
+	 * 
+	 * should be called from a non UI thread
+	 * 
+	 * @param msg_ids
+	 *            {@link JSONArray} of msg_ids (Primary key to message table)
+	 * 
+	 */
+	public void updateMsgState(JSONArray msg_ids) {
+		try {
+			int len = msg_ids.length();
+			StringBuilder strb = new StringBuilder(" _id IN (");
+			String[] ids = new String[len];
+			for (int i = 0; i < len; i++) {
+				ids[i] = msg_ids.getString(i);
+				strb.append("?,");
+			}
+			strb.deleteCharAt(strb.length() - 1);
+			strb.append(") and state<> ");
+			strb.append(String.valueOf(Constants.NOTI_STATE.READ));
+			ContentValues values = new ContentValues();
+			values.put(DbStructure.MessageTable.COLUMN_STATE,
+					Constants.MSG_STATE.ACK_SEND);
+			setDb();
+			db.update(DbStructure.MessageTable.TABLE_NAME, values,
+					strb.toString(), ids);
+
+		} catch (Exception e) {
+			Utility.DEBUG(e);
+		}
+	}
+
+	/**
+	 * update the state of notification to stateACK_SENT
+	 * 
+	 * should be called from a non UI thread
+	 * 
+	 * @param msg_ids
+	 *            {@link JSONArray} of msg_ids (Primary key of Notification
+	 *            table)
+	 */
+	public void updateNotiState(JSONArray noti_ids) {
+		try {
+			int len = noti_ids.length();
+			StringBuilder strb = new StringBuilder(" _id IN (");
+			String[] ids = new String[len];
+			for (int i = 0; i < len; i++) {
+				ids[i] = noti_ids.getString(i);
+				strb.append("?,");
+			}
+			strb.deleteCharAt(strb.length() - 1);
+			strb.append(") and state<> ");
+			strb.append(String.valueOf(Constants.NOTI_STATE.READ));
+			ContentValues values = new ContentValues();
+			values.put(DbStructure.NotificationTable.COLUMN_STATE,
+					Constants.NOTI_STATE.ACK_SEND);
+			setDb();
+			db.update(DbStructure.NotificationTable.TABLE_NAME, values,
+					strb.toString(), ids);
+
+		} catch (Exception e) {
+			Utility.DEBUG(e);
+		}
 	}
 
 	/**
@@ -702,6 +783,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 		long msg_id = db.insert(DbStructure.MessageTable.TABLE_NAME, null,
 				values);
+		db.execSQL("update user set last_msg_on=(select time from messages where sender=user._id or receiver=user._id order by time desc limit 1)");
 		Utility.startBackgroundService(context);
 		return msg_id;
 	}
@@ -957,70 +1039,9 @@ public class DbHelper extends SQLiteOpenHelper {
 			LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 		}
 	}
-	/*
-	 * public void getNotificationsFromDB() { new
-	 * GetNotificationsFromDB().execute(); }
-	 * 
-	 * /* get the data for notification list from database move it to DbHelper
-	 * 
-	 * @author Zeeshan Khan
-	 * 
-	 * 
-	 * private class GetNotificationsFromDB extends AsyncTask<Void, Integer,
-	 * ArrayList<Notification>> {
-	 * 
-	 * @Override protected ArrayList<Notification> doInBackground(Void...
-	 * params) {
-	 * 
-	 * /** to prevent fc when the activity is reconstructed and the background
-	 * thread is still executing
-	 * 
-	 * setDb();
-	 * 
-	 * String[] columns = { DbStructure.NotificationTable._ID,
-	 * DbStructure.UserTable.COLUMN_PROFILE_PIC,
-	 * DbStructure.NotificationTable.COLUMN_SUBJECT,
-	 * DbStructure.NotificationTable.COLUMN_TEXT,
-	 * DbStructure.NotificationTable.COLUMN_TIME,
-	 * DbStructure.NotificationTable.COLUMN_FOR_FACULTY,
-	 * DbStructure.NotificationTable.COLUMN_STATE,
-	 * DbStructure.NotificationTable.COLUMN_FOR_FACULTY };
-	 * 
-	 * Cursor c = db .rawQuery("select " +
-	 * DbStructure.NotificationTable.TABLE_NAME + DbConstants.DOT + columns[0] +
-	 * DbConstants.COMMA + columns[1] + DbConstants.COMMA + columns[2] +
-	 * DbConstants.COMMA + columns[3] + DbConstants.COMMA + columns[4] +
-	 * DbConstants.COMMA + columns[5] + DbConstants.COMMA + columns[6] +
-	 * " from " + DbStructure.NotificationTable.TABLE_NAME + " join " +
-	 * DbStructure.UserTable.TABLE_NAME + " on " +
-	 * DbStructure.NotificationTable.COLUMN_SENDER + "=" +
-	 * DbStructure.UserTable.TABLE_NAME + DbConstants.DOT +
-	 * DbStructure.UserTable._ID + " order by " +
-	 * DbStructure.NotificationTable.COLUMN_TIME + " desc", null);
-	 * 
-	 * ArrayList<Notification> notifications = new ArrayList<Notification>();
-	 * c.moveToFirst(); while (c.isAfterLast() == false) {
-	 * 
-	 * Notification tmpnot = new Notification(c.getInt(c
-	 * .getColumnIndexOrThrow(columns[5])), c.getInt(c
-	 * .getColumnIndexOrThrow(columns[0])), c.getString(c
-	 * .getColumnIndexOrThrow(columns[1])), c.getString(c
-	 * .getColumnIndexOrThrow(columns[2])), c.getString(c
-	 * .getColumnIndexOrThrow(columns[3])), c.getLong(c
-	 * .getColumnIndexOrThrow(columns[4])), c.getInt(c
-	 * .getColumnIndexOrThrow(columns[6]))); notifications.add(tmpnot);
-	 * 
-	 * c.moveToNext();
-	 * 
-	 * } return notifications; }
-	 * 
-	 * @Override protected void onPostExecute(ArrayList<Notification> data) { if
-	 * (data != null) { Intent intent = new Intent(
-	 * Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
-	 * intent.putParcelableArrayListExtra( Constants.INTENT_EXTRA.NOTIFICATIONS,
-	 * data); LocalBroadcastManager.getInstance(context) .sendBroadcast(intent);
-	 * } }
-	 * 
-	 * }
-	 */
+
+	private void sendBroadcast(String action) {
+		Intent intent = new Intent(action);
+		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+	}
 }

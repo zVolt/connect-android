@@ -24,19 +24,19 @@
         android:text="TextView" />
 
     <TextView
-        android:id="@+id/textViewContactsDetails"
+        android:id="@+id/textViewContactsLastMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/imageViewContactsImage"
-        android:layout_alignLeft="@+id/textViewContactsName"
-        android:layout_alignRight="@+id/textViewContactsName"
         android:layout_marginBottom="5dp"
+        android:layout_toLeftOf="@+id/textViewContactsTime"
+        android:layout_toRightOf="@+id/imageViewMsgState"
         android:singleLine="true"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/textViewContactsExtra"
+        android:id="@+id/textViewContactsTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/imageViewContactsImage"
@@ -45,5 +45,14 @@
          android:layout_marginBottom="5dp"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ImageView
+        android:id="@+id/imageViewMsgState"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignBottom="@+id/imageViewContactsImage"
+        android:layout_alignTop="@+id/textViewContactsLastMsg"
+        android:layout_toRightOf="@+id/imageViewContactsImage"
+        android:src="@drawable/ic_action_wait" />
 
 </RelativeLayout>

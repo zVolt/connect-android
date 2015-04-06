@@ -41,16 +41,17 @@
                 android:id="@+id/textViewNotificationTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
                 android:text="12:40pm"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <ImageView
                 android:id="@+id/imageViewNotificationState"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:contentDescription="@string/desc_noti_state"
                 android:src="@drawable/ic_file_done"
-                android:visibility="gone" />
+                android:visibility="visible" />
         </LinearLayout>
     </LinearLayout>
 

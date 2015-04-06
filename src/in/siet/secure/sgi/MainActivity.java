@@ -395,4 +395,5 @@ public class MainActivity extends ActionBarActivity {
 			dbh = new DbHelper(getApplicationContext());
 		return dbh;
 	}
+
 }

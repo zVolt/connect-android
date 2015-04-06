@@ -5,15 +5,18 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.MessagesAdapter;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.dao.DbHelper;
+import in.siet.secure.dao.DbStructure;
 
 import java.util.Calendar;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.LocalBroadcastManager;
@@ -46,6 +49,7 @@ public class ChatActivity extends ActionBarActivity {
 	String sender_lid;
 	private DbHelper dbh;
 	long msg_id;
+	private ContentValues values;
 	private static final String TAG = "in.siet.secure.sgi.ChatActivity";
 	Toolbar toolbar;
 	private static final String query = "select messages._id,text,time,state from messages where sender=? or receiver=?";
@@ -55,8 +59,37 @@ public class ChatActivity extends ActionBarActivity {
 		public void onReceive(Context context, Intent intent) {
 			Utility.log(TAG, "received broadcast update messages");
 			updateCursor();
+			markAllRead();
 		}
 	};
+
+	private void markAllRead() {
+		new MarkAllRead().execute();
+	}
+
+	private class MarkAllRead extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
+			if (values == null) {
+				values = new ContentValues();
+				values.put(DbStructure.MessageTable.COLUMN_STATE,
+						Constants.MSG_STATE.READ);
+			}
+			getDbHelper().getDb().update(
+					DbStructure.MessageTable.TABLE_NAME,
+					values,
+					" sender=? and state IN (?,?)",
+					new String[] { String.valueOf(receiver_id),
+							String.valueOf(Constants.MSG_STATE.RECEIVED),
+							String.valueOf(Constants.MSG_STATE.ACK_SEND) });
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			updateCursor();
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +99,7 @@ public class ChatActivity extends ActionBarActivity {
 		Intent intent = getIntent();
 		// title="tambu";
 		// title = intent.getStringExtra(Constants.INTENT_EXTRA.CHAT_NAME);
-		receiver_id = intent.getIntExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
+		receiver_id = intent.getLongExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
 				-1);
 		// if receiver_id==-1 go back to previous activity
 		list = (ListView) findViewById(R.id.listViewChats);
@@ -81,7 +114,7 @@ public class ChatActivity extends ActionBarActivity {
 						getSPreferences().getString(
 								Constants.PREF_KEYS.user_id, null),
 						String.valueOf(receiver_id) });
-		
+
 		c.moveToFirst();
 		while (!c.isAfterLast()) {
 			if (c.getLong(0) == receiver_id) {
@@ -152,6 +185,7 @@ public class ChatActivity extends ActionBarActivity {
 						new IntentFilter(
 								Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES));
 		updateCursor();
+		markAllRead();
 	}
 
 	@Override
@@ -165,14 +199,24 @@ public class ChatActivity extends ActionBarActivity {
 	}
 
 	public void updateCursor() {
-		Cursor new_cursor;
-		String[] args = { String.valueOf(receiver_id),
-				String.valueOf(receiver_id) };
+		new UpdateCursor().execute();
+	}
 
-		new_cursor = getDbHelper().getDb().rawQuery(query, args);
-		Cursor old_cursor = adapter.swapCursor(new_cursor);
-		if (old_cursor != null)
-			old_cursor.close();
+	private class UpdateCursor extends AsyncTask<Void, Void, Cursor> {
+		@Override
+		protected Cursor doInBackground(Void... params) {
+			String[] args = { String.valueOf(receiver_id),
+					String.valueOf(receiver_id) };
+			return getDbHelper().getDb().rawQuery(query, args);
+		}
+
+		@Override
+		protected void onPostExecute(Cursor result) {
+			Cursor old_cursor = adapter.swapCursor(result);
+			if (old_cursor != null)
+				old_cursor.close();
+
+		}
 	}
 
 	/**

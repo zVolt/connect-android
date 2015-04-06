@@ -4,7 +4,6 @@ import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;

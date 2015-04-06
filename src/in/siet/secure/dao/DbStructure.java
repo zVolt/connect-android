@@ -15,6 +15,7 @@ public final class DbStructure {
 		public static final String COLUMN_LOGIN_ID = "login_id";
 		public static final String COLUMN_FNAME = "f_name";
 		public static final String COLUMN_LNAME = "l_name";
+		public static final String COLUMN_LAST_MSG_ON = "last_msg_on";
 		// public static final String COLUMN_DEPARTMENT = "department";
 		public static final String COLUMN_PROFILE_PIC = "pic_url";
 
@@ -25,6 +26,7 @@ public final class DbStructure {
 				+ DbConstants.UNIQUE + DbConstants.COMMA + COLUMN_FNAME
 				+ DbConstants.TYPE_TEXT + DbConstants.COMMA + COLUMN_LNAME
 				+ DbConstants.TYPE_TEXT + DbConstants.COMMA
+				+ COLUMN_LAST_MSG_ON + DbConstants.TYPE_INT + DbConstants.COMMA
 				+ COLUMN_PROFILE_PIC + DbConstants.TYPE_TEXT
 				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE
