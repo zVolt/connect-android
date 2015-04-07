@@ -258,6 +258,10 @@ public class DbHelper extends SQLiteOpenHelper {
 		setDb();
 		int len = notifications.length();
 		JSONArray ids = new JSONArray();
+		int len_files = -1;
+		JSONObject files;
+		JSONArray file;
+		long noti_id, file_id;
 		if (len > 0) {
 			JSONObject notification;
 			ContentValues values = new ContentValues();
@@ -306,10 +310,48 @@ public class DbHelper extends SQLiteOpenHelper {
 									.getString(Constants.JSONKEYS.NOTIFICATIONS.SENDER)));
 					values.put(DbStructure.NotificationTable.COLUMN_TARGET,
 							target_id);
-					db.insert(DbStructure.NotificationTable.TABLE_NAME, null,
+					noti_id = db.insert(
+							DbStructure.NotificationTable.TABLE_NAME, null,
 							values);
 					ids.put(notification
 							.getInt(Constants.JSONKEYS.NOTIFICATIONS.ID));
+					file = notification
+							.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS);
+					len_files = file.length();
+					for (int j = 0; j < len_files; j++) {
+						files = file.getJSONObject(j);
+						values.clear();
+						String path = files
+								.getString(Constants.JSONKEYS.FILES.URL);
+						values.put(
+								DbStructure.FileTable.COLUMN_SENDER,
+								getUserPk(notification
+										.getString(Constants.JSONKEYS.NOTIFICATIONS.SENDER)));
+						values.put(DbStructure.FileTable.COLUMN_URL, path);
+						values.put(DbStructure.FileTable.COLUMN_STATE,
+								Constants.FILE_STATE.RECEIVED);
+						values.put(DbStructure.FileTable.COLUMN_SIZE,
+								Constants.JSONKEYS.FILES.SIZE);
+						int idx = path.replaceAll("\\\\", "/").lastIndexOf("/");
+						String filename = idx >= 0 ? path.substring(idx + 1)
+								: path;
+						values.put(DbStructure.FileTable.COLUMN_NAME, filename);
+						file_id = db.insert(DbStructure.FileTable.TABLE_NAME,
+								null, values);
+						values.clear();
+						values.put(
+								DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID,
+								noti_id);
+						values.put(
+								DbStructure.FileNotificationMapTable.COLUMN_FILE_ID,
+								file_id);
+						db.insert(
+								DbStructure.FileNotificationMapTable.TABLE_NAME,
+								null, values);
+						values.clear();
+						Utility.log(TAG, "hiiisfkhdkjs  " + j + filename);
+					}
+					values.clear();
 				}
 				sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 			} catch (Exception e) {

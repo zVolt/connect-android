@@ -378,8 +378,10 @@ public class BackgroundService extends IntentService {
 								noti_time);
 						attachment.put(Constants.JSONKEYS.FILES.ID,
 								c_attachment.getString(3));
+						File file =new File(c_attachment.getString(1)); 
+						attachment.put(Constants.JSONKEYS.FILES.SIZE,file.length() );
 						params.put(Constants.QueryParameters.FILE + i++,
-								new File(c_attachment.getString(1)));
+								file);
 						attachments.put(attachment);
 					} catch (Exception e) {
 						Utility.DEBUG(e);
