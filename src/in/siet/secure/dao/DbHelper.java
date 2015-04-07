@@ -1052,6 +1052,7 @@ public class DbHelper extends SQLiteOpenHelper {
 							+ " where "
 							+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
 							+ DbConstants.EQUALS + noti_id);
+			Utility.log(TAG,query.toString());
 			Cursor c = db.rawQuery(query.toString(), null);
 			Utility.log(TAG, query.toString());
 			c.moveToFirst();

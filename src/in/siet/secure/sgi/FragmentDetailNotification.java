@@ -49,7 +49,7 @@ public class FragmentDetailNotification extends Fragment implements
 
 			if (intent.getBooleanExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS,
 					false)) {
-				if (intent.getIntExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID,
+				if (intent.getLongExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID,
 						-1) == not_id) {
 					ArrayList<Attachment> data = intent
 							.<Attachment> getParcelableArrayListExtra(Constants.INTENT_EXTRA.ATTACHMENTS_DATA);
