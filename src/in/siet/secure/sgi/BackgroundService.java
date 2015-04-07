@@ -391,8 +391,6 @@ public class BackgroundService extends IntentService {
 			params.put(Constants.QueryParameters.FILE_ID, attachments);
 			params.put(Constants.QueryParameters.USERNAME, user_id);
 			AsyncHttpClient client = new SyncHttpClient();
-			// client.addHeader("Content-Type", "multipart/form-data");
-			// client.setTimeout(500000);
 			client.post(getApplicationContext(),
 					Utility.getBaseURL(getApplicationContext())
 							+ "query/upload_file", params,

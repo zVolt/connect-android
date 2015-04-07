@@ -12,6 +12,7 @@
         android:paddingEnd="@dimen/large_padding"
         android:paddingStart="@dimen/large_padding"
         android:text="T"
+        android:autoLink="all"
         android:textColor="@color/gray3"
         android:textSize="15sp" />
 
