@@ -259,8 +259,8 @@ public class DbHelper extends SQLiteOpenHelper {
 		int len = notifications.length();
 		JSONArray ids = new JSONArray();
 		int len_files = -1;
-		JSONObject files;
-		JSONArray file;
+		JSONObject file;
+		JSONArray files;
 		long noti_id, file_id;
 		if (len > 0) {
 			JSONObject notification;
@@ -315,13 +315,13 @@ public class DbHelper extends SQLiteOpenHelper {
 							values);
 					ids.put(notification
 							.getInt(Constants.JSONKEYS.NOTIFICATIONS.ID));
-					file = notification
+					files = notification
 							.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS);
-					len_files = file.length();
+					len_files = files.length();
 					for (int j = 0; j < len_files; j++) {
-						files = file.getJSONObject(j);
+						file = files.getJSONObject(j);
 						values.clear();
-						String path = files
+						String path = file
 								.getString(Constants.JSONKEYS.FILES.URL);
 						values.put(
 								DbStructure.FileTable.COLUMN_SENDER,
@@ -331,7 +331,7 @@ public class DbHelper extends SQLiteOpenHelper {
 						values.put(DbStructure.FileTable.COLUMN_STATE,
 								Constants.FILE_STATE.RECEIVED);
 						values.put(DbStructure.FileTable.COLUMN_SIZE,
-								Constants.JSONKEYS.FILES.SIZE);
+								file.getLong(Constants.JSONKEYS.FILES.SIZE));
 						int idx = path.replaceAll("\\\\", "/").lastIndexOf("/");
 						String filename = idx >= 0 ? path.substring(idx + 1)
 								: path;
