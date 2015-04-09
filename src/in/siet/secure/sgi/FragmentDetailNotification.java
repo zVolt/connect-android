@@ -1,22 +1,37 @@
 package in.siet.secure.sgi;
 
 import in.siet.secure.Util.Attachment;
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.adapters.NotificationAttachmentAdapter;
 import in.siet.secure.adapters.NotificationAttachmentAdapter.ViewHolder;
 import in.siet.secure.contants.Constants;
+import in.siet.secure.dao.DbConstants;
 import in.siet.secure.dao.DbHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+
+import org.apache.http.Header;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore.Files;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +42,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.FileAsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class FragmentDetailNotification extends Fragment implements
@@ -38,8 +56,8 @@ public class FragmentDetailNotification extends Fragment implements
 	private View rootView;
 	private DbHelper dbh;
 	public static final String TAG = "in.siet.secure.sgi.FragmentDetailNotification";
+	private SharedPreferences spref;
 	private BroadcastReceiver refresh_receiver = new BroadcastReceiver() {
-
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			/**
@@ -164,7 +182,13 @@ public class FragmentDetailNotification extends Fragment implements
 				listViewAtachments.addView(tmp_child);
 			}
 		}
+	}
 
+	private SharedPreferences getSPreferences() {
+		if (spref == null)
+			spref = getActivity().getSharedPreferences(
+					Constants.PREF_FILE_NAME, Context.MODE_PRIVATE);
+		return spref;
 	}
 
 	public void setData(ArrayList<Attachment> data) {
@@ -193,10 +217,11 @@ public class FragmentDetailNotification extends Fragment implements
 
 	@Override
 	public void onClick(View view) {
+
 		switch (view.getId()) {
 		case R.id.imageButtonAttachmentAction:
-
-			ViewHolder h = (ViewHolder) ((View) view.getParent()).getTag();
+			final ViewHolder h = (ViewHolder) ((View) view.getParent())
+					.getTag();
 			if (h.state != Constants.NOTI_STATE.RECEIVED) {
 				// open file
 				Utility.log(TAG, "opening file");
@@ -205,13 +230,10 @@ public class FragmentDetailNotification extends Fragment implements
 				String ext = MimeTypeMap
 						.getFileExtensionFromUrl(file.getName());
 				String type = map.getMimeTypeFromExtension(ext);
-
 				if (type == null)
 					type = "*/*";
-
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				Uri data = Uri.fromFile(file);
-
 				intent.setDataAndType(data, type);
 				try {
 					startActivity(intent);
@@ -222,12 +244,74 @@ public class FragmentDetailNotification extends Fragment implements
 				// download file
 				Utility.log(TAG, "downloading file state " + h.state);
 				Utility.log("Yaha", "clicked on " + h.name.getText());
-				new Utility.DownloadFile(getActivity().getApplicationContext())
-						.execute(h.url, (String) h.name.getText(), "" + h.id);
+				RequestParams params = new RequestParams();
+				Utility.putCredentials(params, getSPreferences());
+				params.put(Constants.QueryParameters.FILES.NAME, h.name
+						.getText().toString());
+				AsyncHttpClient client = new AsyncHttpClient();
+				Utility.log(TAG, "before downloadf ile");
+				client.get(
+						Utility.getBaseURL(getActivity()
+								.getApplicationContext())
+								+ "query/download_file", params,
+						new FileAsyncHttpResponseHandler(getActivity()
+								.getApplicationContext()) {
+							@Override
+							public void onSuccess(int statusCode,
+									Header[] headers, File file) {
+								Utility.log(TAG, "on success file download");
+								try {
+									String file_name = (h.name.getText())
+											.toString();
+									long file_id = h.id;
+									File dir = new File(Constants.PATH_TO_APP);
+									if (isExternalStorageWritable()) {
+										dir.mkdirs();
+									}
+									String file_url = dir + "/" + file_name;
+									// else write in internal storage
+									File file_new = new File(file_url);
+									int read = 0;
+									byte[] bytes = new byte[1024];
+									InputStream inputStream = new FileInputStream(
+											file);
+									OutputStream outputStream = new FileOutputStream(
+											file_new);
+									while ((read = inputStream.read(bytes)) != -1) {
+										outputStream.write(bytes, 0, read);
+									}
+									Utility.log(TAG, dir + "");
+									outputStream.flush();
+									outputStream.close();
+									inputStream.close();
+									getDbHelper().updateFileState(file_id,
+											Constants.FILE_STATE.DOWNLOADED,
+											file_url);
+								} catch (FileNotFoundException e) {
+									Utility.DEBUG(e);
+								} catch (IOException e) {
+									Utility.DEBUG(e);
+								}
+							}
+
+							@Override
+							public void onFailure(int arg0, Header[] arg1,
+									Throwable arg2, File arg3) {
+								Utility.log(TAG, "on failure file :::" + arg2);
+							}
+						});
+				Utility.log(TAG, "after download file");
 			}
 			break;
 		}
+	}
 
+	public boolean isExternalStorageWritable() {
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			return true;
+		}
+		return false;
 	}
 
 	private DbHelper getDbHelper() {

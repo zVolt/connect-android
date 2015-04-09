@@ -337,6 +337,7 @@ public class BackgroundService extends IntentService {
 					Utility.log(TAG, "before sending file");
 					sendfile(c_attachment, c.getLong(2),
 							spref.getString(Constants.PREF_KEYS.user_id, null));
+					// check for null
 					attachment.put(Constants.JSONKEYS.FILES.ID, json_fileid);
 					notification.put(
 							Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
@@ -415,21 +416,21 @@ public class BackgroundService extends IntentService {
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								Throwable throwable, JSONObject response) {
-							Utility.log(TAG, "..fail1 " + response.toString());
+							Utility.log(TAG, "fail " + response.toString());
 						}
 
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								String responseString, Throwable throwable) {
 							Utility.log(TAG,
-									"..fail2" + throwable.getLocalizedMessage());
+									"fail" + throwable.getLocalizedMessage());
 						}
 
 						@Override
 						public void onFailure(int statusCode, Header[] headers,
 								Throwable throwable, JSONArray errorResponse) {
 							Utility.log(TAG,
-									"..fail3" + throwable.getLocalizedMessage());
+									"fail" + throwable.getLocalizedMessage());
 						}
 					});
 
@@ -606,6 +607,7 @@ public class BackgroundService extends IntentService {
 										SyncHttpClient client = new SyncHttpClient();
 										client.addHeader("Content-Type",
 												"application/json");
+										
 										client.post(
 												getApplicationContext(),
 												Utility.getBaseURL(getApplicationContext())
