@@ -150,6 +150,11 @@ public interface Constants {
 			String TIME = "time";
 		}
 
+		public static interface FILES {
+			String NAME = "file_name";
+			String INPUT_STREAM = "file_input_stream";
+			String DESC = "desc";
+		}
 	}
 
 	/**

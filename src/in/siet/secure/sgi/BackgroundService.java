@@ -408,7 +408,6 @@ public class BackgroundService extends IntentService {
 									setFileUploadingResult(true);
 								}
 							}
-
 							@Override
 							public void commonTask() {
 								setFileUploadingResult(false);
@@ -598,6 +597,7 @@ public class BackgroundService extends IntentService {
 										SyncHttpClient client = new SyncHttpClient();
 										client.addHeader("Content-Type",
 												"application/json");
+										
 										client.post(
 												getApplicationContext(),
 												Utility.getBaseURL(getApplicationContext())

@@ -488,6 +488,51 @@ public class DbHelper extends SQLiteOpenHelper {
 	}
 
 	/**
+	 * 
+	 * update the state of file stored in local database
+	 * 
+	 * @param file_id
+	 *            ID(Primary key) of the file whose state is to be updated
+	 * @param state
+	 *            State to which the value of the existing state id to be
+	 *            updated
+	 */
+	public void updateFileState(long file_id, int state, String url) {
+		new UpdateFileState(file_id, state, url).execute();
+	}
+
+	/**
+	 * 
+	 * {@link AsyncTask} class to update the file state
+	 * 
+	 * @author swati
+	 * 
+	 */
+	private class UpdateFileState extends AsyncTask<Void, Void, Void> {
+		long file_id;
+		int state;
+		String url;
+
+		public UpdateFileState(long file_id_, int state_, String url_) {
+			file_id = file_id_;
+			state = state_;
+			url = url_;
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			setDb();
+			ContentValues values = new ContentValues();
+			values.put(DbStructure.FileTable.COLUMN_STATE, state);
+			values.put(DbStructure.FileTable.COLUMN_URL, url);
+
+			db.update(DbStructure.FileTable.TABLE_NAME, values, " _id=?",
+					new String[] { String.valueOf(file_id) });
+			return null;
+		}
+	}
+
+	/**
 	 * insert a users with full details
 	 * 
 	 * @param response
