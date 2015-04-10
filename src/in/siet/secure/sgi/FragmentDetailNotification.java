@@ -226,19 +226,25 @@ public class FragmentDetailNotification extends Fragment implements
 				// open file
 				Utility.log(TAG, "opening file");
 				File file = new File(h.url);
-				MimeTypeMap map = MimeTypeMap.getSingleton();
-				String ext = MimeTypeMap
-						.getFileExtensionFromUrl(file.getName());
-				String type = map.getMimeTypeFromExtension(ext);
-				if (type == null)
-					type = "*/*";
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				Uri data = Uri.fromFile(file);
-				intent.setDataAndType(data, type);
-				try {
+				if (file.exists()) {
+					MimeTypeMap map = MimeTypeMap.getSingleton();
+					String ext = MimeTypeMap.getFileExtensionFromUrl(file
+							.getName());
+					String type = map.getMimeTypeFromExtension(ext);
+					if (type == null)
+						type = "*/*";
+					Intent intent = new Intent(Intent.ACTION_VIEW);
+					Uri data = Uri.fromFile(file);
+					intent.setDataAndType(data, type);
+					// try {
 					startActivity(intent);
-				} catch (Exception e) {
-					Utility.RaiseToast(getActivity(), "cannot open file", false);
+					// } catch (Exception e) {
+					// Utility.RaiseToast(getActivity(), "cannot open file",
+					// false);
+					// }
+				} else {
+					Utility.RaiseToast(getActivity(),
+							"File does not exists on disk", false);
 				}
 			} else {
 				// download file
