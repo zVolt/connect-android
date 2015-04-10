@@ -15,8 +15,6 @@ import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.BackgroundService;
 import in.siet.secure.sgi.NotificationGenerator;
 
-import java.util.ArrayList;
-
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -149,9 +147,9 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * 
 	 * @param not_id
 	 */
-	public void getFilesOfNotification(long not_id) {
-		new FetchFilesOfNotification(not_id).execute();
-	}
+//	public void getFilesOfNotification(long not_id) {
+//		new FetchFilesOfNotification(not_id).execute();
+//	}
 
 	/**
 	 * provide users primary key i.e., the value of _id column corresponding to
@@ -1084,82 +1082,84 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * @author Zeeshan Khan
 	 * 
 	 */
-	private class FetchFilesOfNotification extends
-			AsyncTask<Void, Void, ArrayList<Attachment>> {
-		long noti_id;
-
-		public FetchFilesOfNotification(long not_id_) {
-			noti_id = not_id_;
-		}
-
-		@Override
-		protected ArrayList<Attachment> doInBackground(Void... params) {
-
-			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
-			String[] column = { DbStructure.FileTable._ID,
-					DbStructure.FileTable.COLUMN_NAME,
-					DbStructure.FileTable.COLUMN_STATE,
-					// DbStructure.FileTable.COLUMN_URL,
-					DbStructure.FileTable.COLUMN_SIZE };
-			StringBuilder query = new StringBuilder(
-					"select "
-							+ column[0]
-							+ DbConstants.COMMA
-							+ column[1]
-							+ DbConstants.COMMA
-							+ column[2]
-							+ DbConstants.COMMA
-							+ column[3]
-							// + DbConstants.COMMA
-							// + column[4]
-							+ " from "
-							+ DbStructure.FileTable.TABLE_NAME
-							+ " join "
-							+ DbStructure.FileNotificationMapTable.TABLE_NAME
-							+ " on "
-							+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
-							+ DbConstants.EQUALS
-							+ DbStructure.FileTable._ID
-							+ " where "
-							+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
-							+ DbConstants.EQUALS + noti_id);
-			Utility.log(TAG, query.toString());
-			Cursor c = db.rawQuery(query.toString(), null);
-			Utility.log(TAG, query.toString());
-			c.moveToFirst();
-			Attachment tmp;
-			while (!c.isAfterLast()) {
-				tmp = new Attachment(c.getLong(c
-						.getColumnIndexOrThrow(column[0])), c.getString(c
-						.getColumnIndexOrThrow(column[1])), c.getInt(c
-						.getColumnIndexOrThrow(column[2])), c.getLong(c
-						.getColumnIndexOrThrow(column[3])));
-				attachments.add(tmp);
-				c.moveToNext();
-			}
-
-			return attachments;
-		}
-
-		@Override
-		protected void onPostExecute(ArrayList<Attachment> result) {
-			/**
-			 * send local broadcast to update list of notifications
-			 */
-			Intent intent = new Intent(
-					Constants.LOCAL_INTENT_ACTION.RELOAD_ATTACHMENTS);
-			intent.putExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID, noti_id);
-			if (result != null && result.size() > 0) {
-				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, true);
-				intent.putParcelableArrayListExtra(
-						Constants.INTENT_EXTRA.ATTACHMENTS_DATA, result);
-			} else {
-				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, false);
-			}
-			LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-		}
-	}
-
+//	
+//	private class FetchFilesOfNotification extends
+//			AsyncTask<Void, Void, ArrayList<Attachment>> {
+//		long noti_id;
+//
+//		public FetchFilesOfNotification(long not_id_) {
+//			noti_id = not_id_;
+//		}
+//
+//		@Override
+//		protected ArrayList<Attachment> doInBackground(Void... params) {
+//
+//			ArrayList<Attachment> attachments = new ArrayList<Attachment>();
+//			String[] column = { DbStructure.FileTable._ID,
+//					DbStructure.FileTable.COLUMN_NAME,
+//					DbStructure.FileTable.COLUMN_STATE,
+//					// DbStructure.FileTable.COLUMN_URL,
+//					DbStructure.FileTable.COLUMN_SIZE };
+//			StringBuilder query = new StringBuilder(
+//					"select "
+//							+ column[0]
+//							+ DbConstants.COMMA
+//							+ column[1]
+//							+ DbConstants.COMMA
+//							+ column[2]
+//							+ DbConstants.COMMA
+//							+ column[3]
+//							// + DbConstants.COMMA
+//							// + column[4]
+//							+ " from "
+//							+ DbStructure.FileTable.TABLE_NAME
+//							+ " join "
+//							+ DbStructure.FileNotificationMapTable.TABLE_NAME
+//							+ " on "
+//							+ DbStructure.FileNotificationMapTable.COLUMN_FILE_ID
+//							+ DbConstants.EQUALS
+//							+ DbStructure.FileTable._ID
+//							+ " where "
+//							+ DbStructure.FileNotificationMapTable.COLUMN_NOTIFICATION_ID
+//							+ DbConstants.EQUALS + noti_id);
+//			Utility.log(TAG, query.toString());
+//			Cursor c = db.rawQuery(query.toString(), null);
+//			Utility.log(TAG, query.toString());
+//			c.moveToFirst();
+//			Attachment tmp;
+//			
+//			while (!c.isAfterLast()) {
+//				tmp = new Attachment(c.getLong(c
+//						.getColumnIndexOrThrow(column[0])), c.getString(c
+//						.getColumnIndexOrThrow(column[1])), c.getInt(c
+//						.getColumnIndexOrThrow(column[2])), c.getLong(c
+//						.getColumnIndexOrThrow(column[3])));
+//				attachments.add(tmp);
+//				c.moveToNext();
+//			}
+//
+//			return attachments;
+//		}
+//
+//		@Override
+//		protected void onPostExecute(ArrayList<Attachment> result) {
+//			/**
+//			 * send local broadcast to update list of notifications
+//			 */
+//			Intent intent = new Intent(
+//					Constants.LOCAL_INTENT_ACTION.RELOAD_ATTACHMENTS);
+//			intent.putExtra(Constants.INTENT_EXTRA.NOTIFICATION_ID, noti_id);
+//			if (result != null && result.size() > 0) {
+//				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, true);
+//				intent.putParcelableArrayListExtra(
+//						Constants.INTENT_EXTRA.ATTACHMENTS_DATA, result);
+//			} else {
+//				intent.putExtra(Constants.INTENT_EXTRA.HAS_ATTACHMENTS, false);
+//			}
+//			LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+//		}
+//	}
+//
 	private void sendBroadcast(String action) {
 		if (action != null) {
 			Intent intent = new Intent(action);

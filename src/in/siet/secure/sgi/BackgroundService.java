@@ -331,7 +331,7 @@ public class BackgroundService extends IntentService {
 					 */
 					Utility.log(TAG, "uploading files");
 					sendfile(c.getInt(7),
-							spref.getString(Constants.PREF_KEYS.user_id, null));
+							getSPreferences().getString(Constants.PREF_KEYS.user_id, null));
 					if (getFileUploadingResult()) {
 						// count the notification only if the files are uploaded
 						// successfully

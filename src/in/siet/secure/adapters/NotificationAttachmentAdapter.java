@@ -1,86 +1,105 @@
 package in.siet.secure.adapters;
 
-import in.siet.secure.Util.Attachment;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
 import in.siet.secure.sgi.R;
-
-import java.util.ArrayList;
-
 import android.content.Context;
+import android.database.Cursor;
+import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
-	private static ArrayList<Attachment> files;
+public class NotificationAttachmentAdapter extends CursorAdapter {
+
+	// private static ArrayList<Attachment> files;
 	ViewHolder holder;
 	Context context;
-	private Attachment tmp;
 
-	public NotificationAttachmentAdapter(Context contxt,
-			ArrayList<Attachment> objects) {
-		super(contxt, R.layout.notification_attachements, objects);
+	// private Attachment tmp;
+
+	public NotificationAttachmentAdapter(Context contxt, Cursor cursor_) {
+		super(contxt, cursor_, 0);// R.layout.notification_attachements,
+									// objects);
 		context = contxt;
-		files = objects;
+		// files = objects;
 
 	}
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View setView(View view, Cursor c) {
 
-		if (convertView == null) {
-			LayoutInflater inflater = (LayoutInflater) context
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = inflater.inflate(R.layout.notification_attachements,
-					parent, false);
-			holder = new ViewHolder();
-			holder.name = (TextView) convertView
-					.findViewById(R.id.textViewNotiFileName);
-			holder.data = (TextView) convertView
-					.findViewById(R.id.textViewNotiFileDetail);
-			holder.state_image = (ImageView) convertView
-					.findViewById(R.id.imageViewState);
-			holder.action_button = (ImageButton) convertView
-					.findViewById(R.id.imageButtonAttachmentAction);
-		} else {
-			holder = (ViewHolder) convertView.getTag();
+		holder = (ViewHolder) view.getTag();
+		// tmp = files.get(position);
+		int state = c.getInt(2);
+		String name = c.getString(1);
+		long size = c.getLong(3);
+		holder.state = state;
+		holder.url = c.getString(4);
+		holder.id = c.getLong(0);
+
+	
+
+		holder.name.setText(name);
+		holder.data.setText(Utility.getSizeString(size));
+		switch (state) {
+		case Constants.FILE_STATE.RECEIVED:
+		case Constants.FILE_STATE.ACK_SEND:
+			holder.action_button
+					.setImageResource(R.drawable.ic_action_download);
+			
+			break;
+		case Constants.FILE_STATE.DOWNLOADED:
+			holder.action_button.setImageResource(R.drawable.ic_action_file);
+			break;
+		case Constants.FILE_STATE.PENDING:
+			holder.action_button.setImageResource(R.drawable.ic_action_wait);
+			break;
+		case Constants.FILE_STATE.SENT:
+			holder.action_button.setImageResource(R.drawable.ic_action_done);
+			break;
+		case Constants.FILE_STATE.ACK_RECEIVED:
+			holder.action_button
+					.setImageResource(R.drawable.ic_action_done_all);
+			break;
 		}
 
-		tmp = files.get(position);
-		if (tmp.state == Constants.FILE_STATE.ACK_SEND
-				|| tmp.state == Constants.FILE_STATE.DOWNLOADED)
-			holder.state_image.setImageDrawable(context.getResources()
-					.getDrawable(R.drawable.ic_file_done));
-		else
-			holder.state_image.setImageDrawable(context.getResources()
-					.getDrawable(R.drawable.ic_file_download));
-
-		holder.name.setText(tmp.name);
-		holder.data.setText(Utility.getSizeString(tmp.size));
-		holder.action_button.setImageResource(R.drawable.ic_action_done);
-
 		// holder.action_button.setOnClickListener();
-		holder.state = tmp.state;
-		holder.url = tmp.url;
-		holder.id = tmp.id;
 
-		convertView.setTag(holder);
-		return convertView;
+		view.setTag(holder);
+		return view;
 	}
 
 	public static class ViewHolder {
 		public int state; // refer to constants.STATE for info
 		public long id;
 		public String url;
-		ImageView state_image;
+		//ImageView state_image;
 		public ImageButton action_button;
 		public TextView name;
 		TextView data;
+	}
+
+	@Override
+	public void bindView(View view, Context context, Cursor cursor) {
+		view = setView(view, cursor);
+	}
+
+	@Override
+	public View newView(Context context, Cursor cursor, ViewGroup parent) {
+		LayoutInflater inflater = (LayoutInflater) context
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflater.inflate(R.layout.notification_attachements,
+				parent, false);
+		holder = new ViewHolder();
+		holder.name = (TextView) view.findViewById(R.id.textViewNotiFileName);
+		holder.data = (TextView) view.findViewById(R.id.textViewNotiFileDetail);
+	//	holder.state_image = (ImageView) view.findViewById(R.id.imageViewState);
+		holder.action_button = (ImageButton) view
+				.findViewById(R.id.imageButtonAttachmentAction);
+		view.setTag(holder);
+		return setView(view, cursor);
 	}
 
 }
