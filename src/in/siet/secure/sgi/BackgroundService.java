@@ -24,7 +24,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.loopj.android.http.AsyncHttpClient;
@@ -43,18 +44,16 @@ import com.loopj.android.http.SyncHttpClient;
  */
 public class BackgroundService extends IntentService {
 	private static boolean SERVICE_WORKING;
-	// private static boolean HAVE_NEW_DATA;
-	// private int NO_OF_INSTANCES;
-	// private final IBinder binder = new LocalBinder();
 	private boolean START_BY_GCM;
 	private SharedPreferences spref;
 	private DbHelper dbh;
 	static String TAG = "in.siet.secure.sgi.BackgroundActivity";
 	private String my_userid;
-	private JSONArray json_fileid = null;
-
+	private JSONArray server_file_ids = null;
+	private WakeLock wake_lock;
 	private boolean got_new_sender;
 	private Intent starter;
+	private boolean FILE_UPLOADING_RESULT;
 
 	public BackgroundService() {
 		super("BackgroundService");
@@ -66,17 +65,19 @@ public class BackgroundService extends IntentService {
 		return dbh;
 	}
 
+	/**
+	 * Filter messages based on message type. Since it is likely that GCM will
+	 * be extended in the future with new message types, just ignore any message
+	 * types you're not interested in, or that you don't recognize.
+	 * 
+	 * @param intent
+	 * @return
+	 */
 	private boolean checkGcmMsgType(Intent intent) {
 		boolean res = false;
 		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
 		String messageType = gcm.getMessageType(intent);
 
-		/*
-		 * Filter messages based on message type. Since it is likely that GCM
-		 * will be extended in the future with new message types, just ignore
-		 * any message types you're not interested in, or that you don't
-		 * recognize.
-		 */
 		if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
 		} else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED
 				.equals(messageType)) {
@@ -88,45 +89,57 @@ public class BackgroundService extends IntentService {
 		return res;
 	}
 
+	private void setStarting(boolean by_gcm) {
+		if (by_gcm) {
+			setStartByGCM(true);
+		} else {
+			holdWakeLock();
+			setStartByGCM(false);
+		}
+	}
+
+	private void setFinishing() {
+		if (getStartByGCM()) {
+			GcmBroadcastReceiver.completeWakefulIntent(starter);
+		} else {
+			releaseWakeLock();
+		}
+
+	}
+
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Utility.log(TAG, "service has accepted a request vai intent");
 		starter = intent; // intent required to release the wakeful
 							// serverice wakelock
+		// check for logout
 		if (!BackgroundService.isServiceRunning()) {
-			setStartByGCM(checkGcmMsgType(intent));
+			setStarting(checkGcmMsgType(intent));
 			sync();
 		}
-
-		/*
-		 * else { /** service already running., now we may have some new data to
-		 * send to server so we will use alarm service to run this service later
-		 * in time automatically so that the new data get synchronize with
-		 * server here we will just mark that the service should set an alarm in
-		 * onDestroy method
-		 * 
-		 * Utility.log(TAG, "service running so setting have new data");
-		 * setHaveNewData(true); }
-		 */
 	}
 
 	/**
 	 * Hold a partial wake lock so that you don't get killed ;)
 	 */
-	/*
-	 * private void holdWakeLock() { PowerManager pm = (PowerManager)
-	 * getSystemService(POWER_SERVICE); if (wake == null) wake =
-	 * pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG); if (!wake.isHeld())
-	 * wake.acquire(); }
-	 */
+
+	private void holdWakeLock() {
+		PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+		if (wake_lock == null)
+			wake_lock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		if (!wake_lock.isHeld())
+			wake_lock.acquire();
+	}
+
 	/**
 	 * release the wake lock
 	 */
 
-	/*
-	 * private void releaseLock() { if (wake != null && wake.isHeld())
-	 * wake.release(); }
-	 */
+	private void releaseWakeLock() {
+		if (wake_lock != null && wake_lock.isHeld())
+			wake_lock.release();
+	}
+
 	/**
 	 * not called from any where
 	 */
@@ -211,14 +224,6 @@ public class BackgroundService extends IntentService {
 	 * trigger notification action
 	 */
 
-	public class StartSync extends AsyncTask<Void, Void, Void> {
-		@Override
-		protected Void doInBackground(Void... params) {
-			sync();
-			return null;
-		}
-	}
-
 	public void sync() {
 		Utility.log(TAG, "serice is in sync");
 		setServiceRunning(true);
@@ -240,7 +245,6 @@ public class BackgroundService extends IntentService {
 			 * pending messages
 			 */
 			JSONArray pending_messages = getPendingMessages();
-
 			if (pending_messages.length() > 0)
 				data_to_send.put(Constants.JSONKEYS.MESSAGES.MESSAGES,
 						pending_messages);
@@ -256,7 +260,6 @@ public class BackgroundService extends IntentService {
 							Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS,
 							pending_notifications);
 			}
-
 		} catch (JSONException e) {
 			Utility.DEBUG(e);
 		}
@@ -278,7 +281,6 @@ public class BackgroundService extends IntentService {
 		 */
 		Utility.log(TAG, "sending data to a new thread");
 		new SendDataToServer().execute(body);
-
 	}
 
 	/**
@@ -293,12 +295,8 @@ public class BackgroundService extends IntentService {
 	private JSONArray getPendingNotifications() {
 		JSONArray notifications = new JSONArray();
 		JSONObject notification;
-		JSONArray attachments = new JSONArray();
-		JSONObject attachment = new JSONObject();
-		Cursor c_attachment;
-		int status;
+		// JSONObject attachment = new JSONObject();
 		String query = "select n.text,n.subject,n.time,m.course,m.branch,m.year,m.section,n._id,n.for_faculty from notification as n join user_mapper as m on n.target=m._id and n.state=? and n.sender=(select _id from user where login_id=?)";
-
 		SQLiteDatabase db = getDbHelper().getDb();
 		String[] args = { String.valueOf(Constants.NOTI_STATE.PENDING),
 				getSPreferences().getString(Constants.PREF_KEYS.user_id, null) };
@@ -326,25 +324,32 @@ public class BackgroundService extends IntentService {
 					notification.put(
 							Constants.JSONKEYS.NOTIFICATIONS.FOR_FACULTY,
 							c.getInt(8));
-					query = "select f.name,f.url,f.size,f._id from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id ='"
-							+ c.getInt(7) + "'";
-					Utility.log(TAG, query);
-					c_attachment = db.rawQuery(query, null);
+
 					/**
 					 * put some mechanism to retry sending file in case of
 					 * failure
 					 */
-					Utility.log(TAG, "before sending file");
-					sendfile(c_attachment, c.getLong(2),
+					Utility.log(TAG, "uploading files");
+					sendfile(c.getInt(7),
 							spref.getString(Constants.PREF_KEYS.user_id, null));
-					attachment.put(Constants.JSONKEYS.FILES.ID, json_fileid);
-					notification.put(
-							Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
-							attachment);
-					Utility.log(TAG, "after sending file");
-					c_attachment.close();
-
-					notifications.put(notification);
+					if (getFileUploadingResult()) {
+						// count the notification only if the files are uploaded
+						// successfully
+						if (server_file_ids != null
+								&& server_file_ids.length() > 0)
+							notification
+									.put(Constants.JSONKEYS.NOTIFICATIONS.ATTACHMENTS,
+											server_file_ids);
+						else {
+							Utility.log(TAG,
+									"no files attached with the notification");
+						}
+						Utility.log(TAG, "sending file successfull");
+						notifications.put(notification);
+					} else {
+						Utility.log(TAG,
+								"skipping the notification because files sending status was false");
+					}
 				} catch (Exception e) {
 					Utility.DEBUG(e);
 				}
@@ -355,87 +360,74 @@ public class BackgroundService extends IntentService {
 		return notifications;
 	}
 
-	public void sendfile(Cursor c_attachment, long noti_time, String user_id) {
-		JSONArray attachments = new JSONArray();
-		JSONObject attachment = new JSONObject();
+	public void sendfile(int noti_id, String user_id) {
+		// JSONArray attachmentss = new JSONArray();
+		// JSONObject attachment;
 		RequestParams params = new RequestParams();
+		String query = "select f.url from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id =?";
+
+		Utility.log(TAG, query);
+		Cursor c_attachment = getDbHelper().getDb().rawQuery(query,
+				new String[] { String.valueOf(noti_id) });
 		try {
 			int i = 0;
-			// meaole
 			if (c_attachment.moveToFirst()) {
 				while (!c_attachment.isAfterLast()) {
 					try {
-						attachment = new JSONObject();
-						attachment.put(Constants.JSONKEYS.FILES.NAME,
-								c_attachment.getString(0));
-						attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME, // naya
-																				// contant
-																				// bana
-																				// lo
-																				// files
-																				// k
-																				// andar
-								noti_time);
-						attachment.put(Constants.JSONKEYS.FILES.ID,
-								c_attachment.getString(3));
-						File file =new File(c_attachment.getString(1)); 
-						attachment.put(Constants.JSONKEYS.FILES.SIZE,file.length() );
-						params.put(Constants.QueryParameters.FILE + i++,
-								file);
-						attachments.put(attachment);
+						// attachment = new JSONObject();
+						// attachment.put(Constants.JSONKEYS.FILES.NAME,c_attachment.getString(0));
+						// attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME,noti_time);
+						// attachment.put(Constants.JSONKEYS.FILES.ID,c_attachment.getString(3));
+						File file = new File(c_attachment.getString(0));
+						// attachment.put(Constants.JSONKEYS.FILES.SIZE,file.length());
+						// putting fiels in parameters
+						params.put(Constants.QueryParameters.FILE + i++, file);
+						// attachments.put(attachment);
 					} catch (Exception e) {
 						Utility.DEBUG(e);
 					}
 					c_attachment.moveToNext();
 				}
-			}
-			Utility.log(TAG, "sending a file");
-			params.put(Constants.QueryParameters.FILE_ID, attachments);
-			params.put(Constants.QueryParameters.USERNAME, user_id);
-			AsyncHttpClient client = new SyncHttpClient();
-			client.post(getApplicationContext(),
-					Utility.getBaseURL(getApplicationContext())
-							+ "query/upload_file", params,
-					new MyJsonHttpResponseHandler() {
-						@Override
-						public void onSuccess(int statusCode, Header[] headers,
-								JSONObject response) {
-							Utility.log(TAG, response.toString());
-							Utility.log(TAG, "sendfile on success");
-							try {
-								if (response.has(Constants.JSONKEYS.FILES.ID))
-									json_fileid = response
-											.getJSONArray(Constants.JSONKEYS.FILES.ID);
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+
+				c_attachment.close();
+				Utility.log(TAG, "sending files ");
+				// params.put(Constants.QueryParameters.FILE_ID, attachments);
+				// params.put(Constants.QueryParameters.USERNAME, user_id);
+				Utility.putCredentials(params, getSPreferences());
+				SyncHttpClient client = new SyncHttpClient();
+				client.post(getApplicationContext(),
+						Utility.getBaseURL(getApplicationContext())
+								+ "query/upload_file", params,
+						new MyJsonHttpResponseHandler() {
+							@Override
+							public void onSuccess(int statusCode,
+									Header[] headers, JSONArray response) {
+								Utility.log(TAG, "sendfile in success");
+								if (response != null) {
+									server_file_ids = response;
+									setFileUploadingResult(true);
+								}
 							}
-						}
 
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONObject response) {
-							Utility.log(TAG, "..fail1 " + response.toString());
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								String responseString, Throwable throwable) {
-							Utility.log(TAG,
-									"..fail2" + throwable.getLocalizedMessage());
-						}
-
-						@Override
-						public void onFailure(int statusCode, Header[] headers,
-								Throwable throwable, JSONArray errorResponse) {
-							Utility.log(TAG,
-									"..fail3" + throwable.getLocalizedMessage());
-						}
-					});
-
+							@Override
+							public void commonTask() {
+								setFileUploadingResult(false);
+							}
+						});
+			} else {
+				setFileUploadingResult(true);
+			}
 		} catch (Exception e) {
 			Utility.DEBUG(e);
 		}
+	}
+
+	private boolean getFileUploadingResult() {
+		return FILE_UPLOADING_RESULT;
+	}
+
+	private void setFileUploadingResult(boolean result) {
+		FILE_UPLOADING_RESULT = result;
 	}
 
 	private JSONArray getPendingMessages() {
@@ -528,8 +520,8 @@ public class BackgroundService extends IntentService {
 					public void commonTask() {
 						Utility.log(TAG, "sending ack done");
 						setServiceRunning(false);
-						if (START_BY_GCM)
-							GcmBroadcastReceiver.completeWakefulIntent(starter);
+						setFinishing();
+
 					}
 				});
 	}
@@ -654,23 +646,16 @@ public class BackgroundService extends IntentService {
 									setGotNewSenders(true);
 								}
 								if (getGotNewSenders()) {
-
 									if (response
 											.has(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS)) {
 										JSONArray notifs = response
 												.getJSONArray(Constants.JSONKEYS.NOTIFICATIONS.NOTIFICATIONS);
-
 										ids_to_send
 												.put(Constants.JSONKEYS.NOTIFICATIONS.ACK,
 														getDbHelper()
 																.fillNotifications(
 																		notifs));
-
-										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_NOTIFICATIONS);
 									}
-									// get messages and insert it into db(help
-									// of
-									// DbHelper)
 									if (response
 											.has(Constants.JSONKEYS.MESSAGES.MESSAGES)) {
 										ids_to_send
@@ -679,35 +664,6 @@ public class BackgroundService extends IntentService {
 																.fillMessages(
 																		response.getJSONArray(Constants.JSONKEYS.MESSAGES.MESSAGES),
 																		getMyUserid()));
-										sendBroadcast(Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES);
-									}
-
-									if (ids_to_send
-											.has(Constants.JSONKEYS.MESSAGES.ACK)) {
-										Intent intent = new Intent(
-												getApplicationContext(),
-												MainActivity.class);
-										// gte pk of new sender if one if there
-										// are many senders then change the
-										// intent class to main activity
-										Utility.buildNotification(
-												getApplicationContext(),
-												intent, "Message",
-												"You have new messages");
-									}
-									if (ids_to_send
-											.has(Constants.JSONKEYS.NOTIFICATIONS.ACK)) {
-										// chnage the open notification fragment
-										Intent intent = new Intent(
-												getApplicationContext(),
-												MainActivity.class);
-										intent.putExtra(
-												Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW,
-												FragmentNotification.TAG);
-										Utility.buildNotification(
-												getApplicationContext(),
-												intent, "Notifications",
-												"You have new notifications");
 									}
 								}
 							} catch (JSONException e) {
@@ -732,8 +688,7 @@ public class BackgroundService extends IntentService {
 				sendAck(ids_to_send);
 			} else {
 				setServiceRunning(false);
-				if (START_BY_GCM)
-					GcmBroadcastReceiver.completeWakefulIntent(starter);
+				setFinishing();
 			}
 
 		}
@@ -840,12 +795,6 @@ public class BackgroundService extends IntentService {
 		return ids_to_get_from_server;
 	}
 
-	private void sendBroadcast(String action) {
-		Intent intent = new Intent(action);
-		LocalBroadcastManager.getInstance(getApplicationContext())
-				.sendBroadcast(intent);
-	}
-
 	private void setGotNewSenders(boolean set) {
 		got_new_sender = set;
 	}
@@ -870,12 +819,12 @@ public class BackgroundService extends IntentService {
 		return SERVICE_WORKING;
 	}
 
-	/*
-	 * public void setHaveNewData(boolean have_new_data) { // HAVE_NEW_DATA =
-	 * have_new_data; }
-	 */
-	public void setStartByGCM(boolean start_by_gcm) {
+	private void setStartByGCM(boolean start_by_gcm) {
 		START_BY_GCM = start_by_gcm;
+	}
+
+	private boolean getStartByGCM() {
+		return START_BY_GCM;
 	}
 
 	private String getMyUserid() {

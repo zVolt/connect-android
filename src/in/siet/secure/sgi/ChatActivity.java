@@ -100,6 +100,9 @@ public class ChatActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
+		list = (ListView) findViewById(R.id.listViewChats);
+		msg = (EditText) findViewById(R.id.editTextChats);
+		toolbar = (Toolbar) findViewById(R.id.toolbar);
 
 		Intent intent = getIntent();
 		// title="tambu";
@@ -107,31 +110,53 @@ public class ChatActivity extends ActionBarActivity {
 		receiver_id = intent.getLongExtra(Constants.INTENT_EXTRA.CHAT_USER_PK,
 				-1);
 		// if receiver_id==-1 go back to previous activity
-		list = (ListView) findViewById(R.id.listViewChats);
-		msg = (EditText) findViewById(R.id.editTextChats);
-		toolbar = (Toolbar) findViewById(R.id.toolbar);
-
-		String tmpq = "select _id,login_id,pic_url,f_name,l_name from user where login_id=? or _id=?";
-
-		c = getDbHelper().getDb().rawQuery(
-				tmpq,
-				new String[] {
-						getSPreferences().getString(
-								Constants.PREF_KEYS.user_id, null),
-						String.valueOf(receiver_id) });
-
-		c.moveToFirst();
-		while (!c.isAfterLast()) {
-			if (c.getLong(0) == receiver_id) {
-				receiver_lid = c.getString(1);
-				user_image_url = c.getString(2);
-				title = c.getString(3) + Constants.SPACE + c.getString(4);
-			} else {
-				sender_id = c.getLong(0);
+		if (receiver_id != -1) {
+			Utility.log(TAG, "we have user pk");
+			String tmpq = "select _id,login_id,pic_url,f_name,l_name from user where login_id=? or _id=?";
+			c = getDbHelper().getDb().rawQuery(
+					tmpq,
+					new String[] {
+							getSPreferences().getString(
+									Constants.PREF_KEYS.user_id, null),
+							String.valueOf(receiver_id) });
+			c.moveToFirst();
+			while (!c.isAfterLast()) {
+				if (c.getLong(0) == receiver_id) {
+					receiver_lid = c.getString(1);
+					user_image_url = c.getString(2);
+					title = c.getString(3) + Constants.SPACE + c.getString(4);
+				} else {
+					sender_id = c.getLong(0);
+				}
+				c.moveToNext();
 			}
-			c.moveToNext();
+			c.close();
+
+		} else {
+			Utility.log(TAG, "we have user login id");
+			receiver_lid = intent
+					.getStringExtra(Constants.INTENT_EXTRA.USER_NAME_TO_CHAT);
+			String tmpq = "select _id,login_id,pic_url,f_name,l_name from user where login_id IN (?,?)";
+			c = getDbHelper().getDb().rawQuery(
+					tmpq,
+					new String[] {
+							getSPreferences().getString(
+									Constants.PREF_KEYS.user_id, null),
+							receiver_lid });
+			c.moveToFirst();
+			while (!c.isAfterLast()) {
+				if (c.getString(1).equalsIgnoreCase(receiver_lid)) {
+					// receiver_lid = c.getString(1);
+					receiver_id = c.getLong(0);
+					user_image_url = c.getString(2);
+					title = c.getString(3) + Constants.SPACE + c.getString(4);
+				} else {
+					sender_id = c.getLong(0);
+				}
+				c.moveToNext();
+			}
+			c.close();
 		}
-		c.close();
 
 		String[] args = { String.valueOf(receiver_id),
 				String.valueOf(receiver_id) };
@@ -191,6 +216,8 @@ public class ChatActivity extends ActionBarActivity {
 								Constants.LOCAL_INTENT_ACTION.RELOAD_MESSAGES));
 		updateCursor();
 		markAllRead();
+		Utility.CancelNotification(getApplicationContext(),
+				Constants.MSG_NOTI_ID);
 	}
 
 	@Override

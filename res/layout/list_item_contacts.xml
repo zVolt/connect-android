@@ -1,8 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:padding="@dimen/default_padding"    
-     >
+    android:padding="@dimen/default_padding" >
 
     <ImageView
         android:id="@+id/imageViewContactsImage"
@@ -18,10 +17,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="10dp"
-        android:singleLine="true"
         android:layout_toRightOf="@+id/imageViewContactsImage"
-        android:textAppearance="?android:attr/textAppearanceMedium" 
-        android:text="TextView" />
+        android:singleLine="true"
+        android:text="TextView"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/black" />
 
     <TextView
         android:id="@+id/textViewContactsLastMsg"
@@ -41,8 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/imageViewContactsImage"
         android:layout_alignParentRight="true"
+        android:layout_marginBottom="5dp"
         android:singleLine="true"
-         android:layout_marginBottom="5dp"
         android:text="Small Text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 

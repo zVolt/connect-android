@@ -125,7 +125,7 @@ public final class DbStructure {
 		public static final String COLUMN_URL = "url";
 		public static final String COLUMN_NAME = "name";
 		public static final String COLUMN_STATE = "state";
-		public static final String COLUMN_SENDER = "sender";
+//		public static final String COLUMN_SENDER = "sender";
 		public static final String COLUMN_SIZE = "size";
 
 		public static final String COMMAND_CREATE = DbConstants.CREATE_TABLE
@@ -135,7 +135,7 @@ public final class DbStructure {
 				+ DbConstants.COMMA + COLUMN_URL + DbConstants.TYPE_TEXT
 				+ DbConstants.COMMA + COLUMN_SIZE + DbConstants.TYPE_INT
 				+ DbConstants.COMMA + COLUMN_STATE + DbConstants.TYPE_INT
-				+ DbConstants.COMMA + COLUMN_SENDER + DbConstants.TYPE_INT
+		//		+ DbConstants.COMMA + COLUMN_SENDER + DbConstants.TYPE_INT
 				+ DbConstants.BRACES_CLOSE + DbConstants.SEMICOLON;
 		public static final String COMMAND_DROP = DbConstants.DROP_TABLE
 				+ TABLE_NAME + DbConstants.SEMICOLON;

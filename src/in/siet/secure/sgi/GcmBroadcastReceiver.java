@@ -20,16 +20,23 @@ public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
 		SharedPreferences spf = context.getSharedPreferences(
 				Constants.PREF_FILE_NAME, Context.MODE_PRIVATE);
 		// Start the service, keeping the device awake while it is launching.
-		if (Utility.isConnected(context) && spf.getBoolean(Constants.PREF_KEYS.logged_in, false)
-				&& !BackgroundService.isServiceRunning()) {
-			startWakefulService(context, (intent.setComponent(comp)));
-		} else {
 
-			Utility.log(TAG,
-					"aborting sync no internet or service is running settign to start in 10 sec ");
-			Utility.setAlarm(context, 10000);
-			// set flag here that there is some data to be send to server
+		if (Utility.isConnected(context)) {
+			if (spf.getBoolean(Constants.PREF_KEYS.logged_in, false)
+					&& !BackgroundService.isServiceRunning()) {
+				startWakefulService(context, (intent.setComponent(comp)));
+			} else {
+
+				Utility.log(TAG,
+						"aborting sync not logged in or service is running settign to start in 10 sec ");
+				Utility.setAlarm(context, 10000);
+				// set flag here that there is some data to be send to server
+			}
+			setResultCode(Activity.RESULT_OK);
+		} else {
+			// if not connected to internet then backing off anf relaying on the
+			// network state listener broadcast receiver
+			Utility.log(TAG, "No internet hence backing off");
 		}
-		setResultCode(Activity.RESULT_OK);
 	}
 }

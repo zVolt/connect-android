@@ -43,7 +43,8 @@
         </activity>
         <activity
             android:name="in.siet.secure.sgi.ChatActivity"
-            android:label="@string/interaction" >
+            android:label="@string/interaction"
+            android:launchMode="singleTop" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.siet.secure.sgi.MainActivity" />
@@ -73,6 +74,11 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".NotificationGenerator"
+            android:exported="false" >
+        </service>
         <!-- GCM Specific components -->
 
         <meta-data

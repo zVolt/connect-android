@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -187,6 +188,20 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		if (intent.hasExtra(Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW)) {
+			String fragment_tag = intent
+					.getStringExtra(Constants.INTENT_EXTRA.FRAGMENT_TO_SHOW);
+			if (fragment_tag.equalsIgnoreCase(FragmentContacts.TAG))
+				switch_fragment(Constants.DRAWER_ID.INTERACTION);
+			else if (fragment_tag.equalsIgnoreCase(FragmentNotification.TAG))
+				switch_fragment(Constants.DRAWER_ID.NOTIFICATION);
+		}
+		setIntent(intent);
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
 	}
@@ -241,6 +256,11 @@ public class MainActivity extends ActionBarActivity {
 					Constants.PREF_KEYS.user_id, "");
 			String reg_id = getSPreferences().getString(
 					Constants.PREF_KEYS.PROPERTY_REG_ID, "");
+			boolean local_server = getSPreferences().getBoolean(
+					Constants.PREF_KEYS.LOCAL_SERVER, false);
+			String ip = getSPreferences().getString(
+					Constants.PREF_KEYS.SERVER_IP, "192.168.0.100");
+
 			int app_version = getSPreferences()
 					.getInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
 							Integer.MIN_VALUE);
@@ -249,6 +269,8 @@ public class MainActivity extends ActionBarActivity {
 					.clear()
 					.putString(Constants.PREF_KEYS.user_id, user_id)
 					.putString(Constants.PREF_KEYS.PROPERTY_REG_ID, reg_id)
+					.putString(Constants.PREF_KEYS.SERVER_IP, ip)
+					.putBoolean(Constants.PREF_KEYS.LOCAL_SERVER, local_server)
 					.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
 							app_version).commit();
 

@@ -75,7 +75,7 @@ public class NotificationAttachmentAdapter extends ArrayAdapter<Attachment> {
 
 	public static class ViewHolder {
 		public int state; // refer to constants.STATE for info
-		public int id;
+		public long id;
 		public String url;
 		ImageView state_image;
 		public ImageButton action_button;

@@ -59,8 +59,8 @@ public interface Constants {
 		String HAS_ATTACHMENTS = "has_attachments";
 		String NOTIFICATIONS = "notifications";
 
-		String FRAGMENT_TO_SHOW = "fargemnt_to_show";
-
+		String FRAGMENT_TO_SHOW = "fragemnt_to_show";
+		String USER_NAME_TO_CHAT = "user_name_to_chat";
 		String CHAT_NAME = "name";
 		String CHAT_USER_PK = "user_pk";
 	}
@@ -150,7 +150,6 @@ public interface Constants {
 			String TIME = "time";
 		}
 
-		
 	}
 
 	/**
@@ -310,7 +309,7 @@ public interface Constants {
 
 		public static interface FILES {
 			String NAME = "name";
-			String ID = "Id";
+			String IDS = "Ids";
 			String URL = "url";
 			String SIZE = "size";
 		}

@@ -37,19 +37,11 @@ import android.widget.Toast;
 import com.loopj.android.http.RequestParams;
 
 public class Utility {
-	// private static boolean LOCA_SERVER = false;
 	private final static String TAG = "in.siet.secure.sgi.Utility";
-	// public static String SERVER = LOCA_SERVER ? "192.168.0.101"
-	// : "sgitomcat-1093.rhcloud.com";
 	private static ProgressDialog progress_dialog;
 	private static SharedPreferences spf;
 	public static int MAX_NOTIFICATION_TEXT_LINES = 20;
-	/**
-	 * STRING TO HOLD THE TEXT OF THE NOTIFICATION TO BE RAISED FOR INCOMING
-	 * MESSAGE
-	 */
-	// public static String notification_msg_text[] = new
-	// String[MAX_NOTIFICATION_TEXT_LINES];
+
 	/**
 	 * BOOLEAN VARIABLE TO CHECK WHETHER NOTIFICATION IS ACTIVE IN THE
 	 * NOTIFICATION DRAWER OR NOT
@@ -145,11 +137,23 @@ public class Utility {
 	}
 
 	public static String encode(String str) {
-		return Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
+		String res;
+		try {
+			res = Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
+		} catch (Exception e) {
+			res = "";
+		}
+		return res;
 	}
 
 	public static String decode(String str) {
-		return new String(Base64.decode(str, Base64.DEFAULT));
+		String res;
+		try {
+			res = new String(Base64.decode(str.getBytes(), Base64.DEFAULT));
+		} catch (Exception e) {
+			res = "";
+		}
+		return res;
 	}
 
 	public static boolean isConnected(Context context) {
@@ -171,8 +175,12 @@ public class Utility {
 	 * @param text
 	 */
 	public static void buildNotification(Context context, Intent action,
-			String title, String text) {
-
+			int noti_id, String text) {
+		String title;
+		if (noti_id == Constants.MSG_NOTI_ID)
+			title = "Message";
+		else
+			title = "Notification";
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				context).setSmallIcon(R.drawable.ic_stat_launcher)
 				.setContentTitle(title).setContentText(text);
@@ -190,9 +198,7 @@ public class Utility {
 		mBuilder.setContentIntent(p_intent);
 		NotificationManager mNotifyMgr = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotifyMgr.notify(
-				title.equalsIgnoreCase("Message") ? Constants.MSG_NOTI_ID
-						: Constants.NOTI_NOTI_ID, mBuilder.build());
+		mNotifyMgr.notify(noti_id, mBuilder.build());
 		notification_msg_active = true;
 	}
 

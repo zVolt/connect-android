@@ -382,6 +382,7 @@ public class LoginActivity extends ActionBarActivity {
 									e.getLocalizedMessage());
 						} finally {
 							Utility.hideProgressDialog();
+
 						}
 					}
 
