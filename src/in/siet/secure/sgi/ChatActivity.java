@@ -231,9 +231,15 @@ public class ChatActivity extends ActionBarActivity {
 	}
 
 	public void updateCursor() {
-		new UpdateCursor().execute();
+		// new UpdateCursor().execute();
+		String[] args = { String.valueOf(receiver_id),
+				String.valueOf(receiver_id) };
+		Cursor old_cursor = adapter.swapCursor(getDbHelper().getDb().rawQuery(
+				query, args));
+		if (old_cursor != null)
+			old_cursor.close();
 	}
-
+/*
 	private class UpdateCursor extends AsyncTask<Void, Void, Cursor> {
 		@Override
 		protected Cursor doInBackground(Void... params) {
@@ -250,7 +256,7 @@ public class ChatActivity extends ActionBarActivity {
 
 		}
 	}
-
+*/
 	/**
 	 * insert new message into database move the sending part to service
 	 * 

@@ -19,6 +19,9 @@ public interface Constants {
 	 */
 	public int MSG_NOTI_ID = 1;
 	public int NOTI_NOTI_ID = 2;
+	public int UPLOAD_NOTI_ID = 3;
+	public int DOWNLOAD_NOTI_ID = 4;
+	
 	public String PATH_TO_APP = Environment.getExternalStorageDirectory()
 			.getPath() + "/in.secure.siet.sgi/download/";
 	public String PREF_FILE_NAME = "in.siet.secure.preference_file";

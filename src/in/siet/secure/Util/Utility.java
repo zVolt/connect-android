@@ -29,6 +29,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.text.format.DateUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -346,6 +347,55 @@ public class Utility {
 			context.startService(intent);
 		} else {
 			Utility.setAlarm(context, 10000);
+		}
+	}
+
+	static NotificationManager mNotifyManager;
+	static Builder mBuilder;
+
+	public static void SetProgressNotification(boolean uploading,
+			Context context) {
+		if (mNotifyManager == null)
+			mNotifyManager = (NotificationManager) context
+					.getSystemService(Context.NOTIFICATION_SERVICE);
+		if (mBuilder == null)
+			mBuilder = new NotificationCompat.Builder(context);
+		
+		mBuilder.setContentTitle(
+				(uploading ? "Uploading" : "Downloading") + " Attachments")
+
+				.setContentText(
+						(uploading ? "Uploading" : "Downloading")
+								+ " in progress")
+				.setSmallIcon(
+						uploading ? R.drawable.ic_action_upload
+								: R.drawable.ic_action_download);
+	}
+
+	public static void updateProgressNotification(int total, int done,
+			boolean uploading) {
+		if (mBuilder != null && mNotifyManager != null) {
+			mBuilder.setProgress(total, done, false).setContentText(
+					(done * 100 / total) + "% done");
+			// Displays the progress bar for the first time.
+			mNotifyManager.notify((uploading ? Constants.UPLOAD_NOTI_ID
+					: Constants.DOWNLOAD_NOTI_ID), mBuilder.build());
+		} else {
+			log(TAG, "notibuilder or noti manager is null in update progress");
+		}
+	}
+
+	public static void completeProgressNotification(boolean uploading,
+			boolean result) {
+		if (mBuilder != null && mNotifyManager != null) {
+			mBuilder.setContentText(
+					(uploading ? "uploading" : "downloading")
+							+ (result ? " completed" : " failed")).setProgress(
+					0, 0, false);
+			mNotifyManager.notify((uploading ? Constants.UPLOAD_NOTI_ID
+					: Constants.DOWNLOAD_NOTI_ID), mBuilder.build());
+		} else {
+			log(TAG, "notibuilder or noti manager is null in complete progree");
 		}
 	}
 }

@@ -330,8 +330,10 @@ public class BackgroundService extends IntentService {
 					 * failure
 					 */
 					Utility.log(TAG, "uploading files");
-					sendfile(c.getInt(7),
-							getSPreferences().getString(Constants.PREF_KEYS.user_id, null));
+					sendfile(
+							c.getInt(7),
+							getSPreferences().getString(
+									Constants.PREF_KEYS.user_id, null));
 					if (getFileUploadingResult()) {
 						// count the notification only if the files are uploaded
 						// successfully
@@ -361,8 +363,6 @@ public class BackgroundService extends IntentService {
 	}
 
 	public void sendfile(int noti_id, String user_id) {
-		// JSONArray attachmentss = new JSONArray();
-		// JSONObject attachment;
 		RequestParams params = new RequestParams();
 		String query = "select f.url from files as f join file_notification_map as fnm on f._id=fnm.file_id join notification as n on fnm.notification_id=n._id where n._id =?";
 
@@ -370,35 +370,32 @@ public class BackgroundService extends IntentService {
 		Cursor c_attachment = getDbHelper().getDb().rawQuery(query,
 				new String[] { String.valueOf(noti_id) });
 		try {
-			int i = 0;
+
 			if (c_attachment.moveToFirst()) {
 				while (!c_attachment.isAfterLast()) {
 					try {
-						// attachment = new JSONObject();
-						// attachment.put(Constants.JSONKEYS.FILES.NAME,c_attachment.getString(0));
-						// attachment.put(Constants.JSONKEYS.NOTIFICATIONS.TIME,noti_time);
-						// attachment.put(Constants.JSONKEYS.FILES.ID,c_attachment.getString(3));
+
 						File file = new File(c_attachment.getString(0));
-						// attachment.put(Constants.JSONKEYS.FILES.SIZE,file.length());
-						// putting fiels in parameters
-						params.put(Constants.QueryParameters.FILE + i++, file);
-						// attachments.put(attachment);
+						params.put(Constants.QueryParameters.FILE, file);
 					} catch (Exception e) {
 						Utility.DEBUG(e);
 					}
 					c_attachment.moveToNext();
 				}
-
 				c_attachment.close();
+
+				// notification progress
+				Utility.SetProgressNotification(true, getApplicationContext());
+
 				Utility.log(TAG, "sending files ");
-				// params.put(Constants.QueryParameters.FILE_ID, attachments);
-				// params.put(Constants.QueryParameters.USERNAME, user_id);
 				Utility.putCredentials(params, getSPreferences());
 				SyncHttpClient client = new SyncHttpClient();
+				client.setTimeout(60000);
 				client.post(getApplicationContext(),
 						Utility.getBaseURL(getApplicationContext())
 								+ "query/upload_file", params,
 						new MyJsonHttpResponseHandler() {
+					
 							@Override
 							public void onSuccess(int statusCode,
 									Header[] headers, JSONArray response) {
@@ -406,10 +403,28 @@ public class BackgroundService extends IntentService {
 								if (response != null) {
 									server_file_ids = response;
 									setFileUploadingResult(true);
+									// update db state of file
+									Utility.completeProgressNotification(true,
+											true);
+
 								}
+
 							}
 							@Override
+							public void onProgress(int bytesWritten,
+									int totalSize) {
+								Utility.updateProgressNotification(totalSize,
+										bytesWritten, true);
+								if(totalSize==bytesWritten)
+									setFileUploadingResult(true);
+
+								super.onProgress(bytesWritten, totalSize);
+							}
+
+							@Override
 							public void commonTask() {
+								Utility.completeProgressNotification(true,
+										false);
 								setFileUploadingResult(false);
 							}
 						});
@@ -597,7 +612,7 @@ public class BackgroundService extends IntentService {
 										SyncHttpClient client = new SyncHttpClient();
 										client.addHeader("Content-Type",
 												"application/json");
-										
+
 										client.post(
 												getApplicationContext(),
 												Utility.getBaseURL(getApplicationContext())

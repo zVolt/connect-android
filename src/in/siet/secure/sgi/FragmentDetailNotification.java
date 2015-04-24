@@ -105,7 +105,7 @@ public class FragmentDetailNotification extends Fragment implements
 		Cursor cursor = getDbHelper().getDb().rawQuery(files_query,
 				new String[] { String.valueOf(not_id) });
 		adapter = new NotificationAttachmentAdapter(getActivity(), cursor);
-		
+
 		Bundle bundle = getArguments();
 		not_id = bundle.getLong(Constants.BUNDLE_DATA.NOTIFICATION_ID);
 		// getDbHelper().getFilesOfNotification(not_id);
@@ -137,7 +137,7 @@ public class FragmentDetailNotification extends Fragment implements
 				image);
 		// adapter=new NotificationAttachmentAdapter(getActivity(),
 		// attachments);
-		//processAttachments();
+		// processAttachments();
 		updateCursor();
 		int tmp_state = bundle.getInt(Constants.BUNDLE_DATA.NOTIFICATION_STATE);
 		if (tmp_state == Constants.NOTI_STATE.RECEIVED
@@ -223,7 +223,7 @@ public class FragmentDetailNotification extends Fragment implements
 		case R.id.imageButtonAttachmentAction:
 			final ViewHolder h = (ViewHolder) ((View) view.getParent())
 					.getTag();
-			final String file_name=h.name.getText().toString();
+			final String file_name = h.name.getText().toString();
 			if (h.state != Constants.NOTI_STATE.RECEIVED) {
 				// open file
 				Utility.log(TAG, "opening file");
@@ -250,7 +250,7 @@ public class FragmentDetailNotification extends Fragment implements
 				}
 			} else {
 				// download file
-				
+
 				Utility.log(TAG, "downloading file state " + h.state);
 				Utility.log("Yaha", "clicked on " + file_name);
 				RequestParams params = new RequestParams();
@@ -258,6 +258,8 @@ public class FragmentDetailNotification extends Fragment implements
 				params.put(Constants.QueryParameters.FILES.NAME, file_name);
 				AsyncHttpClient client = new AsyncHttpClient();
 				Utility.log(TAG, "before downloadf ile");
+				Utility.SetProgressNotification(false, getActivity()
+						.getApplicationContext());
 				client.get(
 						Utility.getBaseURL(getActivity()
 								.getApplicationContext())
@@ -270,7 +272,6 @@ public class FragmentDetailNotification extends Fragment implements
 								Utility.log(TAG, "on success file download");
 								try {
 
-									
 									Utility.log(TAG, "received file name: "
 											+ file_name);
 									long file_id = h.id;
@@ -297,6 +298,8 @@ public class FragmentDetailNotification extends Fragment implements
 									getDbHelper().updateFileState(file_id,
 											Constants.FILE_STATE.DOWNLOADED,
 											file_url);
+									Utility.completeProgressNotification(false,
+											true);
 								} catch (FileNotFoundException e) {
 									Utility.DEBUG(e);
 								} catch (IOException e) {
@@ -308,7 +311,18 @@ public class FragmentDetailNotification extends Fragment implements
 							@Override
 							public void onFailure(int arg0, Header[] arg1,
 									Throwable arg2, File arg3) {
-								Utility.log(TAG, "on failure file :::" + arg2);
+								Utility.completeProgressNotification(false,
+										false);
+								Utility.log(TAG, "on failure file :" + arg2);
+							}
+
+							@Override
+							public void onProgress(int bytesWritten,
+									int totalSize) {
+								Utility.updateProgressNotification(totalSize,
+										bytesWritten, false);
+								
+							//	super.onProgress(bytesWritten, totalSize);
 							}
 						});
 				Utility.log(TAG, "after download file");
