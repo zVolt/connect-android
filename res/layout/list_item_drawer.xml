@@ -18,9 +18,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/nav_drawer_hpad"
         android:gravity="center_vertical"
+        
         android:text="TextView"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@drawable/drawer_item"
+        android:textColor="@drawable/drawer_item_text_color_selector"
         android:textSize="14sp" />
 
 </LinearLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval" >
+
+    <size
+        android:height="@dimen/drawer_user_image_size_padding"
+        android:width="@dimen/drawer_user_image_size_padding" />
+
+    <solid android:color="#FFF" />
+
+    <stroke
+        android:width="3dp"
+        android:color="#FFF" />
+
+    <padding
+        android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp" />
+
+</shape>

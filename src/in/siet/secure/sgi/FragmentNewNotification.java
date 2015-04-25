@@ -11,13 +11,23 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,13 +40,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class FragmentNewNotification extends Fragment implements
-		OnClickListener {
+		OnClickListener, TextWatcher {
 	public static final String TAG = "in.siet.secure.sgi.FragmentNewNotification";
 	private LinearLayout container_layout;
 	private ArrayList<Attachment> file_list;
 	private SharedPreferences spf;
 	private EditText subject, body;
 	private DbHelper dbh;
+	private ImageButton sendButton;
 
 	public FragmentNewNotification() {
 	}
@@ -51,7 +62,8 @@ public class FragmentNewNotification extends Fragment implements
 		subject = (EditText) rootView
 				.findViewById(R.id.editTextNewNoticeSubject);
 		body = (EditText) rootView.findViewById(R.id.editTextNewNoticeBody);
-
+		subject.addTextChangedListener(this);
+		body.addTextChangedListener(this);
 		// send.setTag(holder);
 		file_list = new ArrayList<Attachment>();
 		container_layout = (LinearLayout) rootView
@@ -60,8 +72,10 @@ public class FragmentNewNotification extends Fragment implements
 		((Button) rootView.findViewById(R.id.buttonFileSelector))
 				.setOnClickListener(this);
 
-		((ImageButton) rootView.findViewById(R.id.buttonSendNotice))
-				.setOnClickListener(this);
+		sendButton = ((ImageButton) rootView
+				.findViewById(R.id.buttonSendNotice));
+
+		sendButton.setOnClickListener(this);
 		return rootView;
 	}
 
@@ -78,6 +92,21 @@ public class FragmentNewNotification extends Fragment implements
 				R.string.fragemnt_title_new);
 
 		super.onResume();
+	}
+
+	@Override
+	public void onStart() {
+		checkInput();
+		super.onStart();
+	}
+
+	private void checkInput() {
+		if (subject.getText().toString().trim().isEmpty()
+				|| body.getText().toString().trim().isEmpty()) {
+			sendButton.setEnabled(false);
+		} else {
+			sendButton.setEnabled(true);
+		}
 	}
 
 	private static class ViewHolder {
@@ -103,7 +132,7 @@ public class FragmentNewNotification extends Fragment implements
 
 	public void selectFiles() {
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-		intent.setType("file/*");
+		intent.setType("*/*");
 		startActivityForResult(intent, 1);
 	}
 
@@ -111,9 +140,11 @@ public class FragmentNewNotification extends Fragment implements
 	public void onActivityResult(int request, int result, Intent data) {
 		if (request == 1 && result == Activity.RESULT_OK) {
 
-			File file = new File(data.getData().getPath());
+			File file = new File(getPath(getActivity().getApplicationContext(),
+					data.getData()));
 			Attachment tmp_atc = new Attachment(file.getName(),
 					file.getAbsolutePath(), file.length());
+			Utility.log(TAG, "file: " + data.getData().getPath());
 			LayoutInflater inflater = (LayoutInflater) getActivity()
 					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View child = inflater.inflate(R.layout.notification_attachements,
@@ -207,7 +238,7 @@ public class FragmentNewNotification extends Fragment implements
 			// state if filled by db class
 
 			getDbHelper().insertNewNotification(new_noti);
-// go to detailed notification now
+			// go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
 			Utility.RaiseToast(getActivity(), "send new notification", false);
@@ -235,5 +266,159 @@ public class FragmentNewNotification extends Fragment implements
 		if (dbh == null)
 			dbh = new DbHelper(getActivity().getApplicationContext());
 		return dbh;
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		checkInput();
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+	}
+
+	/**
+	 * Get a file path from a Uri. This will get the the path for Storage Access
+	 * Framework Documents, as well as the _data field for the MediaStore and
+	 * other file-based ContentProviders.
+	 * 
+	 * @param context
+	 *            The context.
+	 * @param uri
+	 *            The Uri to query.
+	 * @author paulburke
+	 */
+	@SuppressLint("NewApi")
+	public static String getPath(final Context context, final Uri uri) {
+
+		final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+		// DocumentProvider
+		if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+			// ExternalStorageProvider
+			if (isExternalStorageDocument(uri)) {
+				final String docId = DocumentsContract.getDocumentId(uri);
+				final String[] split = docId.split(":");
+				final String type = split[0];
+
+				if ("primary".equalsIgnoreCase(type)) {
+					return Environment.getExternalStorageDirectory() + "/"
+							+ split[1];
+				}
+
+				// TODO handle non-primary volumes
+			}
+			// DownloadsProvider
+			else if (isDownloadsDocument(uri)) {
+
+				final String id = DocumentsContract.getDocumentId(uri);
+				final Uri contentUri = ContentUris.withAppendedId(
+						Uri.parse("content://downloads/public_downloads"),
+						Long.valueOf(id));
+
+				return getDataColumn(context, contentUri, null, null);
+			}
+			// MediaProvider
+			else if (isMediaDocument(uri)) {
+				final String docId = DocumentsContract.getDocumentId(uri);
+				final String[] split = docId.split(":");
+				final String type = split[0];
+
+				Uri contentUri = null;
+				if ("image".equals(type)) {
+					contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+				} else if ("video".equals(type)) {
+					contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+				} else if ("audio".equals(type)) {
+					contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+				}
+
+				final String selection = "_id=?";
+				final String[] selectionArgs = new String[] { split[1] };
+
+				return getDataColumn(context, contentUri, selection,
+						selectionArgs);
+			}
+		}
+		// MediaStore (and general)
+		else if ("content".equalsIgnoreCase(uri.getScheme())) {
+			return getDataColumn(context, uri, null, null);
+		}
+		// File
+		else if ("file".equalsIgnoreCase(uri.getScheme())) {
+			return uri.getPath();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the value of the data column for this Uri. This is useful for
+	 * MediaStore Uris, and other file-based ContentProviders.
+	 * 
+	 * @param context
+	 *            The context.
+	 * @param uri
+	 *            The Uri to query.
+	 * @param selection
+	 *            (Optional) Filter used in the query.
+	 * @param selectionArgs
+	 *            (Optional) Selection arguments used in the query.
+	 * @return The value of the _data column, which is typically a file path.
+	 */
+	public static String getDataColumn(Context context, Uri uri,
+			String selection, String[] selectionArgs) {
+
+		Cursor cursor = null;
+		final String column = "_data";
+		final String[] projection = { column };
+
+		try {
+			cursor = context.getContentResolver().query(uri, projection,
+					selection, selectionArgs, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				final int column_index = cursor.getColumnIndexOrThrow(column);
+				return cursor.getString(column_index);
+			}
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
+		return null;
+	}
+
+	/**
+	 * @param uri
+	 *            The Uri to check.
+	 * @return Whether the Uri authority is ExternalStorageProvider.
+	 */
+	public static boolean isExternalStorageDocument(Uri uri) {
+		return "com.android.externalstorage.documents".equals(uri
+				.getAuthority());
+	}
+
+	/**
+	 * @param uri
+	 *            The Uri to check.
+	 * @return Whether the Uri authority is DownloadsProvider.
+	 */
+	public static boolean isDownloadsDocument(Uri uri) {
+		return "com.android.providers.downloads.documents".equals(uri
+				.getAuthority());
+	}
+
+	/**
+	 * @param uri
+	 *            The Uri to check.
+	 * @return Whether the Uri authority is MediaProvider.
+	 */
+	public static boolean isMediaDocument(Uri uri) {
+		return "com.android.providers.media.documents".equals(uri
+				.getAuthority());
 	}
 }

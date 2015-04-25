@@ -21,16 +21,30 @@
     <color name="gray14">#e0e0e0</color>
     <color name="gray15">#f0f0f0</color>
     <color name="white">#FFFFFF</color>
-    <!-- B2FFC4 BFFFCE 	.#A2C481		.#7FC1BB-->
+    <!-- B2FFC4 BFFFCE 	.#A2C481		.#7FC1BB -->
     <color name="msg_send">#BBDEFB</color>
     <color name="msg_receive">#C8E6C9</color>
     <color name="drawer_header">#00838F</color>
-    
-    <color name="colorPrimaryLight">#B2EBF2</color>
-    <color name="colorPrimaryDark">#0097A7</color>
-    <color name="colorPrimary">#00BCD4</color>
-    
-    <color name="textColorPrimary">#000000</color>
     <color name="button_text_white">#DBDBDB</color>
+
+    <!-- primary color shades -->
+    <color name="colorPrimaryLight">#BBDEFB</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorAccentPrimary">#F50057</color>
+    <color name="colorAccentPrimaryDark">#C51162</color>
+    <color name="colorAccentPrimaryLight">#FF4081</color>
+    <color name="textColorPrimary">#000000</color>
+
+    <!-- state colors -->
+    <!-- Success(green) -->
+    <color name="colorSucess">#4CAF50</color>
+    <color name="colorSucessLight">#C8E6C9</color>
+    <color name="colorSucessDark">#388E3C</color>
+
+    <!-- Failure(red) -->
+    <color name="colorFailure">#F44336</color>
+    <color name="colorFailureLight">#FFCDD2</color>
+    <color name="colorFailureDark">#D32F2F</color>
 
 </resources>

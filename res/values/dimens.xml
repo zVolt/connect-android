@@ -26,9 +26,10 @@
 	<dimen name="drawer_item_image_width">40dp</dimen>
 	<dimen name="drawer_item_image_height">40dp</dimen>
 	<dimen name="drawer_item_maring_btwn_image_text">5dp</dimen>
-	<dimen name="drawer_user_image_width">30dp</dimen>
-	<dimen name="drawer_user_image_height">60dp</dimen>
-	<dimen name="drawer_user_image_radius">40dp</dimen>
+	<dimen name="drawer_user_image_size">100dp</dimen>
+	<dimen name="drawer_user_image_size_padding">103dp</dimen>
+	
+	<dimen name="drawer_user_image_radius">50dp</dimen>
 	
 	<dimen name="list_item_image_state">60dp</dimen>
 	

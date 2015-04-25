@@ -40,7 +40,6 @@
                 android:inputType="textMultiLine"
                 android:maxLines="10" />
 
-           
             <Button
                 android:id="@+id/buttonFileSelector"
                 style="?android:attr/buttonStyleSmall"
@@ -56,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/default_margin"
-        android:background="@drawable/button_dark_gray"
+        android:background="@drawable/button_success"
         android:padding="@dimen/default_padding"
         android:src="@drawable/ic_action_send_white" />
 

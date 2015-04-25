@@ -122,7 +122,8 @@ public class MainActivity extends ActionBarActivity {
 				.displayer(
 						new RoundedBitmapDisplayer(getResources()
 								.getDimensionPixelSize(
-										R.dimen.drawer_user_image_radius)))
+										R.dimen.drawer_user_image_size)))
+
 				.build();
 		ImageLoader.getInstance().displayImage(
 				getSPreferences().getString(Constants.PREF_KEYS.pic_url, null),
@@ -213,6 +214,16 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
+	protected void onStart() {
+		switch (ACTIVE_FRAGMENT_TAG) {
+		case FragmentNotification.TAG:
+			setSelectedItem(Constants.DRAWER_ID.NOTIFICATION);
+			break;
+		}
+		super.onStart();
+	}
+
+	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
 		// Sync the toggle state after onRestoreInstanceState has occurred.
@@ -250,8 +261,6 @@ public class MainActivity extends ActionBarActivity {
 			Utility.startActivity(this, SettingActivity.class);
 			return true;
 		} else if (id == R.id.action_logout) {
-			// clear pref but retain gcm registration ID and version number of
-			// application
 			String user_id = getSPreferences().getString(
 					Constants.PREF_KEYS.user_id, "");
 			String reg_id = getSPreferences().getString(
@@ -273,8 +282,6 @@ public class MainActivity extends ActionBarActivity {
 					.putBoolean(Constants.PREF_KEYS.LOCAL_SERVER, local_server)
 					.putInt(Constants.PREF_KEYS.PROPERTY_APP_VERSION,
 							app_version).commit();
-
-			// new DbHelper(getApplicationContext()).softReset();
 
 			Log.d(TAG, "pref cleared");
 			Utility.startActivity(this, LoginActivity.class);
@@ -312,10 +319,13 @@ public class MainActivity extends ActionBarActivity {
 		for (View v : drawerItemHolder) {
 			if (i == pos) {
 				v.setSelected(true);
+				v.setBackgroundResource(R.drawable.drawer_item_selected);
+
 				((DrawerItemViewHolder) v.getTag()).img
 						.setImageResource(drawerActiveIconIds[i]);
 			} else {
 				v.setSelected(false);
+				v.setBackgroundResource(R.drawable.drawer_item_default);
 				((DrawerItemViewHolder) v.getTag()).img
 						.setImageResource(drawerInactiveIconIds[i]);
 			}
@@ -375,6 +385,7 @@ public class MainActivity extends ActionBarActivity {
 		fragmentTransaction.replace(R.id.mainFrame, fragment,
 				ACTIVE_FRAGMENT_TAG).commit();
 		setSelectedItem(position);
+
 	}
 
 	public class DrawerClickListner implements OnClickListener {

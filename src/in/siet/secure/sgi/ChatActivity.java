@@ -22,10 +22,13 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 /**
@@ -34,10 +37,11 @@ import android.widget.ListView;
  * @author Zeeshan Khan
  * 
  */
-public class ChatActivity extends ActionBarActivity {
+public class ChatActivity extends ActionBarActivity implements TextWatcher {
 	String title;
 	ListView list;
 	EditText msg;
+	private ImageButton sendButton;
 	private Cursor c;
 	MessagesAdapter adapter;
 	SharedPreferences spref;
@@ -103,7 +107,8 @@ public class ChatActivity extends ActionBarActivity {
 		list = (ListView) findViewById(R.id.listViewChats);
 		msg = (EditText) findViewById(R.id.editTextChats);
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
-
+		sendButton = (ImageButton) findViewById(R.id.buttonSendChats);
+		msg.addTextChangedListener(this);
 		Intent intent = getIntent();
 		// title="tambu";
 		// title = intent.getStringExtra(Constants.INTENT_EXTRA.CHAT_NAME);
@@ -186,19 +191,14 @@ public class ChatActivity extends ActionBarActivity {
 
 	@Override
 	protected void onStart() {
+		checkInput();
 		super.onStart();
-		/*
-		 * Intent intent = new Intent(this, BackgroundService.class);
-		 * bindService(intent, service_connection, Context.BIND_AUTO_CREATE);
-		 */
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		/*
-		 * if (binded) { unbindService(service_connection); binded = false; }
-		 */
+
 	}
 
 	@Override
@@ -230,6 +230,13 @@ public class ChatActivity extends ActionBarActivity {
 		super.onPause();
 	}
 
+	private void checkInput() {
+		if (msg.getText().toString().trim().isEmpty())
+			sendButton.setEnabled(false);
+		else
+			sendButton.setEnabled(true);
+	}
+
 	public void updateCursor() {
 		// new UpdateCursor().execute();
 		String[] args = { String.valueOf(receiver_id),
@@ -239,24 +246,19 @@ public class ChatActivity extends ActionBarActivity {
 		if (old_cursor != null)
 			old_cursor.close();
 	}
-/*
-	private class UpdateCursor extends AsyncTask<Void, Void, Cursor> {
-		@Override
-		protected Cursor doInBackground(Void... params) {
-			String[] args = { String.valueOf(receiver_id),
-					String.valueOf(receiver_id) };
-			return getDbHelper().getDb().rawQuery(query, args);
-		}
 
-		@Override
-		protected void onPostExecute(Cursor result) {
-			Cursor old_cursor = adapter.swapCursor(result);
-			if (old_cursor != null)
-				old_cursor.close();
-
-		}
-	}
-*/
+	/*
+	 * private class UpdateCursor extends AsyncTask<Void, Void, Cursor> {
+	 * 
+	 * @Override protected Cursor doInBackground(Void... params) { String[] args
+	 * = { String.valueOf(receiver_id), String.valueOf(receiver_id) }; return
+	 * getDbHelper().getDb().rawQuery(query, args); }
+	 * 
+	 * @Override protected void onPostExecute(Cursor result) { Cursor old_cursor
+	 * = adapter.swapCursor(result); if (old_cursor != null) old_cursor.close();
+	 * 
+	 * } }
+	 */
 	/**
 	 * insert new message into database move the sending part to service
 	 * 
@@ -301,6 +303,7 @@ public class ChatActivity extends ActionBarActivity {
 			dbh = new DbHelper(getApplicationContext());
 		return dbh;
 	}
+
 	/*
 	 * private ServiceConnection service_connection = new ServiceConnection() {
 	 * 
@@ -311,4 +314,18 @@ public class ChatActivity extends ActionBarActivity {
 	 * service_) { LocalBinder binder_ = (LocalBinder) service_; service =
 	 * binder_.getService(); binded = true; } };
 	 */
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		checkInput();
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+	}
 }
