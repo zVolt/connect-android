@@ -92,6 +92,7 @@ public class MainActivity extends ActionBarActivity {
 
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
 				R.string.drawer_open, R.string.drawer_close);
+		
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		drawerlayout.setDrawerListener(drawerToggle);
 
@@ -413,7 +414,6 @@ public class MainActivity extends ActionBarActivity {
 			drawerlayout.closeDrawer(fullDrawerLayout);
 
 		}
-
 	}
 
 	private SharedPreferences getSPreferences() {

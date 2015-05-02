@@ -32,9 +32,10 @@
     <color name="colorPrimaryDark">#00796B</color>
     <color name="colorPrimary">#009688</color>
     
-    <color name="colorAccentPrimary">#00BFA5</color>
-    <color name="colorAccentPrimaryDark">#00BFA5</color>
-    <color name="colorAccentPrimaryLight">#00BFA5</color>
+    <color name="colorAccentPrimary">#607D8B</color>
+    <color name="colorAccentPrimaryDark">#455A64</color>
+    <color name="colorAccentPrimaryLight">#CFD8DC</color>
+    
     <color name="textColorPrimary">#000000</color>
 
     <!-- state colors -->

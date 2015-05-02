@@ -86,6 +86,7 @@ public class FragmentSettings extends PreferenceFragment implements
 			// if they contain password
 			String new_pwd = sharedPref.getString(
 					Constants.PREF_KEYS.PWD_CHANGE, null);
+			
 			if (new_pwd != null && new_pwd.trim().length() > 0) {
 				Utility.showProgressDialog(getActivity());
 				AsyncHttpClient client = new AsyncHttpClient();
