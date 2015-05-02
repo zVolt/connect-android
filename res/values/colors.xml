@@ -28,12 +28,13 @@
     <color name="button_text_white">#DBDBDB</color>
 
     <!-- primary color shades -->
-    <color name="colorPrimaryLight">#BBDEFB</color>
-    <color name="colorPrimaryDark">#1976D2</color>
-    <color name="colorPrimary">#2196F3</color>
-    <color name="colorAccentPrimary">#F50057</color>
-    <color name="colorAccentPrimaryDark">#C51162</color>
-    <color name="colorAccentPrimaryLight">#FF4081</color>
+    <color name="colorPrimaryLight">#B2DFDB</color>
+    <color name="colorPrimaryDark">#00796B</color>
+    <color name="colorPrimary">#009688</color>
+    
+    <color name="colorAccentPrimary">#00BFA5</color>
+    <color name="colorAccentPrimaryDark">#00BFA5</color>
+    <color name="colorAccentPrimaryLight">#00BFA5</color>
     <color name="textColorPrimary">#000000</color>
 
     <!-- state colors -->
