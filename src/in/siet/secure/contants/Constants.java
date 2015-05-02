@@ -14,6 +14,7 @@ public interface Constants {
 	public String SPACE = " ";
 	public String NEW_LINE = "\n";
 	public int HOUR_TO_MILISEC_FACTOR = 360000;
+	
 	/**
 	 * INTEGER VARIABLE TO DEFINE THE ID OF NOTIFICAITON TO MESSAGE
 	 */
@@ -126,6 +127,7 @@ public interface Constants {
 		String PROPERTY_REG_ID = "RegId";
 		String PROPERTY_APP_VERSION = "AppVersion";
 		String SERVER_IP = "server_ip";
+		String PWD_CHANGE = "pwd_change";
 	}
 
 	public interface QueryParameters {
@@ -146,7 +148,8 @@ public interface Constants {
 		String FILE = "file";
 		String FILE_ID = "file_id";
 		String INPUT_STREAM = "file_input_stream";
-
+		String NEW_PWD = "new_pwd";
+		
 		public interface Notification {
 			String SUBJECT = "subject";
 			String BODY = "body";
@@ -286,6 +289,7 @@ public interface Constants {
 
 		public interface TAG_MSGS {
 			String LOGIN = "Login";
+			String PWD_CHANGE="PswdChange";
 		}
 
 		public interface MESSAGES {

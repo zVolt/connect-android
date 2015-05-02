@@ -28,6 +28,12 @@
             android:key="@string/pref_key_update_interval"
             android:summary="@string/pref_desc_update_interval"
             android:title="@string/pref_title_update_interval" />
+        <EditTextPreference
+            android:defaultValue=""
+            android:inputType="textPassword"
+            android:key="@string/pref_key_pwd_change"
+            android:summary="@string/pref_desc_pwd_change"
+            android:title="@string/pref_title_pwd_change" />
     </PreferenceCategory>
 
 </PreferenceScreen>

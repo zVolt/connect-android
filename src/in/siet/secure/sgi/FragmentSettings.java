@@ -1,7 +1,13 @@
 package in.siet.secure.sgi;
 
+import in.siet.secure.Util.MyJsonHttpResponseHandler;
 import in.siet.secure.Util.Utility;
 import in.siet.secure.contants.Constants;
+
+import org.apache.http.Header;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -10,12 +16,16 @@ import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+
 public class FragmentSettings extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 	public static final String TAG = "in.siet.secure.sgi.FragmentSettings";
 	private SharedPreferences spf;
 
 	public FragmentSettings() {
+
 	}
 
 	@Override
@@ -70,6 +80,62 @@ public class FragmentSettings extends PreferenceFragment implements
 					.edit()
 					.putBoolean(Constants.PREF_KEYS.LOCAL_SERVER,
 							sharedPref.getBoolean(key, false)).commit();
+		} else if (key
+				.equalsIgnoreCase(getString(R.string.pref_key_pwd_change))) {
+			// show progress hit server to change password and update pref keys
+			// if they contain password
+			String new_pwd = sharedPref.getString(
+					Constants.PREF_KEYS.PWD_CHANGE, null);
+			if (new_pwd != null && new_pwd.trim().length() > 0) {
+				Utility.showProgressDialog(getActivity());
+				AsyncHttpClient client = new AsyncHttpClient();
+				RequestParams params = new RequestParams();
+				Utility.putCredentials(params, getSPreferences());
+				params.put(Constants.QueryParameters.NEW_PWD,
+						Utility.encode(new_pwd));
+
+				client.get(Utility.getBaseURL(getActivity())
+						+ "query/pwd_change", params,
+						new MyJsonHttpResponseHandler() {
+							@Override
+							public void onSuccess(int statusCode,
+									Header[] headers, JSONObject response) {
+								try {
+									if (response
+											.getString(Constants.JSONKEYS.TAG)
+											.equalsIgnoreCase(
+													Constants.JSONKEYS.TAG_MSGS.PWD_CHANGE)
+											&& response
+													.getBoolean(Constants.JSONKEYS.STATUS)) {
+
+										Utility.RaiseToast(
+												getActivity(),
+												"password changed successfully",
+												false);
+
+									}
+									else{
+										Utility.RaiseToast(
+												getActivity(),
+												"password changed unsuccessfully!! Try again later.",
+												false);
+									}
+									commonTask();
+								} catch (JSONException e) {
+									Utility.DEBUG(e);
+								}
+							};
+
+							@Override
+							public void commonTask() {
+								Utility.hideProgressDialog();
+							}
+						});
+
+			} else {
+				Utility.RaiseToast(getActivity(), "Password remain unchanged",
+						false);
+			}
 		}
 	}
 

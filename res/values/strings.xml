@@ -46,16 +46,19 @@
     <string name="pref_cat_general">General</string>
 
     <!-- Setting titles -->
+    <string name="pref_title_pwd_change">Change Password</string>
     <string name="pref_title_server_ip">Server IP Address</string>
     <string name="pref_title_update_interval">Update Interval</string>
 	<string name="pref_title_local_server">Local Server</string>
 	
     <!-- Setting Desc -->
+    <string name="pref_desc_pwd_change">Change your login password</string>
     <string name="pref_desc_server_ip">Server\'s IP Address (Developers only)</string>
     <string name="pref_desc_update_interval">How frequently you want updates</string>
     <string name="pref_desc_local_server">Use local server</string>
     
     <!-- Setting Desc -->
+    <string name="pref_key_pwd_change">pwd_change</string>
     <string name="pref_key_server_ip">server_ip</string>
     <string name="pref_key_update_interval">update_interval</string>
 	<string name="pref_key_local_server">use_local_server</string>

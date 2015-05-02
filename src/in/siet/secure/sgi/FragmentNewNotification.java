@@ -139,7 +139,12 @@ public class FragmentNewNotification extends Fragment implements
 	@Override
 	public void onActivityResult(int request, int result, Intent data) {
 		if (request == 1 && result == Activity.RESULT_OK) {
-
+			Utility.log(
+					TAG,
+					data.getDataString()
+							+ " path: "
+							+ getPath(getActivity().getApplicationContext(),
+									data.getData()));
 			File file = new File(getPath(getActivity().getApplicationContext(),
 					data.getData()));
 			Attachment tmp_atc = new Attachment(file.getName(),
@@ -303,11 +308,17 @@ public class FragmentNewNotification extends Fragment implements
 			// ExternalStorageProvider
 			if (isExternalStorageDocument(uri)) {
 				final String docId = DocumentsContract.getDocumentId(uri);
+
 				final String[] split = docId.split(":");
 				final String type = split[0];
 
+				Utility.log(TAG, "docID:" + docId + "\ntype:" + split[0]
+						+ "\n s1:" + split[1]);
 				if ("primary".equalsIgnoreCase(type)) {
 					return Environment.getExternalStorageDirectory() + "/"
+							+ split[1];
+				} else {
+					return Environment.getExternalStoragePublicDirectory(type) + "/"
 							+ split[1];
 				}
 
