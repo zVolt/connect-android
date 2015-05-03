@@ -39,12 +39,7 @@
             android:layout_marginRight="@dimen/default_margin"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <ProgressBar
-            android:id="@+id/progressBarFile"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="4dp"
-            android:indeterminate="true" />
+        
     </LinearLayout>
 
     <ImageButton

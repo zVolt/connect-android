@@ -181,6 +181,7 @@ public class FragmentNewNotification extends Fragment implements
 			 */
 			container_layout.addView(child);
 			file_list.add(tmp_atc);
+
 		}
 	}
 
@@ -206,6 +207,12 @@ public class FragmentNewNotification extends Fragment implements
 			indx += 1;
 			tmp_child = container_layout.getChildAt(indx);
 		}
+	}
+
+	private void clearAttachments() {
+		for (int i = 3; i < container_layout.getChildCount(); i++)
+			container_layout.removeViewAt(i);
+		file_list = new ArrayList<Attachment>();
 	}
 
 	/**
@@ -246,6 +253,8 @@ public class FragmentNewNotification extends Fragment implements
 			// go to detailed notification now
 			subject.getText().clear();
 			body.getText().clear();
+			clearAttachments();
+
 			Utility.RaiseToast(getActivity(), "send new notification", false);
 		} else {
 			Utility.RaiseToast(getActivity(), "cannot create notification",
@@ -318,8 +327,8 @@ public class FragmentNewNotification extends Fragment implements
 					return Environment.getExternalStorageDirectory() + "/"
 							+ split[1];
 				} else {
-					return Environment.getExternalStoragePublicDirectory(type) + "/"
-							+ split[1];
+					return Environment.getExternalStoragePublicDirectory(type)
+							+ "/" + split[1];
 				}
 
 				// TODO handle non-primary volumes
