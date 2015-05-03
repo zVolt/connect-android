@@ -3,11 +3,12 @@
 
     <!-- App Name -->
     <string name="app_name">SGI</string>
-    
+
     <!-- Titles -->
     <string name="title_notification">Notification</string>
     <string name="title_main">Notification</string>
     <string name="title_chat">Notification</string>
+    <string name="title_about">About</string>
 
     <!-- for Drawer Accessiblity -->
     <string name="drawer_open">Open</string>
@@ -49,19 +50,19 @@
     <string name="pref_title_pwd_change">Change Password</string>
     <string name="pref_title_server_ip">Server IP Address</string>
     <string name="pref_title_update_interval">Update Interval</string>
-	<string name="pref_title_local_server">Local Server</string>
-	
+    <string name="pref_title_local_server">Local Server</string>
+
     <!-- Setting Desc -->
     <string name="pref_desc_pwd_change">Change your login password</string>
     <string name="pref_desc_server_ip">Server\'s IP Address (Developers only)</string>
     <string name="pref_desc_update_interval">How frequently you want updates</string>
     <string name="pref_desc_local_server">Use local server</string>
-    
+
     <!-- Setting Desc -->
     <string name="pref_key_pwd_change">pwd_change</string>
     <string name="pref_key_server_ip">server_ip</string>
     <string name="pref_key_update_interval">update_interval</string>
-	<string name="pref_key_local_server">use_local_server</string>
+    <string name="pref_key_local_server">use_local_server</string>
 
     <!-- Drawer text -->
     <string name="getMsg">Refresh</string>
@@ -99,6 +100,10 @@
     <string name="desc_noti_sender_image">Photo of Sender</string>
     <string name="desc_noti_file_state">State of attachment</string>
     <string name="desc_noti_file_action_button">Action on Attachment</string>
+
+    <!-- About content -->
+    <string name="about_text">The developers are Zeeshan Khan and Swati Kesarwani</string>
+    <string name="about_title">Coding Mutants</string>
 
     <!-- Arrays -->
     <string-array name="array_panel_options">

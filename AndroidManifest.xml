@@ -63,6 +63,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.siet.secure.sgi.MainActivity" />
         </activity>
+        <activity
+            android:name="in.siet.secure.sgi.AboutActivity"
+            android:label="@string/title_about" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.siet.secure.sgi.MainActivity" />
+        </activity>
 
         <service
             android:name=".BackgroundService"

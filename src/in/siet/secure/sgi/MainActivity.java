@@ -92,7 +92,7 @@ public class MainActivity extends ActionBarActivity {
 
 		drawerToggle = new ActionBarDrawerToggle(this, drawerlayout,
 				R.string.drawer_open, R.string.drawer_close);
-		
+
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		drawerlayout.setDrawerListener(drawerToggle);
 
@@ -290,6 +290,9 @@ public class MainActivity extends ActionBarActivity {
 			return true;
 		} else if (id == R.id.action_reset) {
 			getDbHelper().clearUserData();
+			return true;
+		} else if (id == R.id.action_about) {
+			Utility.startActivity(this, AboutActivity.class);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
