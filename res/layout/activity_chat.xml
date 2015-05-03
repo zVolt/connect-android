@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        app:popupTheme="@style/Theme.AppCompat.NoActionBar"
-        app:theme="@style/MyActionBarTheme" />
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <ListView
         android:id="@+id/listViewChats"

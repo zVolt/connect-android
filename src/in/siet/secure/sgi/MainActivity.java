@@ -97,8 +97,10 @@ public class MainActivity extends ActionBarActivity {
 		drawerlayout.setDrawerListener(drawerToggle);
 
 		setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
+		
+		
+		//getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		//getSupportActionBar().setHomeButtonEnabled(true);
 
 	}
 
