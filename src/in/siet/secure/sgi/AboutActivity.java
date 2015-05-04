@@ -13,6 +13,6 @@ public class AboutActivity extends ActionBarActivity {
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayShowHomeEnabled(true);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-	}
 
+	}
 }

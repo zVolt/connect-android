@@ -22,7 +22,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/large_padding"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="@dimen/default_padding" >
@@ -39,27 +40,25 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="@dimen/default_padding"
-                android:text="@string/about_title"
+                android:text="@string/about_appname"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
-                android:id="@+id/textView1"
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/about_title"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:autoLink="email"
                 android:padding="@dimen/default_padding"
                 android:text="@string/about_text" />
         </LinearLayout>
     </ScrollView>
-
-    <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </android.support.v7.widget.Toolbar>
-
-    <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </android.support.v7.widget.Toolbar>
 
 </LinearLayout>
