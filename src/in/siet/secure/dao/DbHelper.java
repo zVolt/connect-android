@@ -670,7 +670,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 		long user_pk = db.insertWithOnConflict(
 				DbStructure.UserTable.TABLE_NAME, null, values,
-				SQLiteDatabase.CONFLICT_REPLACE);
+				SQLiteDatabase.CONFLICT_IGNORE);
 
 		if (user_pk != -1) {
 			if (!is_faculty) {
