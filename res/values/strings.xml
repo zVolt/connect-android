@@ -102,7 +102,7 @@
     <string name="desc_noti_file_action_button">Action on Attachment</string>
 
     <!-- About content -->
-    <string name="about_text">The developers are Zeeshan Khan and Swati Kesarwani</string>
+    <string name="about_text">SGI Application is a project developed by Coding Mutants, the aims is to provide a interation and easy notifying platform for members of SGI, the developers of the project are Zeeshan Khan and Swati Kesarwani. Feel free to give feedback and suggestions is any, Thank you. </string>
     <string name="about_title">Coding Mutants</string>
 
     <!-- Arrays -->
